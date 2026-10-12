@@ -19,6 +19,60 @@
     .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     .hint { font-size: 11px; line-height: 1.45; color: #94a3b8; }
     .step-badge { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:9999px; background:rgba(34,211,238,.15); color:#67e8f9; font-weight:700; font-size:11px; border:1px solid rgba(34,211,238,.3); flex-shrink:0; }
+      #lang-en, #lang-bm { background:#1e293b; color:#94a3b8; }
+    #lang-en.on, #lang-bm.on { background:#06b6d4; color:#020617; }
+        html.light body { background-color:#f8fafc; color:#0f172a; }
+    html.light .keep-white { color:#fff !important; }
+    html.light .bg-gradient-to-br.from-slate-900 { background-image:none; background-color:#fff; }
+    html.light .glow-cyan { box-shadow: 0 8px 30px -10px rgba(8,145,178,.25); }
+    html.light .step-badge { background:rgba(8,145,178,.12); color:#0e7490; border-color:rgba(8,145,178,.35); }
+    html.light #lang-en, html.light #lang-bm { background:#e2e8f0; color:#475569; }
+    html.light #lang-en.on, html.light #lang-bm.on { background:#0891b2; color:#fff; }
+    html.light .custom-scroll::-webkit-scrollbar-track { background:#f1f5f9; }
+    html.light .custom-scroll::-webkit-scrollbar-thumb { background:#cbd5e1; }
+    html.light select, html.light input { color-scheme: light; }
+    html.light .text-cyan-300, html.light .text-cyan-400 { color:#0e7490; }
+    html.light .text-emerald-400 { color:#059669; }
+    html.light .text-rose-400, html.light .text-rose-300 { color:#e11d48; }
+    html.light .text-emerald-300 { color:#047857; }
+    html.light .text-amber-300 { color:#b45309; }
+    html.light .text-orange-300 { color:#c2410c; }
+    html.light .bg-cyan-400.text-slate-950, html.light .bg-cyan-500.text-slate-950 { color:#fff; background-color:#0891b2; }
+    html.light .hover\:bg-cyan-400:hover { background-color:#0891b2; color:#fff; }
+    html.light .text-cyan-300.bg-cyan-500\/10, html.light .bg-cyan-500\/10 { background-color:rgba(8,145,178,.1); }
+    .light .bg-slate-800{background-color:#e2e8f0}
+    .light .bg-slate-800\/50{background-color:#e2e8f0}
+    .light .bg-slate-800\/60{background-color:#e2e8f0}
+    .light .bg-slate-800\/80{background-color:#e2e8f0}
+    .light .bg-slate-900{background-color:#ffffff}
+    .light .bg-slate-900\/40{background-color:#ffffff}
+    .light .bg-slate-900\/50{background-color:#ffffff}
+    .light .bg-slate-900\/60{background-color:#ffffff}
+    .light .bg-slate-900\/70{background-color:#ffffff}
+    .light .bg-slate-900\/80{background-color:#ffffff}
+    .light .bg-slate-950{background-color:#f1f5f9}
+    .light .bg-slate-950\/60{background-color:#f1f5f9}
+    .light .bg-slate-950\/70{background-color:#f1f5f9}
+    .light .bg-slate-950\/80{background-color:#f1f5f9}
+    .light .border-slate-600\/40{border-color:#94a3b8}
+    .light .border-slate-700{border-color:#cbd5e1}
+    .light .border-slate-700\/60{border-color:#cbd5e1}
+    .light .border-slate-800{border-color:#cbd5e1}
+    .light .border-slate-800\/60{border-color:#cbd5e1}
+    .light .border-slate-800\/80{border-color:#cbd5e1}
+    .light .border-slate-800\/90{border-color:#cbd5e1}
+    .light .hover\:bg-slate-700:hover{background-color:#cbd5e1}
+    .light .hover\:bg-slate-800:hover{background-color:#e2e8f0}
+    .light .hover\:bg-slate-800\/40:hover{background-color:#e2e8f0}
+    .light .hover\:border-slate-700:hover{border-color:#cbd5e1}
+    .light .hover\:text-white:hover{color:#0f172a}
+    .light .text-slate-100{color:#0f172a}
+    .light .text-slate-200{color:#1e293b}
+    .light .text-slate-300{color:#334155}
+    .light .text-slate-400{color:#475569}
+    .light .text-slate-500{color:#64748b}
+    .light .text-slate-600{color:#64748b}
+    .light .text-white{color:#0f172a}
   </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-100 antialiased custom-scroll">
@@ -27,7 +81,7 @@
   <header class="border-b border-slate-800/80 bg-slate-900/70 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex items-center justify-between">
     <div class="flex items-center space-x-3">
       <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-        <span class="text-white font-mono font-bold text-sm">PS</span>
+        <span class="keep-white text-white font-mono font-bold text-sm">PS</span>
       </div>
       <div>
         <div class="flex items-center space-x-2">
@@ -42,6 +96,11 @@
         <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
         <span class="text-slate-300 font-medium">Zero-Cloud Storage (PDPA Clean)</span>
       </div>
+      <div class="flex items-center rounded-lg border border-slate-700 overflow-hidden text-xs font-semibold" role="group" aria-label="Language">
+        <button id="lang-en" onclick="setLang('en')" class="px-2.5 py-1.5">EN</button>
+        <button id="lang-bm" onclick="setLang('bm')" class="px-2.5 py-1.5">BM</button>
+      </div>
+      <button id="theme-btn" onclick="toggleTheme()" class="text-xs px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors border border-slate-700" aria-label="Toggle day/night theme">🌙</button>
       <button onclick="toggleGuide(true)" class="text-xs px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-lg text-cyan-300 transition-colors border border-cyan-500/30 font-semibold">
         ? How to use
       </button>
@@ -169,7 +228,7 @@
             <div class="flex items-center justify-between">
               <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider"><span class="step-badge mr-1">3</span> Risk Per Trade</label>
               <div class="flex items-center gap-1 text-[11px] mono">
-                <span id="risk-cash-display" class="text-cyan-400 font-bold">$15.00</span>
+                <span id="risk-cash-display" data-nt class="text-cyan-400 font-bold">$15.00</span>
                 <span class="text-slate-500">at risk</span>
               </div>
             </div>
@@ -194,8 +253,8 @@
 
           <div class="space-y-3">
             <div class="flex items-center justify-between">
-              <label id="sl-label" class="text-[11px] font-bold text-slate-300 uppercase tracking-wider"><span class="step-badge mr-1">4</span> Stop Loss Distance (Pips)</label>
-              <span id="sl-unit-helper" class="text-[11px] font-mono text-slate-500">1 pip = 10 points</span>
+              <label id="sl-label" data-nt class="text-[11px] font-bold text-slate-300 uppercase tracking-wider"><span class="step-badge mr-1">4</span> Stop Loss Distance (Pips)</label>
+              <span id="sl-unit-helper" data-nt class="text-[11px] font-mono text-slate-500">1 pip = 10 points</span>
             </div>
             <div class="grid grid-cols-5 gap-1.5" id="sl-chips">
               <button onclick="setSLValue(10)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">10</button>
@@ -206,7 +265,7 @@
             </div>
             <div class="flex items-center gap-2">
               <input type="number" id="sl-distance" value="20" step="1" min="1" oninput="onSLInput()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-              <span id="sl-unit-tag" class="text-xs font-mono text-slate-400 px-2.5 py-2 bg-slate-800 rounded-xl border border-slate-700 whitespace-nowrap">PIPS</span>
+              <span id="sl-unit-tag" data-nt class="text-xs font-mono text-slate-400 px-2.5 py-2 bg-slate-800 rounded-xl border border-slate-700 whitespace-nowrap">PIPS</span>
             </div>
             <p class="hint">Distance between your entry price and your stop loss. Tighter stop = bigger lot size for the same risk.</p>
           </div>
@@ -229,26 +288,26 @@
           <div class="flex items-start justify-between">
             <div>
               <span class="text-xs font-mono tracking-widest text-cyan-400 font-semibold uppercase">Recommended broker order</span>
-              <h3 id="display-order-title" class="text-2xl font-black text-white mt-0.5">0.07 Total Lots</h3>
+              <h3 id="display-order-title" data-nt class="text-2xl font-black text-white mt-0.5">0.07 Total Lots</h3>
               <p class="hint">Enter this lot size in your trading platform.</p>
             </div>
             <div class="text-right">
               <div class="text-xs text-slate-400">Max loss if stopped out</div>
-              <div id="display-risk-cash" class="text-lg font-mono font-bold text-rose-400">-$15.00 (-1.5%)</div>
+              <div id="display-risk-cash" data-nt class="text-lg font-mono font-bold text-rose-400">-$15.00 (-1.5%)</div>
             </div>
           </div>
 
           <div class="space-y-2.5">
             <div class="flex items-center justify-between text-xs text-slate-400 px-1">
               <span>Order breakdown</span>
-              <span id="display-split-ratio" class="font-mono text-slate-500">Equal split</span>
+              <span id="display-split-ratio" data-nt class="font-mono text-slate-500">Equal split</span>
             </div>
-            <div id="layer-ticket-container" class="space-y-2"></div>
+            <div id="layer-ticket-container" data-nt class="space-y-2"></div>
           </div>
 
           <div id="guardrail-alert" class="hidden p-3 rounded-xl border text-xs flex items-center gap-2.5">
             <span id="guardrail-icon" class="text-base">⚠️</span>
-            <span id="guardrail-msg" class="leading-relaxed"></span>
+            <span id="guardrail-msg" data-nt class="leading-relaxed"></span>
           </div>
 
           <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
@@ -256,26 +315,26 @@
             <div class="grid grid-cols-3 gap-3 text-center">
               <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
                 <div class="text-[10px] text-slate-400 font-mono">1 : 1.5</div>
-                <div id="tp-gain-15" class="text-emerald-400 font-bold mono text-sm mt-0.5">+$22.50</div>
-                <div id="tp-pips-15" class="text-[10px] text-slate-500 font-mono mt-0.5">+30.0 pips</div>
+                <div id="tp-gain-15" data-nt class="text-emerald-400 font-bold mono text-sm mt-0.5">+$22.50</div>
+                <div id="tp-pips-15" data-nt class="text-[10px] text-slate-500 font-mono mt-0.5">+30.0 pips</div>
               </div>
               <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
                 <div class="text-[10px] text-slate-400 font-mono">1 : 2.0</div>
-                <div id="tp-gain-20" class="text-emerald-400 font-bold mono text-sm mt-0.5">+$30.00</div>
-                <div id="tp-pips-20" class="text-[10px] text-slate-500 font-mono mt-0.5">+40.0 pips</div>
+                <div id="tp-gain-20" data-nt class="text-emerald-400 font-bold mono text-sm mt-0.5">+$30.00</div>
+                <div id="tp-pips-20" data-nt class="text-[10px] text-slate-500 font-mono mt-0.5">+40.0 pips</div>
               </div>
               <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
                 <div class="text-[10px] text-slate-400 font-mono">1 : 3.0</div>
-                <div id="tp-gain-30" class="text-emerald-400 font-bold mono text-sm mt-0.5">+$45.00</div>
-                <div id="tp-pips-30" class="text-[10px] text-slate-500 font-mono mt-0.5">+60.0 pips</div>
+                <div id="tp-gain-30" data-nt class="text-emerald-400 font-bold mono text-sm mt-0.5">+$45.00</div>
+                <div id="tp-pips-30" data-nt class="text-[10px] text-slate-500 font-mono mt-0.5">+60.0 pips</div>
               </div>
             </div>
             <p class="hint">Set your take-profit this many pips/points from entry to hit the target.</p>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800 text-[11px] font-mono text-slate-500">
-            <span>Pip Value: <strong id="debug-pipval" class="text-slate-300">$10.00/lot</strong></span>
-            <span>Contract: <strong id="debug-contract" class="text-slate-300">100,000 units</strong></span>
+            <span>Pip Value: <strong id="debug-pipval" data-nt class="text-slate-300">$10.00/lot</strong></span>
+            <span>Contract: <strong id="debug-contract" data-nt class="text-slate-300">100,000 units</strong></span>
             <span>Min step: <strong class="text-slate-300">0.01 lot</strong></span>
           </div>
         </div>
@@ -324,7 +383,7 @@
       <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Equity Milestone Trajectory</h3>
-          <span class="text-xs font-mono text-cyan-400" id="chart-summary-stat">$100.00 ➔ $1,000.00</span>
+          <span class="text-xs font-mono text-cyan-400" id="chart-summary-stat" data-nt>$100.00 ➔ $1,000.00</span>
         </div>
         <div class="h-64 w-full"><canvas id="compoundingChart"></canvas></div>
       </div>
@@ -352,7 +411,7 @@
                 <th class="p-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody id="planner-table-body" class="divide-y divide-slate-800/60"></tbody>
+            <tbody id="planner-table-body" data-nt class="divide-y divide-slate-800/60"></tbody>
           </table>
         </div>
       </div>
@@ -382,7 +441,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
           <div><strong class="text-slate-200 block mb-0.5">1. Zero PII Collection</strong>This tool does not capture Personally Identifiable Information (PII) such as NRIC, full name, email address, phone number, or live MT4/MT5 broker login credentials.</div>
           <div><strong class="text-slate-200 block mb-0.5">2. Edge Network Delivery</strong>Web application binaries (HTML/JS) are hosted on globally distributed edge networks (including US/EU data centers). By accessing this tool, you acknowledge international transmission of static web assets.</div>
-          <div><strong class="text-slate-200 block mb-0.5">3. No Persistence</strong>This tool does not store your inputs. Values exist only in your browser's memory for the current session and disappear when you close or reload the page.</div>
+          <div><strong class="text-slate-200 block mb-0.5">3. No Persistence</strong>This tool does not store your inputs. Values exist only in your browser's memory for the current session and disappear when you close or reload the page. Only your language and theme choice are remembered in your browser.</div>
         </div>
       </div>
 
@@ -405,18 +464,209 @@
       slDistance: 20,
       layers: 3,
       assetProfiles: {
-        forex:   { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helper: '1 pip = 10 points' },
-        gold:    { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helper: '$1 move = 10 pips' },
-        crypto:  { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helper: '1 point = $1 move' },
-        indices: { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helper: '1 point = 1 index point' }
+        forex:   { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helperKey: 'h_forex' },
+        gold:    { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helperKey: 'h_gold' },
+        crypto:  { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helperKey: 'h_crypto' },
+        indices: { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helperKey: 'h_indices' }
       }
     };
 
     let chartInstance = null;
 
-    window.addEventListener('DOMContentLoaded', () => {
+    // --- LANGUAGE (EN / BM) & THEME (night / day) ---
+    const BM = {
+ "Multi-Asset Sizer & Compounding Planner": "Pengira Saiz Pelbagai Aset & Perancang Kompaun",
+ "Zero-Cloud Storage (PDPA Clean)": "Tiada Storan Awan (Patuh PDPA)",
+ "? How to use": "? Cara guna",
+ "Reset": "Set semula",
+ "How to use in 30 seconds": "Cara guna dalam 30 saat",
+ "Everything updates live as you type. Nothing is saved or sent anywhere.": "Semua dikemas kini serta-merta semasa anda menaip. Tiada apa disimpan atau dihantar ke mana-mana.",
+ "Pick your instrument": "Pilih instrumen anda",
+ "(Forex, Gold, Crypto, Indices) and enter your": "(Forex, Emas, Kripto, Indeks) dan masukkan",
+ "account equity": "ekuiti akaun",
+ ".": ".",
+ "Choose how much you risk": "Pilih berapa banyak anda risikokan",
+ "per trade (1–2% is common). This is the most you lose if your stop loss is hit.": "setiap dagangan (1–2% biasa). Ini jumlah maksimum yang anda rugi jika stop loss terkena.",
+ "Enter your stop loss distance": "Masukkan jarak stop loss",
+ "– how far (in pips/points) price can move against you before you exit.": "– sejauh mana (dalam pips/points) harga boleh bergerak melawan anda sebelum anda keluar.",
+ "Read the Recommended Broker Order": "Baca Pesanan Broker Disyorkan",
+ ". Type the lot size into your platform. Pick 2–4 layers to split it into several smaller entries.": ". Masukkan saiz lot ke dalam platform anda. Pilih 2–4 lapisan untuk membahagikannya kepada beberapa kemasukan lebih kecil.",
+ "Use the": "Gunakan tab",
+ "Stepped Compounding Plan": "Pelan Kompaun Berperingkat",
+ "tab to map a path from your starting balance to a goal, then click": "untuk merancang laluan dari baki permulaan ke sasaran, kemudian klik",
+ "Load Sizer": "Muat ke Pengira",
+ "on any step.": "pada mana-mana langkah.",
+ "The formula": "Formula",
+ "Example: $1,000 × 1.5% = $15 risk. 20 pips × $10 = $200 per lot → 0.07 lots.": "Contoh: $1,000 × 1.5% = $15 risiko. 20 pips × $10 = $200 setiap lot → 0.07 lot.",
+ "Presets": "Pratetap",
+ "One-click setups for common styles.": "Tetapan satu klik untuk gaya biasa.",
+ "Layers": "Lapisan",
+ "Splits total lots into equal entries.": "Membahagi jumlah lot kepada kemasukan sama rata.",
+ "R:R targets": "Sasaran R:R",
+ "Profit if price hits 1.5×, 2× or 3× your risk.": "Untung jika harga capai 1.5×, 2× atau 3× risiko anda.",
+ "Warnings": "Amaran",
+ "Yellow/red banner = lot size too big for your risk.": "Sepanduk kuning/merah = saiz lot terlalu besar untuk risiko anda.",
+ "Educational calculator only – not financial advice. Always verify pip value and contract size with your broker.": "Kalkulator pendidikan sahaja – bukan nasihat kewangan. Sentiasa sahkan nilai pip dan saiz kontrak dengan broker anda.",
+ "Got it": "Faham",
+ "Quick start:": "Mula pantas:",
+ "pick a": "pilih",
+ "preset": "pratetap",
+ "below (or fill the 3 boxes:": "di bawah (atau isi 3 kotak:",
+ "equity → risk % → stop loss": "ekuiti → risiko % → stop loss",
+ ") and read the": ") dan baca",
+ "Recommended Broker Order": "Pesanan Broker Disyorkan",
+ "on the right. Press": "di sebelah kanan. Tekan",
+ "for a 30-second guide.": "untuk panduan 30 saat.",
+ "🎯 1-Touch Position Sizer": "🎯 Pengira Saiz Posisi 1-Sentuhan",
+ "📈 Stepped Compounding Plan": "📈 Pelan Kompaun Berperingkat",
+ "PRESETS:": "PRATETAP:",
+ "Gold Scalp (30pts)": "Skalp Emas (30pts)",
+ "Forex Swing (25p)": "Swing Forex (25p)",
+ "BTC 2% Risk": "BTC Risiko 2%",
+ "Cent Account (10k USC)": "Akaun Cent (10k USC)",
+ "Your Trade Setup": "Tetapan Dagangan Anda",
+ "Live": "Langsung",
+ "What are you trading?": "Apa yang anda dagangkan?",
+ "Gold Metals": "Emas",
+ "Crypto": "Kripto",
+ "Indices": "Indeks",
+ "Account Type": "Jenis Akaun",
+ "Standard ($10/pip per lot)": "Standard ($10/pip setiap lot)",
+ "Cent Account (USC)": "Akaun Cent (USC)",
+ "Micro Account": "Akaun Mikro",
+ "Account Equity ($)": "Ekuiti Akaun ($)",
+ "Not sure? Leave Account Type on": "Tidak pasti? Biarkan Jenis Akaun pada",
+ "Standard": "Standard",
+ ". Use": ". Guna",
+ "Cent": "Cent",
+ "only if your broker offers cent accounts.": "hanya jika broker anda menawarkan akaun cent.",
+ "Risk Per Trade": "Risiko Setiap Dagangan",
+ "at risk": "dalam risiko",
+ "The % of your equity you accept losing if the stop loss hits. Most traders stay at 1–2%.": "% ekuiti yang anda sanggup rugi jika stop loss terkena. Kebanyakan peniaga kekal pada 1–2%.",
+ "Distance between your entry price and your stop loss. Tighter stop = bigger lot size for the same risk.": "Jarak antara harga kemasukan dan stop loss anda. Stop lebih dekat = saiz lot lebih besar untuk risiko yang sama.",
+ "Split into entries (optional)": "Bahagi kepada kemasukan (pilihan)",
+ "1 Entry": "1 Kemasukan",
+ "2 Layers": "2 Lapisan",
+ "3 Layers": "3 Lapisan",
+ "4 Layers": "4 Lapisan",
+ "Layers = several smaller orders that together equal the total lot size (all share the same stop loss).": "Lapisan = beberapa pesanan lebih kecil yang jumlahnya sama dengan jumlah lot (semua berkongsi stop loss yang sama).",
+ "Recommended broker order": "Pesanan broker disyorkan",
+ "Enter this lot size in your trading platform.": "Masukkan saiz lot ini dalam platform dagangan anda.",
+ "Max loss if stopped out": "Kerugian maksimum jika stop loss terkena",
+ "Order breakdown": "Pecahan pesanan",
+ "If the trade wins (reward : risk)": "Jika dagangan menang (ganjaran : risiko)",
+ "Set your take-profit this many pips/points from entry to hit the target.": "Letak take-profit sejauh ini (pips/points) dari kemasukan untuk capai sasaran.",
+ "Pip Value:": "Nilai Pip:",
+ "Contract:": "Kontrak:",
+ "Min step:": "Langkah min:",
+ "Good to know": "Perlu tahu",
+ "Add a small buffer to your stop loss for spread and liquidity sweeps.": "Tambah sedikit ruang pada stop loss untuk spread dan sapuan kecairan.",
+ "On Gold (XAUUSD), a $1.00 price move = 10 pips (100 points).": "Pada Emas (XAUUSD), pergerakan harga $1.00 = 10 pips (100 points).",
+ "On Cent accounts (USC), divide the displayed USD value by 100 for the real deposit.": "Pada akaun Cent (USC), bahagikan nilai USD yang dipaparkan dengan 100 untuk deposit sebenar.",
+ "Pip values here are approximations – confirm with your broker's contract specs.": "Nilai pip di sini adalah anggaran – sahkan dengan spesifikasi kontrak broker anda.",
+ "How this works:": "Cara ia berfungsi:",
+ "enter your starting balance, goal and number of steps (trades). The planner calculates the growth % each step must deliver. You can also type a growth % directly. Click": "masukkan baki permulaan, sasaran dan bilangan langkah (dagangan). Perancang mengira % pertumbuhan yang perlu dicapai setiap langkah. Anda juga boleh taip % pertumbuhan terus. Klik",
+ "on any row to size that step's trade.": "pada mana-mana baris untuk mengira saiz dagangan langkah itu.",
+ "Starting Balance ($)": "Baki Permulaan ($)",
+ "Target End Goal ($)": "Sasaran Akhir ($)",
+ "Steps / Milestone Trades": "Langkah / Dagangan Pencapaian",
+ "Growth Per Step (%) – auto or manual": "Pertumbuhan Setiap Langkah (%) – auto atau manual",
+ "Equity Milestone Trajectory": "Trajektori Pencapaian Ekuiti",
+ "Execution Milestones": "Pencapaian Pelaksanaan",
+ "Indicative lot sizes per step (assumes ~25-pip stop on a $10/pip instrument)": "Saiz lot indikatif setiap langkah (andaian stop ~25 pip pada instrumen $10/pip)",
+ "📥 Export CSV": "📥 Eksport CSV",
+ "# Step": "# Langkah",
+ "Start Balance": "Baki Mula",
+ "Gain Required": "Keuntungan Diperlukan",
+ "Total Lots": "Jumlah Lot",
+ "Layer Ticket (3x)": "Tiket Lapisan (3x)",
+ "End Balance": "Baki Akhir",
+ "Action": "Tindakan",
+ "Financial & Execution Risk Disclosure": "Pendedahan Risiko Kewangan & Pelaksanaan",
+ "Trading foreign exchange, precious metals, indices, and crypto CFDs carries high risk and may not be suitable for all investors. Position Sizing v1.0 provides purely mathematical modeling and theoretical exposure estimates based on user inputs. Past performance and theoretical compounding curves do not guarantee future market returns. Actual order execution may experience slippage, broker commission variations, and spread expansion during volatile sessions.": "Dagangan pertukaran asing, logam berharga, indeks dan CFD kripto melibatkan risiko tinggi dan mungkin tidak sesuai untuk semua pelabur. Position Sizing v1.0 hanya menyediakan model matematik dan anggaran pendedahan teori berdasarkan input pengguna. Prestasi lalu dan lengkung kompaun teori tidak menjamin pulangan pasaran masa depan. Pelaksanaan pesanan sebenar mungkin mengalami slippage, perbezaan komisen broker dan pelebaran spread semasa sesi tidak menentu.",
+ "PDPA 2010 & Data Processing Notice": "Notis PDPA 2010 & Pemprosesan Data",
+ "View Legal Details": "Lihat Butiran Undang-undang",
+ "In compliance with the": "Selaras dengan",
+ "Personal Data Protection Act 2010 (Malaysia)": "Akta Perlindungan Data Peribadi 2010 (Malaysia)",
+ ", this application operates on a": ", aplikasi ini beroperasi atas",
+ "Zero-Knowledge Client-Side Architecture": "Seni Bina Sisi-Klien Tanpa Pengetahuan",
+ ". All equity amounts, lot sizes, and parameters are calculated strictly inside your local browser runtime memory (RAM) and are not collected, processed, or stored on external servers. Static assets are served via secure Content Delivery Networks (CDNs) hosted across international edge nodes outside Malaysia.": ". Semua jumlah ekuiti, saiz lot dan parameter dikira sepenuhnya dalam memori (RAM) pelayar tempatan anda dan tidak dikumpul, diproses atau disimpan di pelayan luar. Aset statik disampaikan melalui Rangkaian Penyampaian Kandungan (CDN) selamat yang dihoskan di nod tepi antarabangsa di luar Malaysia.",
+ "Cross-Border Data Transfer & Infrastructure Statement (Section 129 PDPA)": "Penyata Pemindahan Data Rentas Sempadan & Infrastruktur (Seksyen 129 PDPA)",
+ "✕ Close": "✕ Tutup",
+ "1. Zero PII Collection": "1. Tiada Pengumpulan PII",
+ "This tool does not capture Personally Identifiable Information (PII) such as NRIC, full name, email address, phone number, or live MT4/MT5 broker login credentials.": "Alat ini tidak mengumpul Maklumat Pengenalan Peribadi (PII) seperti No. KP, nama penuh, e-mel, nombor telefon atau kelayakan log masuk broker MT4/MT5.",
+ "2. Edge Network Delivery": "2. Penyampaian Rangkaian Tepi",
+ "Web application binaries (HTML/JS) are hosted on globally distributed edge networks (including US/EU data centers). By accessing this tool, you acknowledge international transmission of static web assets.": "Fail aplikasi web (HTML/JS) dihoskan pada rangkaian tepi yang diagihkan secara global (termasuk pusat data AS/EU). Dengan mengakses alat ini, anda mengakui penghantaran antarabangsa aset web statik.",
+ "3. No Persistence": "3. Tiada Penyimpanan",
+ "© 2026 Position Sizing v1.0 • Risk & Compounding Planner": "© 2026 Position Sizing v1.0 • Perancang Risiko & Kompaun",
+ "Client-Side Execution": "Pelaksanaan Sisi-Klien",
+ "Zero Server Telemetry": "Tiada Telemetri Pelayan",
+ "PDPA 2010 (MY)": "PDPA 2010 (MY)",
+ "This tool does not store your inputs. Values exist only in your browser's memory for the current session and disappear when you close or reload the page. Only your language and theme choice are remembered in your browser.": "Alat ini tidak menyimpan input anda. Nilai hanya wujud dalam memori pelayar untuk sesi semasa dan hilang apabila anda tutup atau muat semula halaman. Hanya pilihan bahasa dan tema disimpan dalam pelayar anda."
+};
+    const DYN = {"en": {"slDist": "Stop Loss Distance", "totalLots": "Total Lots", "centUnits": "Cent Units", "units": "units", "singleEntry": "Single entry", "equalSplit": "Equal split", "order": "Order", "noOrder": "Enter equity, risk and stop loss to see your order.", "start": "Start", "step": "Step", "steps": "Steps", "loadSizer": "Load Sizer", "chartLabel": "Milestone Equity ($)", "h_forex": "1 pip = 10 points", "h_gold": "$1 move = 10 pips", "h_crypto": "1 point = $1 move", "h_indices": "1 point = 1 index point", "g_round": "<strong>Lot rounding:</strong> the minimum 0.01 lot puts <strong>$%1</strong> (%2%) at risk – more than you chose. Widen the stop, lower risk, or use a Cent account.", "g_small": "<strong>Small account:</strong> a Standard account with $%1 is very thin. Consider a <strong>Cent Account</strong>.", "g_empty": "Enter your account equity to get a lot size."}, "bm": {"slDist": "Jarak Stop Loss", "totalLots": "Jumlah Lot", "centUnits": "Unit Cent", "units": "unit", "singleEntry": "Satu kemasukan", "equalSplit": "Pecahan sama", "order": "Pesanan", "noOrder": "Masukkan ekuiti, risiko dan stop loss untuk melihat pesanan anda.", "start": "Mula", "step": "Langkah", "steps": "Langkah", "loadSizer": "Muat ke Pengira", "chartLabel": "Ekuiti Pencapaian ($)", "h_forex": "1 pip = 10 points", "h_gold": "Pergerakan $1 = 10 pips", "h_crypto": "1 point = pergerakan $1", "h_indices": "1 point = 1 point indeks", "g_round": "<strong>Pembundaran lot:</strong> lot minimum 0.01 meletakkan <strong>$%1</strong> (%2%) dalam risiko – lebih daripada pilihan anda. Lebarkan stop, kurangkan risiko, atau guna akaun Cent.", "g_small": "<strong>Akaun kecil:</strong> akaun Standard dengan $%1 sangat nipis. Pertimbangkan <strong>Akaun Cent</strong>.", "g_empty": "Masukkan ekuiti akaun anda untuk mendapatkan saiz lot."}};
+    let lang = 'en';
+    let theme = 'dark';
+    const textOrig = new WeakMap();
+
+    function t(key, a, b) {
+      let str = DYN[lang][key] ?? DYN.en[key] ?? key;
+      return str.replace('%1', a).replace('%2', b);
+    }
+
+    function translateStatic() {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+        acceptNode: n => (n.parentElement.closest('script,[data-nt]') || !n.data.trim()) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+      });
+      const nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      nodes.forEach(n => {
+        if (!textOrig.has(n)) textOrig.set(n, n.data);
+        const orig = textOrig.get(n);
+        const key = orig.replace(/\s+/g, ' ').trim();
+        const out = lang === 'bm' && BM[key] !== undefined ? BM[key] : key;
+        const lead = /^\s/.test(orig) ? ' ' : '';
+        const trail = /\s$/.test(orig) ? ' ' : '';
+        n.data = lang === 'bm' && BM[key] !== undefined ? lead + out + trail : orig;
+      });
+    }
+
+    function setLang(l) {
+      lang = l;
+      document.documentElement.lang = l === 'bm' ? 'ms' : 'en';
+      document.getElementById('lang-en').classList.toggle('on', l === 'en');
+      document.getElementById('lang-bm').classList.toggle('on', l === 'bm');
+      try { localStorage.setItem('ps-lang', l); } catch (e) {}
+      translateStatic();
       calculateSizer();
-      solveGainFromGoal();
+      generateCompoundPlan();
+    }
+
+    function gridColor() { return theme === 'light' ? '#e2e8f0' : '#1e293b'; }
+    function tickColor() { return theme === 'light' ? '#64748b' : '#64748b'; }
+
+    function setTheme(th) {
+      theme = th;
+      document.documentElement.classList.toggle('light', th === 'light');
+      document.getElementById('theme-btn').innerText = th === 'light' ? '🌙' : '☀️';
+      try { localStorage.setItem('ps-theme', th); } catch (e) {}
+      if (chartInstance) generateCompoundPlan();
+    }
+    function toggleTheme() { setTheme(theme === 'light' ? 'dark' : 'light'); }
+
+    function initPrefs() {
+      let l = (navigator.language || '').toLowerCase().startsWith('ms') ? 'bm' : 'en';
+      let th = 'dark';
+      try {
+        l = localStorage.getItem('ps-lang') || l;
+        th = localStorage.getItem('ps-theme') || th;
+      } catch (e) {}
+      setTheme(th);
+      setLang(l);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initPrefs();
     });
 
     function toggleGuide(show) {
@@ -452,10 +702,6 @@
       });
 
       const profile = appState.assetProfiles[assetKey];
-      document.getElementById('sl-unit-tag').innerText = profile.unit;
-      document.getElementById('sl-unit-helper').innerText = profile.helper;
-      document.getElementById('sl-label').innerHTML = `<span class="step-badge mr-1">4</span> Stop Loss Distance (${profile.unit})`;
-
       const defaults = { gold: 30, crypto: 250, indices: 50, forex: 20 };
       setSLValue(defaults[assetKey]);
     }
@@ -566,16 +812,19 @@
       if (accType === 'cent') accMultiplier = 0.01;
 
       const profile = appState.assetProfiles[appState.currentAsset];
+      document.getElementById('sl-unit-tag').innerText = profile.unit;
+      document.getElementById('sl-unit-helper').innerText = t(profile.helperKey);
+      document.getElementById('sl-label').innerHTML = `<span class="step-badge mr-1">4</span> ${t('slDist')} (${profile.unit})`;
       const effectivePipValue = profile.pipVal * accMultiplier;
 
       const calculatedLot = riskAmount / (appState.slDistance * effectivePipValue);
       let roundedTotalLot = Math.floor(calculatedLot * 100) / 100;
       if (roundedTotalLot < 0.01 && calculatedLot > 0) roundedTotalLot = 0.01;
 
-      document.getElementById('display-order-title').innerText = `${roundedTotalLot.toFixed(2)} Total Lots`;
+      document.getElementById('display-order-title').innerText = `${roundedTotalLot.toFixed(2)} ${t('totalLots')}`;
       document.getElementById('debug-pipval').innerText = `$${effectivePipValue.toFixed(2)}/lot`;
-      document.getElementById('debug-contract').innerText = accType === 'cent' ? '1,000 (Cent Units)' : accType === 'micro' ? '10,000 units' : '100,000 units';
-      document.getElementById('display-split-ratio').innerText = appState.layers === 1 ? 'Single entry' : `Equal split x${appState.layers}`;
+      document.getElementById('debug-contract').innerText = accType === 'cent' ? `1,000 (${t('centUnits')})` : accType === 'micro' ? `10,000 ${t('units')}` : `100,000 ${t('units')}`;
+      document.getElementById('display-split-ratio').innerText = appState.layers === 1 ? t('singleEntry') : `${t('equalSplit')} x${appState.layers}`;
 
       buildLayerTickets(roundedTotalLot, appState.layers, appState.slDistance, effectivePipValue, profile.short);
 
@@ -585,13 +834,13 @@
 
       if (balance > 0 && actualDollarAtRisk > riskAmount * 1.15) {
         guardrail.className = 'p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs flex items-center gap-2.5 text-amber-300';
-        guardMsg.innerHTML = `<strong>Lot rounding:</strong> the minimum 0.01 lot puts <strong>$${actualDollarAtRisk.toFixed(2)}</strong> (${((actualDollarAtRisk / balance) * 100).toFixed(1)}%) at risk – more than you chose. Widen the stop, lower risk, or use a Cent account.`;
+        guardMsg.innerHTML = t('g_round', actualDollarAtRisk.toFixed(2), ((actualDollarAtRisk / balance) * 100).toFixed(1));
       } else if (balance > 0 && balance < 50 && accType === 'standard') {
         guardrail.className = 'p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs flex items-center gap-2.5 text-rose-300';
-        guardMsg.innerHTML = `<strong>Small account:</strong> a Standard account with $${balance} is very thin. Consider a <strong>Cent Account</strong>.`;
+        guardMsg.innerHTML = t('g_small', balance);
       } else if (balance <= 0) {
         guardrail.className = 'p-3 rounded-xl border border-slate-600/40 bg-slate-800/60 text-xs flex items-center gap-2.5 text-slate-300';
-        guardMsg.innerHTML = `Enter your account equity to get a lot size.`;
+        guardMsg.innerHTML = t('g_empty');
       } else {
         guardrail.className = 'hidden';
       }
@@ -624,7 +873,7 @@
             <span class="w-6 h-6 rounded-lg bg-cyan-400/10 text-cyan-300 flex items-center justify-center font-bold text-[11px] border border-cyan-400/20">L${i + 1}</span>
             <div>
               <span class="text-white font-bold text-sm">${lot.toFixed(2)} Lots</span>
-              <span class="text-[10px] text-slate-500 ml-2">Order #${i + 1}</span>
+              <span class="text-[10px] text-slate-500 ml-2">${t('order')} #${i + 1}</span>
             </div>
           </div>
           <div class="text-right">
@@ -634,7 +883,7 @@
         container.appendChild(div);
       }
       if (!container.children.length) {
-        container.innerHTML = '<div class="text-xs text-slate-500 p-3">Enter equity, risk and stop loss to see your order.</div>';
+        container.innerHTML = `<div class="text-xs text-slate-500 p-3">${t('noOrder')}</div>`;
       }
     }
 
@@ -659,7 +908,7 @@
       tbody.innerHTML = '';
 
       let currentBal = start;
-      const chartLabels = ['Start'];
+      const chartLabels = [t('start')];
       const chartData = [start];
 
       for (let i = 1; i <= steps; i++) {
@@ -669,7 +918,7 @@
         const estLots = Math.max(0.01, Math.floor((gain / (25 * 10)) * 100) / 100);
         const layerLots = (estLots / 3).toFixed(2);
 
-        chartLabels.push(`Step ${i}`);
+        chartLabels.push(`${t('step')} ${i}`);
         chartData.push(parseFloat(endBal.toFixed(2)));
 
         const tr = document.createElement('tr');
@@ -682,13 +931,13 @@
           <td class="p-3 text-slate-400">${layerLots} x3</td>
           <td class="p-3 text-white font-bold">$${endBal.toFixed(2)}</td>
           <td class="p-3 text-right">
-            <button onclick="loadStepIntoSizer(${currentBal})" class="px-2 py-1 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-slate-300 text-[10px] transition-colors">Load Sizer</button>
+            <button onclick="loadStepIntoSizer(${currentBal})" class="px-2 py-1 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-slate-300 text-[10px] transition-colors">${t('loadSizer')}</button>
           </td>`;
         tbody.appendChild(tr);
         currentBal = endBal;
       }
 
-      document.getElementById('chart-summary-stat').innerText = `$${start.toFixed(2)} ➔ $${currentBal.toFixed(2)} (${steps} Steps)`;
+      document.getElementById('chart-summary-stat').innerText = `$${start.toFixed(2)} ➔ $${currentBal.toFixed(2)} (${steps} ${t('steps')})`;
       renderChart(chartLabels, chartData);
     }
 
@@ -705,7 +954,7 @@
         data: {
           labels,
           datasets: [{
-            label: 'Milestone Equity ($)',
+            label: t('chartLabel'),
             data,
             borderColor: '#06b6d4',
             backgroundColor: 'rgba(6, 182, 212, 0.08)',
@@ -721,8 +970,8 @@
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } } },
-            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => '$' + v } }
+            x: { grid: { color: gridColor() }, ticks: { color: tickColor(), font: { family: 'JetBrains Mono', size: 10 } } },
+            y: { grid: { color: gridColor() }, ticks: { color: tickColor(), font: { family: 'JetBrains Mono', size: 10 }, callback: v => '$' + v } }
           }
         }
       });
