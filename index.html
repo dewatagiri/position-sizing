@@ -234,6 +234,24 @@
           </div>
           <p class="hint -mt-2">Not sure? Leave Account Type on <em>Standard</em>. Use <em>Cent</em> only if your broker offers cent accounts.</p>
 
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Leverage</label>
+              <div class="flex items-center gap-1 text-[11px] mono"><span class="text-slate-500">1 :</span>
+                <input type="number" id="lev-input" value="20" min="1" step="1" oninput="syncLevInput(this.value)" class="mono w-16 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-right text-white">
+              </div>
+            </div>
+            <div class="grid grid-cols-6 gap-1.5">
+              <button onclick="setLeverage(5)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:5</button>
+              <button onclick="setLeverage(10)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:10</button>
+              <button onclick="setLeverage(20)" class="lev-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono">1:20</button>
+              <button onclick="setLeverage(50)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:50</button>
+              <button onclick="setLeverage(100)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:100</button>
+              <button onclick="setLeverage(500)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:500</button>
+            </div>
+            <p class="hint">Your broker's maximum leverage (e.g. prop firms often allow 1:5 to 1:20). Used for the margin check.</p>
+          </div>
+
           <hr class="border-slate-800">
 
           <div class="space-y-3">
@@ -322,6 +340,30 @@
           <div id="guardrail-alert" class="hidden p-3 rounded-xl border text-xs flex items-center gap-2.5">
             <span id="guardrail-icon" class="text-base">⚠️</span>
             <span id="guardrail-msg" data-nt class="leading-relaxed"></span>
+          </div>
+
+          <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Margin check</span>
+              <span id="mg-lev" data-nt class="text-[11px] font-mono text-slate-500">1:20</span>
+            </div>
+            <div id="mg-body" class="hidden grid grid-cols-3 gap-3 text-center">
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <div class="text-[10px] text-slate-400 font-mono">Margin required</div>
+                <div id="mg-req" data-nt class="text-white font-bold mono text-sm mt-0.5">-</div>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <div class="text-[10px] text-slate-400 font-mono">% of equity</div>
+                <div id="mg-pct" data-nt class="text-white font-bold mono text-sm mt-0.5">-</div>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <div class="text-[10px] text-slate-400 font-mono">Max lots at this leverage</div>
+                <div id="mg-max" data-nt class="text-white font-bold mono text-sm mt-0.5">-</div>
+              </div>
+            </div>
+            <div id="mg-alert" data-nt class="hidden p-2.5 rounded-lg border text-xs leading-relaxed"></div>
+            <p id="mg-hint" class="hint">Enter an entry price to check the margin and maximum lots at your leverage.</p>
+            <p class="hint">Approximate: assumes 100,000 units per lot for Forex, 100 oz for Gold and 1 unit for Crypto/Indices. Check your broker's contract specs.</p>
           </div>
 
           <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
@@ -495,11 +537,12 @@
       slDistance: 20,
       layers: 3,
       direction: 1,
+      leverage: 20,
       assetProfiles: {
-        forex:   { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helperKey: 'h_forex', priceUnit: 0.0001, dec: 5, ph: '1.08500' },
-        gold:    { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helperKey: 'h_gold', priceUnit: 0.1, dec: 2, ph: '2650.00' },
-        crypto:  { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helperKey: 'h_crypto', priceUnit: 1, dec: 2, ph: '83500' },
-        indices: { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helperKey: 'h_indices', priceUnit: 1, dec: 2, ph: '42000' }
+        forex:   { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helperKey: 'h_forex', priceUnit: 0.0001, contract: 100000, dec: 5, ph: '1.08500' },
+        gold:    { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helperKey: 'h_gold', priceUnit: 0.1, contract: 100, dec: 2, ph: '2650.00' },
+        crypto:  { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helperKey: 'h_crypto', priceUnit: 1, contract: 1, dec: 2, ph: '83500' },
+        indices: { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helperKey: 'h_indices', priceUnit: 1, contract: 1, dec: 2, ph: '42000' }
       }
     };
 
@@ -507,6 +550,14 @@
 
     // --- LANGUAGE (EN / BM) & THEME (night / day) ---
     const BM = {
+ "Leverage": "Leverage",
+ "Your broker's maximum leverage (e.g. prop firms often allow 1:5 to 1:20). Used for the margin check.": "Leverage maksimum broker anda (cth. firma prop biasanya benarkan 1:5 hingga 1:20). Digunakan untuk semakan margin.",
+ "Margin check": "Semakan margin",
+ "Margin required": "Margin diperlukan",
+ "% of equity": "% ekuiti",
+ "Max lots at this leverage": "Lot maksimum pada leverage ini",
+ "Enter an entry price to check the margin and maximum lots at your leverage.": "Masukkan harga kemasukan untuk menyemak margin dan lot maksimum pada leverage anda.",
+ "Approximate: assumes 100,000 units per lot for Forex, 100 oz for Gold and 1 unit for Crypto/Indices. Check your broker's contract specs.": "Anggaran: andaian 100,000 unit setiap lot untuk Forex, 100 oz untuk Emas dan 1 unit untuk Kripto/Indeks. Semak spesifikasi kontrak broker anda.",
  "Entry Price (optional)": "Harga Kemasukan (pilihan)",
  "Buy / Long": "Beli / Long",
  "Sell / Short": "Jual / Short",
@@ -644,7 +695,7 @@
  "PDPA 2010 (MY)": "PDPA 2010 (MY)",
  "This tool does not store your inputs. Values exist only in your browser's memory for the current session and disappear when you close or reload the page. Only your language and theme choice are remembered in your browser.": "Alat ini tidak menyimpan input anda. Nilai hanya wujud dalam memori pelayar untuk sesi semasa dan hilang apabila anda tutup atau muat semula halaman. Hanya pilihan bahasa dan tema disimpan dalam pelayar anda."
 };
-    const DYN = {"en": {"slDist": "Stop Loss Distance", "totalLots": "Total Lots", "centUnits": "Cent Units", "units": "units", "singleEntry": "Single entry", "equalSplit": "Equal split", "order": "Order", "noOrder": "Enter equity, risk and stop loss to see your order.", "start": "Start", "step": "Step", "steps": "Steps", "loadSizer": "Load Sizer", "chartLabel": "Milestone Equity ($)", "h_forex": "1 pip = 10 points", "h_gold": "$1 move = 10 pips", "h_crypto": "1 point = $1 move", "h_indices": "1 point = 1 index point", "g_round": "<strong>Lot rounding:</strong> the minimum 0.01 lot puts <strong>$%1</strong> (%2%) at risk – more than you chose. Widen the stop, lower risk, or use a Cent account.", "g_small": "<strong>Small account:</strong> a Standard account with $%1 is very thin. Consider a <strong>Cent Account</strong>.", "g_empty": "Enter your account equity to get a lot size."}, "bm": {"slDist": "Jarak Stop Loss", "totalLots": "Jumlah Lot", "centUnits": "Unit Cent", "units": "unit", "singleEntry": "Satu kemasukan", "equalSplit": "Pecahan sama", "order": "Pesanan", "noOrder": "Masukkan ekuiti, risiko dan stop loss untuk melihat pesanan anda.", "start": "Mula", "step": "Langkah", "steps": "Langkah", "loadSizer": "Muat ke Pengira", "chartLabel": "Ekuiti Pencapaian ($)", "h_forex": "1 pip = 10 points", "h_gold": "Pergerakan $1 = 10 pips", "h_crypto": "1 point = pergerakan $1", "h_indices": "1 point = 1 point indeks", "g_round": "<strong>Pembundaran lot:</strong> lot minimum 0.01 meletakkan <strong>$%1</strong> (%2%) dalam risiko – lebih daripada pilihan anda. Lebarkan stop, kurangkan risiko, atau guna akaun Cent.", "g_small": "<strong>Akaun kecil:</strong> akaun Standard dengan $%1 sangat nipis. Pertimbangkan <strong>Akaun Cent</strong>.", "g_empty": "Masukkan ekuiti akaun anda untuk mendapatkan saiz lot."}};
+    const DYN = {"en": {"slDist": "Stop Loss Distance", "totalLots": "Total Lots", "centUnits": "Cent Units", "units": "units", "singleEntry": "Single entry", "equalSplit": "Equal split", "order": "Order", "noOrder": "Enter equity, risk and stop loss to see your order.", "start": "Start", "step": "Step", "steps": "Steps", "loadSizer": "Load Sizer", "chartLabel": "Milestone Equity ($)", "h_forex": "1 pip = 10 points", "h_gold": "$1 move = 10 pips", "h_crypto": "1 point = $1 move", "h_indices": "1 point = 1 index point", "g_round": "<strong>Lot rounding:</strong> the minimum 0.01 lot puts <strong>$%1</strong> (%2%) at risk – more than you chose. Widen the stop, lower risk, or use a Cent account.", "g_small": "<strong>Small account:</strong> a Standard account with $%1 is very thin. Consider a <strong>Cent Account</strong>.", "g_empty": "Enter your account equity to get a lot size.", "m_over": "<strong>Not enough margin:</strong> this order needs more margin than your equity. At this leverage the most you can open is <strong>%1 lots</strong>. Lower the risk, widen the stop, or use higher leverage.", "m_high": "<strong>High margin use:</strong> this order locks up about <strong>%1%</strong> of your equity, leaving little buffer for drawdown."}, "bm": {"slDist": "Jarak Stop Loss", "totalLots": "Jumlah Lot", "centUnits": "Unit Cent", "units": "unit", "singleEntry": "Satu kemasukan", "equalSplit": "Pecahan sama", "order": "Pesanan", "noOrder": "Masukkan ekuiti, risiko dan stop loss untuk melihat pesanan anda.", "start": "Mula", "step": "Langkah", "steps": "Langkah", "loadSizer": "Muat ke Pengira", "chartLabel": "Ekuiti Pencapaian ($)", "h_forex": "1 pip = 10 points", "h_gold": "Pergerakan $1 = 10 pips", "h_crypto": "1 point = pergerakan $1", "h_indices": "1 point = 1 point indeks", "g_round": "<strong>Pembundaran lot:</strong> lot minimum 0.01 meletakkan <strong>$%1</strong> (%2%) dalam risiko – lebih daripada pilihan anda. Lebarkan stop, kurangkan risiko, atau guna akaun Cent.", "g_small": "<strong>Akaun kecil:</strong> akaun Standard dengan $%1 sangat nipis. Pertimbangkan <strong>Akaun Cent</strong>.", "g_empty": "Masukkan ekuiti akaun anda untuk mendapatkan saiz lot.", "m_over": "<strong>Margin tidak mencukupi:</strong> pesanan ini memerlukan margin melebihi ekuiti anda. Pada leverage ini, maksimum yang boleh dibuka ialah <strong>%1 lot</strong>. Kurangkan risiko, lebarkan stop, atau guna leverage lebih tinggi.", "m_high": "<strong>Penggunaan margin tinggi:</strong> pesanan ini mengunci kira-kira <strong>%1%</strong> ekuiti anda, meninggalkan sedikit ruang untuk drawdown."}};
     let lang = 'en';
     let theme = 'dark';
     const textOrig = new WeakMap();
@@ -744,6 +795,30 @@
       document.getElementById('entry-price').value = '';
       const defaults = { gold: 30, crypto: 250, indices: 50, forex: 20 };
       setSLValue(defaults[assetKey]);
+    }
+
+    function updateLevChips(v) {
+      document.querySelectorAll('.lev-chip').forEach(chip => {
+        const n = parseFloat(chip.innerText.split(':')[1]);
+        chip.className = n === v
+          ? 'lev-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono'
+          : 'lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono text-slate-300';
+      });
+    }
+
+    function setLeverage(v) {
+      appState.leverage = v;
+      document.getElementById('lev-input').value = v;
+      updateLevChips(v);
+      calculateSizer();
+    }
+
+    function syncLevInput(val) {
+      let n = parseFloat(val);
+      if (isNaN(n) || n < 1) n = 1;
+      appState.leverage = n;
+      updateLevChips(n);
+      calculateSizer();
     }
 
     function setDirection(d) {
@@ -872,7 +947,7 @@
 
       document.getElementById('display-order-title').innerText = `${roundedTotalLot.toFixed(2)} ${t('totalLots')}`;
       document.getElementById('debug-pipval').innerText = `$${effectivePipValue.toFixed(2)}/lot`;
-      document.getElementById('debug-contract').innerText = accType === 'cent' ? `1,000 (${t('centUnits')})` : accType === 'micro' ? `10,000 ${t('units')}` : `100,000 ${t('units')}`;
+      document.getElementById('debug-contract').innerText = `${(profile.contract * accMultiplier).toLocaleString('en-US')} ${t('units')}${accType === 'cent' ? ' (' + t('centUnits') + ')' : ''}`;
       document.getElementById('display-split-ratio').innerText = appState.layers === 1 ? t('singleEntry') : `${t('equalSplit')} x${appState.layers}`;
 
       buildLayerTickets(roundedTotalLot, appState.layers, appState.slDistance, effectivePipValue, profile.short);
@@ -907,6 +982,30 @@
         const slPrice = entry - dir * appState.slDistance * profile.priceUnit;
         document.getElementById('lvl-entry').innerText = fmtPrice(entry, profile.dec);
         document.getElementById('lvl-sl').innerText = slPrice > 0 ? fmtPrice(slPrice, profile.dec) : '-';
+      }
+      // Margin check (needs an entry price)
+      const lev = appState.leverage;
+      document.getElementById('mg-lev').innerText = `1:${lev}`;
+      const mgBody = document.getElementById('mg-body');
+      const mgAlert = document.getElementById('mg-alert');
+      document.getElementById('mg-hint').classList.toggle('hidden', hasEntry);
+      mgBody.classList.toggle('hidden', !hasEntry);
+      mgAlert.className = 'hidden';
+      if (hasEntry) {
+        const perLot = profile.contract * accMultiplier * entry / lev;
+        const margin = roundedTotalLot * perLot;
+        const pct = balance > 0 ? (margin / balance) * 100 : 0;
+        const maxLots = Math.floor((balance / perLot) * 100) / 100;
+        document.getElementById('mg-req').innerText = `$${margin.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById('mg-pct').innerText = `${pct.toFixed(1)}%`;
+        document.getElementById('mg-max').innerText = maxLots.toFixed(2);
+        if (balance > 0 && margin > balance) {
+          mgAlert.className = 'p-2.5 rounded-lg border text-xs leading-relaxed border-rose-500/30 bg-rose-500/10 text-rose-300';
+          mgAlert.innerHTML = t('m_over', maxLots.toFixed(2));
+        } else if (pct > 30) {
+          mgAlert.className = 'p-2.5 rounded-lg border text-xs leading-relaxed border-amber-500/30 bg-amber-500/10 text-amber-300';
+          mgAlert.innerHTML = t('m_high', pct.toFixed(0));
+        }
       }
       [['15', 1.5], ['20', 2.0], ['30', 3.0]].forEach(([id, r]) => {
         const tp = entry + dir * appState.slDistance * r * profile.priceUnit;
