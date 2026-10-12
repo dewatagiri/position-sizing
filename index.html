@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Position Sizing v1.0 | Multi-Asset Risk & Execution Planner</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #080c14; color: #e2e8f0; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    .glow-cyan { box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.2); }
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #0b1120; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    .hint { font-size: 11px; line-height: 1.45; color: #94a3b8; }
+    .step-badge { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:9999px; background:rgba(34,211,238,.15); color:#67e8f9; font-weight:700; font-size:11px; border:1px solid rgba(34,211,238,.3); flex-shrink:0; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased custom-scroll">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800/80 bg-slate-900/70 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <span class="text-white font-mono font-bold text-sm">PS</span>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="text-base font-bold tracking-tight text-white">Position Sizing</span>
+          <span class="text-xs bg-cyan-400/10 text-cyan-300 font-semibold px-2 py-0.5 rounded-full border border-cyan-400/20">v1.0</span>
+        </div>
+        <p class="text-[11px] text-slate-400">Multi-Asset Sizer & Compounding Planner</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="hidden md:flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700/60 text-xs">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-slate-300 font-medium">Zero-Cloud Storage (PDPA Clean)</span>
+      </div>
+      <button onclick="toggleGuide(true)" class="text-xs px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-lg text-cyan-300 transition-colors border border-cyan-500/30 font-semibold">
+        ? How to use
+      </button>
+      <button onclick="resetToDefaults()" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors border border-slate-700">
+        Reset
+      </button>
+    </div>
+  </header>
+
+  <!-- How-to-use modal -->
+  <div id="guide-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4" onclick="if(event.target===this)toggleGuide(false)">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scroll p-6 space-y-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="text-lg font-black text-white">How to use in 30 seconds</h2>
+          <p class="hint">Everything updates live as you type. Nothing is saved or sent anywhere.</p>
+        </div>
+        <button onclick="toggleGuide(false)" class="text-slate-400 hover:text-white text-sm font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3 text-sm">
+        <div class="flex gap-3"><span class="step-badge">1</span><p><strong class="text-white">Pick your instrument</strong> (Forex, Gold, Crypto, Indices) and enter your <strong class="text-white">account equity</strong>.</p></div>
+        <div class="flex gap-3"><span class="step-badge">2</span><p><strong class="text-white">Choose how much you risk</strong> per trade (1–2% is common). This is the most you lose if your stop loss is hit.</p></div>
+        <div class="flex gap-3"><span class="step-badge">3</span><p><strong class="text-white">Enter your stop loss distance</strong> – how far (in pips/points) price can move against you before you exit.</p></div>
+        <div class="flex gap-3"><span class="step-badge">4</span><p><strong class="text-white">Read the Recommended Broker Order</strong>. Type the lot size into your platform. Pick 2–4 layers to split it into several smaller entries.</p></div>
+        <div class="flex gap-3"><span class="step-badge">5</span><p>Use the <strong class="text-white">Stepped Compounding Plan</strong> tab to map a path from your starting balance to a goal, then click <em>Load Sizer</em> on any step.</p></div>
+      </div>
+
+      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-1">
+        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-300">The formula</div>
+        <code class="mono text-xs text-cyan-300 block">Lots = (Equity × Risk%) ÷ (Stop Loss × Pip Value)</code>
+        <p class="hint">Example: $1,000 × 1.5% = $15 risk. 20 pips × $10 = $200 per lot → 0.07 lots.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
+        <div class="bg-slate-800/60 rounded-lg p-2"><strong class="text-white">Presets</strong><br>One-click setups for common styles.</div>
+        <div class="bg-slate-800/60 rounded-lg p-2"><strong class="text-white">Layers</strong><br>Splits total lots into equal entries.</div>
+        <div class="bg-slate-800/60 rounded-lg p-2"><strong class="text-white">R:R targets</strong><br>Profit if price hits 1.5×, 2× or 3× your risk.</div>
+        <div class="bg-slate-800/60 rounded-lg p-2"><strong class="text-white">Warnings</strong><br>Yellow/red banner = lot size too big for your risk.</div>
+      </div>
+
+      <p class="text-[10px] text-slate-500">Educational calculator only – not financial advice. Always verify pip value and contract size with your broker.</p>
+      <button onclick="toggleGuide(false)" class="w-full py-2 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold hover:bg-cyan-400">Got it</button>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
+
+    <!-- Quick start banner -->
+    <div id="quickstart" class="flex items-start gap-3 bg-cyan-500/5 border border-cyan-500/20 rounded-2xl px-4 py-3 text-xs text-slate-300">
+      <span class="text-base">💡</span>
+      <p class="flex-1 leading-relaxed"><strong class="text-cyan-300">Quick start:</strong> pick a <strong>preset</strong> below (or fill the 3 boxes: <em>equity → risk % → stop loss</em>) and read the <strong>Recommended Broker Order</strong> on the right. Press <strong>? How to use</strong> for a 30-second guide.</p>
+      <button onclick="document.getElementById('quickstart').remove()" class="text-slate-500 hover:text-white" aria-label="Dismiss">✕</button>
+    </div>
+
+    <!-- Mode Selector & Preset Bar -->
+    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/50 p-2 rounded-2xl border border-slate-800">
+      <div class="flex items-center gap-1">
+        <button id="tab-sizer" onclick="switchMainTab('sizer')" class="px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-cyan-500 text-slate-950 shadow-md">
+          🎯 1-Touch Position Sizer
+        </button>
+        <button id="tab-planner" onclick="switchMainTab('planner')" class="px-4 py-2 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
+          📈 Stepped Compounding Plan
+        </button>
+      </div>
+
+      <div class="flex items-center gap-1 text-xs overflow-x-auto py-1">
+        <span class="text-slate-500 font-medium mr-1 text-[11px]">PRESETS:</span>
+        <button onclick="applyPreset('gold-scalp')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-amber-300 border border-amber-500/20 font-mono text-[11px]">Gold Scalp (30pts)</button>
+        <button onclick="applyPreset('forex-swing')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-cyan-300 border border-cyan-500/20 font-mono text-[11px]">Forex Swing (25p)</button>
+        <button onclick="applyPreset('btc-intraday')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-orange-300 border border-orange-500/20 font-mono text-[11px]">BTC 2% Risk</button>
+        <button onclick="applyPreset('cent-boost')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-emerald-300 border border-emerald-500/20 font-mono text-[11px]">Cent Account (10k USC)</button>
+      </div>
+    </div>
+
+    <!-- SECTION 1: POSITION SIZER -->
+    <div id="section-sizer" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <div class="lg:col-span-5 space-y-5">
+        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-bold tracking-wide text-white uppercase flex items-center gap-2">
+              <span class="text-cyan-400">01.</span> Your Trade Setup
+            </h2>
+            <span class="text-[10px] text-slate-500 uppercase tracking-widest font-mono">Live</span>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2"><span class="step-badge mr-1">1</span> What are you trading?</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="asset-pills">
+              <button onclick="setAsset('forex')" data-asset="forex" class="asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 flex flex-col items-center">
+                <span>Forex</span><span class="text-[9px] text-slate-400 font-normal">EURUSD / GBP</span>
+              </button>
+              <button onclick="setAsset('gold')" data-asset="gold" class="asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-800/50 text-slate-300 hover:border-slate-700 flex flex-col items-center">
+                <span>Gold Metals</span><span class="text-[9px] text-slate-400 font-normal">XAUUSD</span>
+              </button>
+              <button onclick="setAsset('crypto')" data-asset="crypto" class="asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-800/50 text-slate-300 hover:border-slate-700 flex flex-col items-center">
+                <span>Crypto</span><span class="text-[9px] text-slate-400 font-normal">BTC / ETH</span>
+              </button>
+              <button onclick="setAsset('indices')" data-asset="indices" class="asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-800/50 text-slate-300 hover:border-slate-700 flex flex-col items-center">
+                <span>Indices</span><span class="text-[9px] text-slate-400 font-normal">US30 / NAS100</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-medium text-slate-400 block mb-1">Account Type</label>
+              <select id="acc-type" onchange="calculateSizer()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
+                <option value="standard">Standard ($10/pip per lot)</option>
+                <option value="cent">Cent Account (USC)</option>
+                <option value="micro">Micro Account</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[11px] font-medium text-slate-400 block mb-1"><span class="step-badge mr-1">2</span> Account Equity ($)</label>
+              <input type="number" id="acc-balance" value="1000" step="50" min="0" oninput="calculateSizer()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
+            </div>
+          </div>
+          <p class="hint -mt-2">Not sure? Leave Account Type on <em>Standard</em>. Use <em>Cent</em> only if your broker offers cent accounts.</p>
+
+          <hr class="border-slate-800">
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider"><span class="step-badge mr-1">3</span> Risk Per Trade</label>
+              <div class="flex items-center gap-1 text-[11px] mono">
+                <span id="risk-cash-display" class="text-cyan-400 font-bold">$15.00</span>
+                <span class="text-slate-500">at risk</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-5 gap-1.5">
+              <button onclick="setRiskPct(0.5)" class="risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">0.5%</button>
+              <button onclick="setRiskPct(1.0)" class="risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1.0%</button>
+              <button onclick="setRiskPct(1.5)" class="risk-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono">1.5%</button>
+              <button onclick="setRiskPct(2.0)" class="risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">2.0%</button>
+              <button onclick="setRiskPct(3.0)" class="risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">3.0%</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="range" id="risk-pct-slider" min="0.1" max="10" step="0.1" value="1.5" oninput="syncRiskSlider(this.value)" class="w-full accent-cyan-400 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
+              <div class="flex items-center">
+                <input type="number" id="risk-pct-input" value="1.5" step="0.1" oninput="syncRiskInput(this.value)" class="mono w-16 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-right text-white">
+                <span class="text-xs text-slate-400 ml-1">%</span>
+              </div>
+            </div>
+            <p class="hint">The % of your equity you accept losing if the stop loss hits. Most traders stay at 1–2%.</p>
+          </div>
+
+          <hr class="border-slate-800">
+
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label id="sl-label" class="text-[11px] font-bold text-slate-300 uppercase tracking-wider"><span class="step-badge mr-1">4</span> Stop Loss Distance (Pips)</label>
+              <span id="sl-unit-helper" class="text-[11px] font-mono text-slate-500">1 pip = 10 points</span>
+            </div>
+            <div class="grid grid-cols-5 gap-1.5" id="sl-chips">
+              <button onclick="setSLValue(10)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">10</button>
+              <button onclick="setSLValue(20)" class="sl-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono">20</button>
+              <button onclick="setSLValue(30)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">30</button>
+              <button onclick="setSLValue(50)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">50</button>
+              <button onclick="setSLValue(100)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">100</button>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="number" id="sl-distance" value="20" step="1" min="1" oninput="onSLInput()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
+              <span id="sl-unit-tag" class="text-xs font-mono text-slate-400 px-2.5 py-2 bg-slate-800 rounded-xl border border-slate-700 whitespace-nowrap">PIPS</span>
+            </div>
+            <p class="hint">Distance between your entry price and your stop loss. Tighter stop = bigger lot size for the same risk.</p>
+          </div>
+
+          <div class="pt-1">
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5"><span class="step-badge mr-1">5</span> Split into entries (optional)</label>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button onclick="setLayers(1)" data-layers="1" class="layer-pill py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-slate-800 text-slate-300">1 Entry</button>
+              <button onclick="setLayers(2)" data-layers="2" class="layer-pill py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-slate-800 text-slate-300">2 Layers</button>
+              <button onclick="setLayers(3)" data-layers="3" class="layer-pill py-1.5 rounded-lg text-xs font-medium border border-cyan-500/50 bg-cyan-500/10 text-cyan-300 font-bold">3 Layers</button>
+              <button onclick="setLayers(4)" data-layers="4" class="layer-pill py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-slate-800 text-slate-300">4 Layers</button>
+            </div>
+            <p class="hint mt-1.5">Layers = several smaller orders that together equal the total lot size (all share the same stop loss).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-7 space-y-5">
+        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 border border-slate-800 rounded-2xl p-6 glow-cyan space-y-6">
+          <div class="flex items-start justify-between">
+            <div>
+              <span class="text-xs font-mono tracking-widest text-cyan-400 font-semibold uppercase">Recommended broker order</span>
+              <h3 id="display-order-title" class="text-2xl font-black text-white mt-0.5">0.07 Total Lots</h3>
+              <p class="hint">Enter this lot size in your trading platform.</p>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-slate-400">Max loss if stopped out</div>
+              <div id="display-risk-cash" class="text-lg font-mono font-bold text-rose-400">-$15.00 (-1.5%)</div>
+            </div>
+          </div>
+
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+              <span>Order breakdown</span>
+              <span id="display-split-ratio" class="font-mono text-slate-500">Equal split</span>
+            </div>
+            <div id="layer-ticket-container" class="space-y-2"></div>
+          </div>
+
+          <div id="guardrail-alert" class="hidden p-3 rounded-xl border text-xs flex items-center gap-2.5">
+            <span id="guardrail-icon" class="text-base">⚠️</span>
+            <span id="guardrail-msg" class="leading-relaxed"></span>
+          </div>
+
+          <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
+            <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase block">If the trade wins (reward : risk)</span>
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <div class="text-[10px] text-slate-400 font-mono">1 : 1.5</div>
+                <div id="tp-gain-15" class="text-emerald-400 font-bold mono text-sm mt-0.5">+$22.50</div>
+                <div id="tp-pips-15" class="text-[10px] text-slate-500 font-mono mt-0.5">+30.0 pips</div>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <div class="text-[10px] text-slate-400 font-mono">1 : 2.0</div>
+                <div id="tp-gain-20" class="text-emerald-400 font-bold mono text-sm mt-0.5">+$30.00</div>
+                <div id="tp-pips-20" class="text-[10px] text-slate-500 font-mono mt-0.5">+40.0 pips</div>
+              </div>
+              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+                <div class="text-[10px] text-slate-400 font-mono">1 : 3.0</div>
+                <div id="tp-gain-30" class="text-emerald-400 font-bold mono text-sm mt-0.5">+$45.00</div>
+                <div id="tp-pips-30" class="text-[10px] text-slate-500 font-mono mt-0.5">+60.0 pips</div>
+              </div>
+            </div>
+            <p class="hint">Set your take-profit this many pips/points from entry to hit the target.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800 text-[11px] font-mono text-slate-500">
+            <span>Pip Value: <strong id="debug-pipval" class="text-slate-300">$10.00/lot</strong></span>
+            <span>Contract: <strong id="debug-contract" class="text-slate-300">100,000 units</strong></span>
+            <span>Min step: <strong class="text-slate-300">0.01 lot</strong></span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 text-xs text-slate-400 space-y-2">
+          <div class="font-bold text-slate-200 uppercase tracking-wide text-[11px]">Good to know</div>
+          <ul class="space-y-1 list-disc list-inside">
+            <li>Add a small buffer to your stop loss for spread and liquidity sweeps.</li>
+            <li>On Gold (XAUUSD), a $1.00 price move = 10 pips (100 points).</li>
+            <li>On Cent accounts (USC), divide the displayed USD value by 100 for the real deposit.</li>
+            <li>Pip values here are approximations – confirm with your broker's contract specs.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: COMPOUNDING PLANNER -->
+    <div id="section-planner" class="hidden space-y-6">
+
+      <div class="bg-cyan-500/5 border border-cyan-500/20 rounded-2xl px-4 py-3 text-xs text-slate-300 leading-relaxed">
+        <strong class="text-cyan-300">How this works:</strong> enter your starting balance, goal and number of steps (trades). The planner calculates the growth % each step must deliver. You can also type a growth % directly. Click <em>Load Sizer</em> on any row to size that step's trade.
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+        <div>
+          <label class="text-[11px] font-medium text-slate-400 block mb-1">Starting Balance ($)</label>
+          <input type="number" id="cp-start" value="100" step="50" oninput="solveGainFromGoal()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="text-[11px] font-medium text-slate-400 block mb-1">Target End Goal ($)</label>
+          <input type="number" id="cp-goal" value="1000" step="50" oninput="solveGainFromGoal()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="text-[11px] font-medium text-slate-400 block mb-1">Steps / Milestone Trades</label>
+          <input type="number" id="cp-steps" value="20" min="3" max="100" oninput="solveGainFromGoal()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
+        </div>
+        <div>
+          <label class="text-[11px] font-medium text-slate-400 block mb-1">Growth Per Step (%) – auto or manual</label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="cp-growth-pct" value="12.2" step="0.1" oninput="generateCompoundPlan()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-bold text-cyan-300 focus:outline-none focus:border-cyan-400">
+            <span class="text-xs font-mono text-slate-400">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Equity Milestone Trajectory</h3>
+          <span class="text-xs font-mono text-cyan-400" id="chart-summary-stat">$100.00 ➔ $1,000.00</span>
+        </div>
+        <div class="h-64 w-full"><canvas id="compoundingChart"></canvas></div>
+      </div>
+
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden">
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white">Execution Milestones</h3>
+            <p class="text-[11px] text-slate-400">Indicative lot sizes per step (assumes ~25-pip stop on a $10/pip instrument)</p>
+          </div>
+          <button onclick="exportPlanCSV()" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 flex items-center gap-1.5">
+            <span>📥 Export CSV</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="p-3"># Step</th>
+                <th class="p-3">Start Balance</th>
+                <th class="p-3">Gain Required</th>
+                <th class="p-3">Total Lots</th>
+                <th class="p-3">Layer Ticket (3x)</th>
+                <th class="p-3">End Balance</th>
+                <th class="p-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="planner-table-body" class="divide-y divide-slate-800/60"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="pt-8 pb-4 border-t border-slate-800/90 text-slate-500 space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] leading-relaxed text-slate-500 font-mono">
+        <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/60 space-y-1.5">
+          <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><span>⚖️</span> Financial & Execution Risk Disclosure</div>
+          <p>Trading foreign exchange, precious metals, indices, and crypto CFDs carries high risk and may not be suitable for all investors. Position Sizing v1.0 provides purely mathematical modeling and theoretical exposure estimates based on user inputs. Past performance and theoretical compounding curves do not guarantee future market returns. Actual order execution may experience slippage, broker commission variations, and spread expansion during volatile sessions.</p>
+        </div>
+        <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/60 space-y-1.5">
+          <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+            <span class="flex items-center gap-1.5"><span>🔒</span> PDPA 2010 & Data Processing Notice</span>
+            <button onclick="togglePrivacyDrawer()" class="text-cyan-400 underline hover:text-cyan-300 cursor-pointer">View Legal Details</button>
+          </div>
+          <p>In compliance with the <strong>Personal Data Protection Act 2010 (Malaysia)</strong>, this application operates on a <em>Zero-Knowledge Client-Side Architecture</em>. All equity amounts, lot sizes, and parameters are calculated strictly inside your local browser runtime memory (RAM) and are not collected, processed, or stored on external servers. Static assets are served via secure Content Delivery Networks (CDNs) hosted across international edge nodes outside Malaysia.</p>
+        </div>
+      </div>
+
+      <div id="privacy-drawer" class="hidden bg-slate-900/70 border border-slate-700/60 rounded-xl p-4 text-[10px] text-slate-400 leading-relaxed font-mono space-y-2">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span class="font-bold text-cyan-300 uppercase">Cross-Border Data Transfer & Infrastructure Statement (Section 129 PDPA)</span>
+          <button onclick="togglePrivacyDrawer()" class="text-slate-400 hover:text-white font-bold text-xs">✕ Close</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+          <div><strong class="text-slate-200 block mb-0.5">1. Zero PII Collection</strong>This tool does not capture Personally Identifiable Information (PII) such as NRIC, full name, email address, phone number, or live MT4/MT5 broker login credentials.</div>
+          <div><strong class="text-slate-200 block mb-0.5">2. Edge Network Delivery</strong>Web application binaries (HTML/JS) are hosted on globally distributed edge networks (including US/EU data centers). By accessing this tool, you acknowledge international transmission of static web assets.</div>
+          <div><strong class="text-slate-200 block mb-0.5">3. No Persistence</strong>This tool does not store your inputs. Values exist only in your browser's memory for the current session and disappear when you close or reload the page.</div>
+        </div>
+      </div>
+
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 text-[9px] text-slate-600 font-mono">
+        <div>&copy; 2026 Position Sizing v1.0 &bull; Risk & Compounding Planner</div>
+        <div class="flex items-center gap-3">
+          <span>Client-Side Execution</span><span>&bull;</span><span>Zero Server Telemetry</span><span>&bull;</span><span>PDPA 2010 (MY)</span>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    let appState = {
+      activeTab: 'sizer',
+      currentAsset: 'forex',
+      accountType: 'standard',
+      balance: 1000,
+      riskPct: 1.5,
+      slDistance: 20,
+      layers: 3,
+      assetProfiles: {
+        forex:   { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helper: '1 pip = 10 points' },
+        gold:    { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helper: '$1 move = 10 pips' },
+        crypto:  { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helper: '1 point = $1 move' },
+        indices: { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helper: '1 point = 1 index point' }
+      }
+    };
+
+    let chartInstance = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      calculateSizer();
+      solveGainFromGoal();
+    });
+
+    function toggleGuide(show) {
+      const m = document.getElementById('guide-modal');
+      m.classList.toggle('hidden', !show);
+      m.classList.toggle('flex', show);
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleGuide(false); });
+
+    function togglePrivacyDrawer() {
+      document.getElementById('privacy-drawer').classList.toggle('hidden');
+    }
+
+    const TAB_ON = 'px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-cyan-500 text-slate-950 shadow-md';
+    const TAB_OFF = 'px-4 py-2 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800';
+
+    function switchMainTab(tab) {
+      appState.activeTab = tab;
+      const isSizer = tab === 'sizer';
+      document.getElementById('tab-sizer').className = isSizer ? TAB_ON : TAB_OFF;
+      document.getElementById('tab-planner').className = isSizer ? TAB_OFF : TAB_ON;
+      document.getElementById('section-sizer').classList.toggle('hidden', !isSizer);
+      document.getElementById('section-planner').classList.toggle('hidden', isSizer);
+      if (isSizer) calculateSizer(); else generateCompoundPlan();
+    }
+
+    function setAsset(assetKey) {
+      appState.currentAsset = assetKey;
+      document.querySelectorAll('.asset-pill').forEach(btn => {
+        btn.className = btn.dataset.asset === assetKey
+          ? 'asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 flex flex-col items-center'
+          : 'asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-800/50 text-slate-300 hover:border-slate-700 flex flex-col items-center';
+      });
+
+      const profile = appState.assetProfiles[assetKey];
+      document.getElementById('sl-unit-tag').innerText = profile.unit;
+      document.getElementById('sl-unit-helper').innerText = profile.helper;
+      document.getElementById('sl-label').innerHTML = `<span class="step-badge mr-1">4</span> Stop Loss Distance (${profile.unit})`;
+
+      const defaults = { gold: 30, crypto: 250, indices: 50, forex: 20 };
+      setSLValue(defaults[assetKey]);
+    }
+
+    function setRiskPct(val) {
+      appState.riskPct = parseFloat(val);
+      document.getElementById('risk-pct-slider').value = val;
+      document.getElementById('risk-pct-input').value = val;
+      updateRiskChipStyles(appState.riskPct);
+      calculateSizer();
+    }
+
+    function syncRiskSlider(val) {
+      appState.riskPct = parseFloat(val);
+      document.getElementById('risk-pct-input').value = val;
+      updateRiskChipStyles(appState.riskPct);
+      calculateSizer();
+    }
+
+    function syncRiskInput(val) {
+      let num = parseFloat(val);
+      if (isNaN(num) || num < 0.1) num = 0.1;
+      if (num > 20) num = 20;
+      appState.riskPct = num;
+      document.getElementById('risk-pct-slider').value = num;
+      updateRiskChipStyles(num);
+      calculateSizer();
+    }
+
+    function updateRiskChipStyles(activeVal) {
+      document.querySelectorAll('.risk-chip').forEach(chip => {
+        chip.className = parseFloat(chip.innerText) === activeVal
+          ? 'risk-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono'
+          : 'risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono text-slate-300';
+      });
+    }
+
+    function updateSLChipStyles(val) {
+      document.querySelectorAll('.sl-chip').forEach(chip => {
+        chip.className = parseFloat(chip.innerText) === val
+          ? 'sl-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono'
+          : 'sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono text-slate-300';
+      });
+    }
+
+    function setSLValue(val) {
+      appState.slDistance = parseFloat(val);
+      document.getElementById('sl-distance').value = val;
+      updateSLChipStyles(appState.slDistance);
+      calculateSizer();
+    }
+
+    function onSLInput() {
+      updateSLChipStyles(parseFloat(document.getElementById('sl-distance').value));
+      calculateSizer();
+    }
+
+    function setLayers(count) {
+      appState.layers = parseInt(count);
+      document.querySelectorAll('.layer-pill').forEach(btn => {
+        btn.className = parseInt(btn.dataset.layers) === appState.layers
+          ? 'layer-pill py-1.5 rounded-lg text-xs font-bold border border-cyan-500/50 bg-cyan-500/10 text-cyan-300'
+          : 'layer-pill py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-slate-800 text-slate-300';
+      });
+      calculateSizer();
+    }
+
+    function applyPreset(name) {
+      const presets = {
+        'gold-scalp':   { bal: 1000,  acc: 'standard', asset: 'gold',   risk: 1.5, sl: 30,  layers: 3 },
+        'forex-swing':  { bal: 2500,  acc: 'standard', asset: 'forex',  risk: 1.0, sl: 25,  layers: 2 },
+        'btc-intraday': { bal: 1500,  acc: 'standard', asset: 'crypto', risk: 2.0, sl: 350, layers: 3 },
+        'cent-boost':   { bal: 10000, acc: 'cent',     asset: 'forex',  risk: 2.0, sl: 20,  layers: 4 }
+      };
+      const p = presets[name];
+      if (!p) return;
+      switchMainTab('sizer');
+      document.getElementById('acc-balance').value = p.bal;
+      document.getElementById('acc-type').value = p.acc;
+      setAsset(p.asset);
+      setRiskPct(p.risk);
+      setSLValue(p.sl);
+      setLayers(p.layers);
+    }
+
+    function resetToDefaults() {
+      document.getElementById('acc-balance').value = 1000;
+      document.getElementById('acc-type').value = 'standard';
+      setAsset('forex');
+      setRiskPct(1.5);
+      setSLValue(20);
+      setLayers(3);
+    }
+
+    function calculateSizer() {
+      const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
+      const accType = document.getElementById('acc-type').value;
+      appState.balance = balance;
+      appState.accountType = accType;
+      appState.slDistance = parseFloat(document.getElementById('sl-distance').value) || 1;
+
+      const riskAmount = balance * (appState.riskPct / 100);
+      document.getElementById('risk-cash-display').innerText = `$${riskAmount.toFixed(2)}`;
+      document.getElementById('display-risk-cash').innerText = `-$${riskAmount.toFixed(2)} (-${appState.riskPct}%)`;
+
+      let accMultiplier = 1.0;
+      if (accType === 'micro') accMultiplier = 0.1;
+      if (accType === 'cent') accMultiplier = 0.01;
+
+      const profile = appState.assetProfiles[appState.currentAsset];
+      const effectivePipValue = profile.pipVal * accMultiplier;
+
+      const calculatedLot = riskAmount / (appState.slDistance * effectivePipValue);
+      let roundedTotalLot = Math.floor(calculatedLot * 100) / 100;
+      if (roundedTotalLot < 0.01 && calculatedLot > 0) roundedTotalLot = 0.01;
+
+      document.getElementById('display-order-title').innerText = `${roundedTotalLot.toFixed(2)} Total Lots`;
+      document.getElementById('debug-pipval').innerText = `$${effectivePipValue.toFixed(2)}/lot`;
+      document.getElementById('debug-contract').innerText = accType === 'cent' ? '1,000 (Cent Units)' : accType === 'micro' ? '10,000 units' : '100,000 units';
+      document.getElementById('display-split-ratio').innerText = appState.layers === 1 ? 'Single entry' : `Equal split x${appState.layers}`;
+
+      buildLayerTickets(roundedTotalLot, appState.layers, appState.slDistance, effectivePipValue, profile.short);
+
+      const guardrail = document.getElementById('guardrail-alert');
+      const guardMsg = document.getElementById('guardrail-msg');
+      const actualDollarAtRisk = roundedTotalLot * appState.slDistance * effectivePipValue;
+
+      if (balance > 0 && actualDollarAtRisk > riskAmount * 1.15) {
+        guardrail.className = 'p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs flex items-center gap-2.5 text-amber-300';
+        guardMsg.innerHTML = `<strong>Lot rounding:</strong> the minimum 0.01 lot puts <strong>$${actualDollarAtRisk.toFixed(2)}</strong> (${((actualDollarAtRisk / balance) * 100).toFixed(1)}%) at risk – more than you chose. Widen the stop, lower risk, or use a Cent account.`;
+      } else if (balance > 0 && balance < 50 && accType === 'standard') {
+        guardrail.className = 'p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs flex items-center gap-2.5 text-rose-300';
+        guardMsg.innerHTML = `<strong>Small account:</strong> a Standard account with $${balance} is very thin. Consider a <strong>Cent Account</strong>.`;
+      } else if (balance <= 0) {
+        guardrail.className = 'p-3 rounded-xl border border-slate-600/40 bg-slate-800/60 text-xs flex items-center gap-2.5 text-slate-300';
+        guardMsg.innerHTML = `Enter your account equity to get a lot size.`;
+      } else {
+        guardrail.className = 'hidden';
+      }
+
+      const sl = appState.slDistance;
+      [['15', 1.5], ['20', 2.0], ['30', 3.0]].forEach(([id, r]) => {
+        document.getElementById(`tp-gain-${id}`).innerText = `+$${(riskAmount * r).toFixed(2)}`;
+        document.getElementById(`tp-pips-${id}`).innerText = `+${(sl * r).toFixed(1)} ${profile.short}`;
+      });
+    }
+
+    function buildLayerTickets(totalLots, layerCount, sl, pipVal, unitShort) {
+      const container = document.getElementById('layer-ticket-container');
+      container.innerHTML = '';
+
+      // Distribute in whole 0.01 steps so layers always sum to the total
+      const totalSteps = Math.round(totalLots * 100);
+      const baseSteps = Math.floor(totalSteps / layerCount);
+      const extra = totalSteps - baseSteps * layerCount;
+
+      for (let i = 0; i < layerCount; i++) {
+        const steps = baseSteps + (i < extra ? 1 : 0);
+        if (steps === 0) continue;
+        const lot = steps / 100;
+        const ticketRisk = lot * sl * pipVal;
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 font-mono text-xs';
+        div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-6 h-6 rounded-lg bg-cyan-400/10 text-cyan-300 flex items-center justify-center font-bold text-[11px] border border-cyan-400/20">L${i + 1}</span>
+            <div>
+              <span class="text-white font-bold text-sm">${lot.toFixed(2)} Lots</span>
+              <span class="text-[10px] text-slate-500 ml-2">Order #${i + 1}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-rose-400 font-semibold">-$${ticketRisk.toFixed(2)}</span>
+            <span class="text-[10px] text-slate-500 block">SL: ${sl} ${unitShort}</span>
+          </div>`;
+        container.appendChild(div);
+      }
+      if (!container.children.length) {
+        container.innerHTML = '<div class="text-xs text-slate-500 p-3">Enter equity, risk and stop loss to see your order.</div>';
+      }
+    }
+
+    function solveGainFromGoal() {
+      const start = parseFloat(document.getElementById('cp-start').value);
+      const goal = parseFloat(document.getElementById('cp-goal').value);
+      const steps = parseInt(document.getElementById('cp-steps').value);
+
+      if (start > 0 && goal > start && steps > 0) {
+        const rate = Math.pow(goal / start, 1 / steps) - 1;
+        document.getElementById('cp-growth-pct').value = (rate * 100).toFixed(2);
+      }
+      generateCompoundPlan();
+    }
+
+    function generateCompoundPlan() {
+      const start = parseFloat(document.getElementById('cp-start').value) || 100;
+      const steps = Math.min(100, Math.max(1, parseInt(document.getElementById('cp-steps').value) || 20));
+      const growthPct = parseFloat(document.getElementById('cp-growth-pct').value) || 5;
+
+      const tbody = document.getElementById('planner-table-body');
+      tbody.innerHTML = '';
+
+      let currentBal = start;
+      const chartLabels = ['Start'];
+      const chartData = [start];
+
+      for (let i = 1; i <= steps; i++) {
+        const gain = currentBal * (growthPct / 100);
+        const endBal = currentBal + gain;
+
+        const estLots = Math.max(0.01, Math.floor((gain / (25 * 10)) * 100) / 100);
+        const layerLots = (estLots / 3).toFixed(2);
+
+        chartLabels.push(`Step ${i}`);
+        chartData.push(parseFloat(endBal.toFixed(2)));
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+        tr.innerHTML = `
+          <td class="p-3 text-slate-400 font-bold">#${i}</td>
+          <td class="p-3 text-white">$${currentBal.toFixed(2)}</td>
+          <td class="p-3 text-emerald-400 font-bold">+$${gain.toFixed(2)} (${growthPct}%)</td>
+          <td class="p-3 text-cyan-300 font-semibold">${estLots.toFixed(2)}</td>
+          <td class="p-3 text-slate-400">${layerLots} x3</td>
+          <td class="p-3 text-white font-bold">$${endBal.toFixed(2)}</td>
+          <td class="p-3 text-right">
+            <button onclick="loadStepIntoSizer(${currentBal})" class="px-2 py-1 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-slate-300 text-[10px] transition-colors">Load Sizer</button>
+          </td>`;
+        tbody.appendChild(tr);
+        currentBal = endBal;
+      }
+
+      document.getElementById('chart-summary-stat').innerText = `$${start.toFixed(2)} ➔ $${currentBal.toFixed(2)} (${steps} Steps)`;
+      renderChart(chartLabels, chartData);
+    }
+
+    function loadStepIntoSizer(stepBal) {
+      document.getElementById('acc-balance').value = stepBal.toFixed(2);
+      switchMainTab('sizer');
+    }
+
+    function renderChart(labels, data) {
+      const ctx = document.getElementById('compoundingChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Milestone Equity ($)',
+            data,
+            borderColor: '#06b6d4',
+            backgroundColor: 'rgba(6, 182, 212, 0.08)',
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2,
+            pointBackgroundColor: '#22d3ee',
+            pointRadius: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } } },
+            y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 }, callback: v => '$' + v } }
+          }
+        }
+      });
+    }
+
+    function exportPlanCSV() {
+      const rows = [["Step", "Start Balance", "Target Gain", "Lots", "End Balance"]];
+      document.querySelectorAll('#planner-table-body tr').forEach(tr => {
+        const c = tr.querySelectorAll('td');
+        rows.push([c[0].innerText, c[1].innerText.replace('$', ''), `"${c[2].innerText}"`, c[3].innerText, c[5].innerText.replace('$', '')]);
+      });
+      const blob = new Blob([rows.map(r => r.join(",")).join("\n")], { type: 'text/csv;charset=utf-8' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "Position_Sizing_v1.0_Plan.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    }
+  </script>
+</body>
+</html>
