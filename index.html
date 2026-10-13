@@ -929,7 +929,6 @@
 
       const riskAmount = balance * (appState.riskPct / 100);
       document.getElementById('risk-cash-display').innerText = `$${riskAmount.toFixed(2)}`;
-      document.getElementById('display-risk-cash').innerText = `-$${riskAmount.toFixed(2)} (-${appState.riskPct}%)`;
 
       let accMultiplier = 1.0;
       if (accType === 'micro') accMultiplier = 0.1;
@@ -952,9 +951,13 @@
 
       buildLayerTickets(roundedTotalLot, appState.layers, appState.slDistance, effectivePipValue, profile.short);
 
+      // Real risk of the rounded lot size (not the target risk)
+      const actualDollarAtRisk = roundedTotalLot * appState.slDistance * effectivePipValue;
+      const actualRiskPct = balance > 0 ? (actualDollarAtRisk / balance) * 100 : 0;
+      document.getElementById('display-risk-cash').innerText = `-$${actualDollarAtRisk.toFixed(2)} (-${parseFloat(actualRiskPct.toFixed(2))}%)`;
+
       const guardrail = document.getElementById('guardrail-alert');
       const guardMsg = document.getElementById('guardrail-msg');
-      const actualDollarAtRisk = roundedTotalLot * appState.slDistance * effectivePipValue;
 
       if (balance > 0 && actualDollarAtRisk > riskAmount * 1.15) {
         guardrail.className = 'p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs flex items-center gap-2.5 text-amber-300';
@@ -1012,7 +1015,7 @@
         document.getElementById(`tp-price-${id}`).innerText = hasEntry && tp > 0 ? fmtPrice(tp, profile.dec) : '';
       });
       [['15', 1.5], ['20', 2.0], ['30', 3.0]].forEach(([id, r]) => {
-        document.getElementById(`tp-gain-${id}`).innerText = `+$${(riskAmount * r).toFixed(2)}`;
+        document.getElementById(`tp-gain-${id}`).innerText = `+$${(actualDollarAtRisk * r).toFixed(2)}`;
         document.getElementById(`tp-pips-${id}`).innerText = `+${(sl * r).toFixed(1)} ${profile.short}`;
       });
     }
