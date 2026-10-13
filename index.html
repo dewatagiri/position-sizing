@@ -447,7 +447,7 @@
         <div>
           <label class="text-[11px] font-medium text-slate-400 block mb-1">Growth Per Step (%) – auto or manual</label>
           <div class="flex items-center gap-2">
-            <input type="number" id="cp-growth-pct" value="12.2" step="0.1" oninput="generateCompoundPlan()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-bold text-cyan-300 focus:outline-none focus:border-cyan-400">
+            <input type="number" id="cp-growth-pct" value="12.2018" step="any" oninput="generateCompoundPlan()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-bold text-cyan-300 focus:outline-none focus:border-cyan-400">
             <span class="text-xs font-mono text-slate-400">%</span>
           </div>
         </div>
@@ -1062,7 +1062,7 @@
 
       if (start > 0 && goal > start && steps > 0) {
         const rate = Math.pow(goal / start, 1 / steps) - 1;
-        document.getElementById('cp-growth-pct').value = (rate * 100).toFixed(2);
+        document.getElementById('cp-growth-pct').value = (rate * 100).toFixed(4);
       }
       generateCompoundPlan();
     }
@@ -1084,7 +1084,15 @@
         const endBal = currentBal + gain;
 
         const estLots = Math.max(0.01, Math.floor((gain / (25 * 10)) * 100) / 100);
-        const layerLots = (estLots / 3).toFixed(2);
+        // Split in whole 0.01 steps so layers always sum to the total
+        const totalSteps = Math.round(estLots * 100);
+        const baseSteps = Math.floor(totalSteps / 3);
+        const extra = totalSteps - baseSteps * 3;
+        const layerLots = extra === 0
+          ? `${(baseSteps / 100).toFixed(2)} x3`
+          : baseSteps === 0
+            ? `0.01 x${extra}`
+            : `${((baseSteps + 1) / 100).toFixed(2)} x${extra} + ${(baseSteps / 100).toFixed(2)} x${3 - extra}`;
 
         chartLabels.push(`${t('step')} ${i}`);
         chartData.push(parseFloat(endBal.toFixed(2)));
@@ -1094,9 +1102,9 @@
         tr.innerHTML = `
           <td class="p-3 text-slate-400 font-bold">#${i}</td>
           <td class="p-3 text-white">$${currentBal.toFixed(2)}</td>
-          <td class="p-3 text-emerald-400 font-bold">+$${gain.toFixed(2)} (${growthPct}%)</td>
+          <td class="p-3 text-emerald-400 font-bold">+$${gain.toFixed(2)} (${parseFloat(growthPct.toFixed(2))}%)</td>
           <td class="p-3 text-cyan-300 font-semibold">${estLots.toFixed(2)}</td>
-          <td class="p-3 text-slate-400">${layerLots} x3</td>
+          <td class="p-3 text-slate-400">${layerLots}</td>
           <td class="p-3 text-white font-bold">$${endBal.toFixed(2)}</td>
           <td class="p-3 text-right">
             <button onclick="loadStepIntoSizer(${currentBal})" class="px-2 py-1 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-slate-300 text-[10px] transition-colors">${t('loadSizer')}</button>
