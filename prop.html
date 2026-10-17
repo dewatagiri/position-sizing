@@ -179,6 +179,7 @@
           <select class="in" id="sv-list" aria-label="Saved accounts" onchange="$('sv-name').value = this.value"></select>
           <button class="btn" onclick="loadAcct()" data-i="sv_load"></button>
           <button class="btn" onclick="delAcct()" data-i="sv_del"></button>
+          <button class="btn" onclick="shortcutAcct()" data-i="sv_short"></button>
         </div>
         <p class="help" id="sv-msg" data-i="sv_help"></p>
       </div>
@@ -495,7 +496,8 @@ const TXT = {
   o_right: '%1% win rate, 1 : %2, %3 trades a day',
   o_note: 'Simulation of %1 runs with your numbers, assuming you follow your daily stop and never take a trade that could breach today’s limit. %2% were still going after %3 days. Real results depend on your edge being real.',
   o_noTrade: 'Fill in the trade or risk plan to see the odds.',
-  h_saved: 'Saved accounts', sv_ph: 'Name, e.g. FTMO 100k live', sv_save: 'Save', sv_load: 'Load', sv_del: 'Delete',
+  h_saved: 'Saved accounts', sv_ph: 'Name, e.g. FTMO 100k live', sv_save: 'Save', sv_load: 'Load', sv_del: 'Delete', sv_short: 'Shortcut',
+  sv_short_how: 'Link copied or share sheet opened. Choose “Add to Home Screen” to get a shortcut with this name. It opens straight to this account.',
   sv_help: 'Save this setup under a name to reuse it later. Saved on this device only.',
   sv_noname: 'Type a name first.', sv_saved: 'Saved “%1”.', sv_loaded: 'Loaded “%1”.', sv_deleted: 'Deleted “%1”.', sv_full: 'Limit of 20 saved accounts. Delete one first.',
   sv_fail: 'Could not save. Your browser may be blocking storage.', sv_confirm: 'Delete “%1”?',
@@ -557,7 +559,8 @@ const TXT = {
   o_right: 'kadar menang %1%, 1 : %2, %3 dagangan sehari',
   o_note: 'Simulasi %1 larian dengan angka anda, dengan andaian anda ikut had harian dan tidak ambil dagangan yang boleh melanggar had hari ini. %2% masih berjalan selepas %3 hari. Keputusan sebenar bergantung pada kelebihan anda benar-benar wujud.',
   o_noTrade: 'Isi dagangan atau pelan risiko untuk melihat peluang.',
-  h_saved: 'Akaun disimpan', sv_ph: 'Nama, cth. FTMO 100k live', sv_save: 'Simpan', sv_load: 'Muat', sv_del: 'Padam',
+  h_saved: 'Akaun disimpan', sv_ph: 'Nama, cth. FTMO 100k live', sv_save: 'Simpan', sv_load: 'Muat', sv_del: 'Padam', sv_short: 'Pintasan',
+  sv_short_how: 'Pautan disalin atau helaian kongsi dibuka. Pilih “Tambah ke Skrin Utama” untuk pintasan bernama akaun ini. Ia terus buka akaun ini.',
   sv_help: 'Simpan tetapan ini dengan nama untuk guna semula. Disimpan pada peranti ini sahaja.',
   sv_noname: 'Taip nama dahulu.', sv_saved: '“%1” disimpan.', sv_loaded: '“%1” dimuatkan.', sv_deleted: '“%1” dipadam.', sv_full: 'Had 20 akaun disimpan. Padam satu dahulu.',
   sv_fail: 'Tidak dapat simpan. Pelayar anda mungkin menyekat storan.', sv_confirm: 'Padam “%1”?',
@@ -859,7 +862,7 @@ function renderSaves(sel) {
   [...$('sv-list').options].forEach((o, i) => { o.value = o.textContent = names[i]; });
   if (sel && names.includes(sel)) $('sv-list').value = sel;
 }
-function svMsg(k, ...a) { const el = $('sv-msg'); el.textContent = t(k, ...a); clearTimeout(el._t); el._t = setTimeout(() => { el.textContent = t('sv_help'); }, 3000); }
+function svMsg(k, ...a) { const el = $('sv-msg'); el.textContent = t(k, ...a); clearTimeout(el._t); el._t = setTimeout(() => { el.textContent = t('sv_help'); }, k === 'sv_short_how' ? 9000 : 3000); }
 function saveAcct() {
   const name = $('sv-name').value.trim();
   if (!name) { svMsg('sv_noname'); $('sv-name').focus(); return; }
@@ -869,7 +872,7 @@ function saveAcct() {
   SAVE_IDS.forEach(id => { d[id] = $(id).value; });
   all[name] = d;
   if (!writeSaves(all)) { svMsg('sv_fail'); return; }
-  renderSaves(name); svMsg('sv_saved', name);
+  renderSaves(name); setIdentity(name); svMsg('sv_saved', name);
 }
 function loadAcct() {
   const name = $('sv-list').value, d = readSaves()[name];
@@ -881,13 +884,38 @@ function loadAcct() {
   state.side = d.side === -1 ? -1 : 1;
   state.stopPct = num(d.stopPct) > 0 ? num(d.stopPct) : state.stopPct;
   $('sv-name').value = name;
-  calc(); svMsg('sv_loaded', name);
+  calc(); setIdentity(name); svMsg('sv_loaded', name);
+}
+// A home-screen shortcut is just this page's URL with ?a=<name>, plus a title and icon that carry the name.
+const BASE_TITLE = document.title;
+function setIdentity(name) {
+  document.title = name ? name + ' · ' + BASE_TITLE : BASE_TITLE;
+  document.querySelectorAll('link[data-acct-icon]').forEach(l => l.remove());
+  if (!name) { try { history.replaceState(null, '', location.pathname); } catch (e) {} return; }
+  try { history.replaceState(null, '', '?a=' + encodeURIComponent(name)); } catch (e) {}
+  let h = 0; for (const ch of name) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+  const c = document.createElement('canvas'); c.width = c.height = 180;
+  const g = c.getContext('2d'); if (!g) return;
+  g.fillStyle = `hsl(${h % 360} 55% 38%)`; g.fillRect(0, 0, 180, 180);
+  const words = name.split(/\s+/).filter(Boolean);
+  const ini = (words.length > 1 ? words[0][0] + words[1][0] : name.slice(0, 2)).toUpperCase();
+  g.fillStyle = '#fff'; g.font = '700 84px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(ini, 90, 96);
+  const url = c.toDataURL('image/png');
+  ['apple-touch-icon', 'icon'].forEach(rel => { const l = document.createElement('link'); l.rel = rel; l.href = url; l.setAttribute('data-acct-icon', ''); document.head.appendChild(l); });
+}
+function shortcutAcct() {
+  const name = $('sv-list').value; if (!(name in readSaves())) return;
+  loadAcct(); setIdentity(name);
+  const url = location.href;
+  if (navigator.share) { navigator.share({ title: name, url }).catch(() => {}); svMsg('sv_short_how'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(() => {});
+  svMsg('sv_short_how');
 }
 function delAcct() {
   const name = $('sv-list').value, all = readSaves();
   if (!(name in all) || !confirm(t('sv_confirm', name))) return;
   delete all[name]; writeSaves(all);
-  if ($('sv-name').value === name) $('sv-name').value = '';
+  if ($('sv-name').value === name) { $('sv-name').value = ''; setIdentity(null); }
   renderSaves(); svMsg('sv_deleted', name);
 }
 
@@ -911,6 +939,8 @@ document.querySelectorAll('#stop-chips .pill').forEach(b => b.addEventListener('
   applyText();
   loadPlan('s1');
   renderSaves();
+  const want = new URLSearchParams(location.search).get('a');
+  if (want && want in readSaves()) { renderSaves(want); loadAcct(); }
   if (!discAccepted()) openDisc();
 })();
 </script>
