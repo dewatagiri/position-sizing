@@ -168,6 +168,22 @@
 
   <main class="grid">
     <section class="form">
+      <!-- saved accounts -->
+      <div class="block">
+        <h2 data-i="h_saved"></h2>
+        <div class="inline">
+          <input class="in" id="sv-name" maxlength="40" autocomplete="off" aria-label="Account name" data-ph="sv_ph">
+          <button class="btn" onclick="saveAcct()" data-i="sv_save"></button>
+        </div>
+        <div class="inline" id="sv-list-wrap" style="margin-top:8px" hidden>
+          <select class="in" id="sv-list" aria-label="Saved accounts" onchange="$('sv-name').value = this.value"></select>
+          <button class="btn" onclick="loadAcct()" data-i="sv_load"></button>
+          <button class="btn" onclick="delAcct()" data-i="sv_del"></button>
+          <button class="btn" onclick="shortcutAcct()" data-i="sv_short"></button>
+        </div>
+        <p class="help" id="sv-msg" data-i="sv_help"></p>
+      </div>
+
       <!-- challenge -->
       <div class="block">
         <h2 data-i="h_challenge"></h2>
@@ -480,13 +496,18 @@ const TXT = {
   o_right: '%1% win rate, 1 : %2, %3 trades a day',
   o_note: 'Simulation of %1 runs with your numbers, assuming you follow your daily stop and never take a trade that could breach today’s limit. %2% were still going after %3 days. Real results depend on your edge being real.',
   o_noTrade: 'Fill in the trade or risk plan to see the odds.',
-  foot: 'Hobby project. Not affiliated with any prop firm. Educational calculator, not financial advice. Your inputs stay in your browser and are never sent or stored.',
+  h_saved: 'Saved accounts', sv_ph: 'Name, e.g. FTMO 100k live', sv_save: 'Save', sv_load: 'Load', sv_del: 'Delete', sv_short: 'Shortcut',
+  sv_short_how: 'Link copied or share sheet opened. Choose “Add to Home Screen” to get a shortcut with this name. It opens straight to this account.',
+  sv_help: 'Save this setup under a name to reuse it later. Saved on this device only.',
+  sv_noname: 'Type a name first.', sv_saved: 'Saved “%1”.', sv_loaded: 'Loaded “%1”.', sv_deleted: 'Deleted “%1”.', sv_full: 'Limit of 20 saved accounts. Delete one first.',
+  sv_fail: 'Could not save. Your browser may be blocking storage.', sv_confirm: 'Delete “%1”?',
+  foot: 'Hobby project. Not affiliated with any prop firm. Educational calculator, not financial advice. Your inputs stay in your browser and are never sent anywhere. They are stored on this device only if you tap Save.',
   footSrc: 'Rules summarised from each firm’s public pages (Bitfunded, FTMO, FundedNext, The5ers and Apex; Bitfunded from bitfunded.com/faq and its user guide), checked 17 Oct 2026. Rules change, so always check the latest before trading.',
   discOpen: 'Read disclaimer', discTitle: 'Before you use this planner',
   disc1: 'This is an educational calculator built as a hobby project. It is not financial advice and is not affiliated with, endorsed by or checked by Bitfunded, FTMO, FundedNext, The5ers, Apex Trader Funding or any other prop firm. Firm names are used only to identify their public rules.',
   disc2: 'Prop firm rules are summarised from public pages and can change at any time. The firm’s own rules and platform numbers always win. If this page disagrees with them, trust the firm.',
   disc3: 'Sizes, fees, exposure and limits are estimates. Gaps, slippage and platform behaviour can make a real loss bigger than shown. The pass odds are a simulation, not a prediction.',
-  disc4: 'Your inputs are processed only in your browser and are not sent or stored anywhere. I accept no liability for any loss from using this page.',
+  disc4: 'Your inputs are processed only in your browser and are never sent anywhere. They are stored on your device only if you tap Save. I accept no liability for any loss from using this page.',
   discCheck: 'I have read this and I use the planner at my own risk.', discGo: 'Continue'
  },
  bm: {
@@ -538,19 +559,25 @@ const TXT = {
   o_right: 'kadar menang %1%, 1 : %2, %3 dagangan sehari',
   o_note: 'Simulasi %1 larian dengan angka anda, dengan andaian anda ikut had harian dan tidak ambil dagangan yang boleh melanggar had hari ini. %2% masih berjalan selepas %3 hari. Keputusan sebenar bergantung pada kelebihan anda benar-benar wujud.',
   o_noTrade: 'Isi dagangan atau pelan risiko untuk melihat peluang.',
-  foot: 'Projek hobi. Tiada kaitan dengan mana-mana prop firm. Kalkulator pendidikan, bukan nasihat kewangan. Input anda kekal dalam pelayar dan tidak dihantar atau disimpan.',
+  h_saved: 'Akaun disimpan', sv_ph: 'Nama, cth. FTMO 100k live', sv_save: 'Simpan', sv_load: 'Muat', sv_del: 'Padam', sv_short: 'Pintasan',
+  sv_short_how: 'Pautan disalin atau helaian kongsi dibuka. Pilih “Tambah ke Skrin Utama” untuk pintasan bernama akaun ini. Ia terus buka akaun ini.',
+  sv_help: 'Simpan tetapan ini dengan nama untuk guna semula. Disimpan pada peranti ini sahaja.',
+  sv_noname: 'Taip nama dahulu.', sv_saved: '“%1” disimpan.', sv_loaded: '“%1” dimuatkan.', sv_deleted: '“%1” dipadam.', sv_full: 'Had 20 akaun disimpan. Padam satu dahulu.',
+  sv_fail: 'Tidak dapat simpan. Pelayar anda mungkin menyekat storan.', sv_confirm: 'Padam “%1”?',
+  foot: 'Projek hobi. Tiada kaitan dengan mana-mana prop firm. Kalkulator pendidikan, bukan nasihat kewangan. Input anda kekal dalam pelayar dan tidak dihantar ke mana-mana. Ia disimpan pada peranti ini hanya jika anda tekan Simpan.',
   footSrc: 'Peraturan diringkaskan dari halaman awam setiap firma (Bitfunded, FTMO, FundedNext, The5ers dan Apex; Bitfunded dari bitfunded.com/faq dan panduan penggunanya), disemak 17 Okt 2026. Peraturan berubah, jadi semak yang terkini sebelum berdagang.',
   discOpen: 'Baca penafian', discTitle: 'Sebelum anda guna perancang ini',
   disc1: 'Ini kalkulator pendidikan yang dibina sebagai projek hobi. Ia bukan nasihat kewangan dan tiada kaitan dengan, tidak disokong atau disemak oleh Bitfunded, FTMO, FundedNext, The5ers, Apex Trader Funding atau mana-mana prop firm lain. Nama firma hanya digunakan untuk mengenal pasti peraturan awam mereka.',
   disc2: 'Peraturan prop firm diringkaskan dari halaman awam dan boleh berubah bila-bila masa. Peraturan dan angka platform firma sentiasa diutamakan. Jika halaman ini berbeza, percayalah firma.',
   disc3: 'Saiz, yuran, pendedahan dan had ialah anggaran. Jurang harga, slippage dan tingkah laku platform boleh menjadikan rugi sebenar lebih besar. Peluang lulus ialah simulasi, bukan ramalan.',
-  disc4: 'Input anda diproses hanya dalam pelayar dan tidak dihantar atau disimpan. Saya tidak menerima liabiliti atas sebarang kerugian daripada penggunaan halaman ini.',
+  disc4: 'Input anda diproses hanya dalam pelayar dan tidak dihantar ke mana-mana. Ia disimpan pada peranti anda hanya jika anda tekan Simpan. Saya tidak menerima liabiliti atas sebarang kerugian daripada penggunaan halaman ini.',
   discCheck: 'Saya telah membaca ini dan menggunakan perancang ini atas risiko sendiri.', discGo: 'Teruskan'
  }
 };
 function t(k, ...a) { let s = (TXT[state.lang] && TXT[state.lang][k]) ?? TXT.en[k] ?? k; a.forEach((v, i) => { s = s.split('%' + (i + 1)).join(v); }); return s; }
 function applyText() {
   document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
+  document.querySelectorAll('[data-ph]').forEach(el => { el.placeholder = t(el.dataset.ph); });
   document.documentElement.lang = state.lang === 'bm' ? 'ms' : 'en';
   renderPlans();
   $('l-en').setAttribute('aria-pressed', state.lang === 'en');
@@ -822,6 +849,76 @@ function copyOrder() {
   if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => flash('copy-ok', t('copied')), fallback); else fallback();
 }
 
+// ---------------- saved accounts ----------------
+// Only written when the user taps Save. Stays in this browser (localStorage), never sent anywhere.
+const SAVE_KEY = 'pf-saves';
+const SAVE_IDS = ['firm', 'acct', 'r-target', 'r-daily', 'r-max', 'r-lev', 'r-fee', 'r-expo', 'r-pos', 'bal', 'today', 'float', 'open-n', 'mg-used', 'risk', 'rr', 'cap', 'tpd', 'wr', 'sym', 'lev', 'entry', 'sl', 'stop', 'step'];
+function readSaves() { try { const o = JSON.parse(localStorage.getItem(SAVE_KEY)); return o && typeof o === 'object' ? o : {}; } catch (e) { return {}; } }
+function writeSaves(o) { try { localStorage.setItem(SAVE_KEY, JSON.stringify(o)); return true; } catch (e) { return false; } }
+function renderSaves(sel) {
+  const names = Object.keys(readSaves());
+  $('sv-list-wrap').hidden = !names.length;
+  $('sv-list').innerHTML = names.map(n => `<option></option>`).join('');
+  [...$('sv-list').options].forEach((o, i) => { o.value = o.textContent = names[i]; });
+  if (sel && names.includes(sel)) $('sv-list').value = sel;
+}
+function svMsg(k, ...a) { const el = $('sv-msg'); el.textContent = t(k, ...a); clearTimeout(el._t); el._t = setTimeout(() => { el.textContent = t('sv_help'); }, k === 'sv_short_how' ? 9000 : 3000); }
+function saveAcct() {
+  const name = $('sv-name').value.trim();
+  if (!name) { svMsg('sv_noname'); $('sv-name').focus(); return; }
+  const all = readSaves();
+  if (!(name in all) && Object.keys(all).length >= 20) { svMsg('sv_full'); return; }
+  const d = { plan: state.plan, side: state.side, stopPct: state.stopPct, at: Date.now() };
+  SAVE_IDS.forEach(id => { d[id] = $(id).value; });
+  all[name] = d;
+  if (!writeSaves(all)) { svMsg('sv_fail'); return; }
+  renderSaves(name); setIdentity(name); svMsg('sv_saved', name);
+}
+function loadAcct() {
+  const name = $('sv-list').value, d = readSaves()[name];
+  if (!d) return;
+  $('firm').value = d.firm;
+  if (!$('firm').value) $('firm').value = 'custom';
+  state.plan = d.plan; onFirm();
+  SAVE_IDS.forEach(id => { if (id !== 'firm' && typeof d[id] === 'string') $(id).value = d[id]; });
+  state.side = d.side === -1 ? -1 : 1;
+  state.stopPct = num(d.stopPct) > 0 ? num(d.stopPct) : state.stopPct;
+  $('sv-name').value = name;
+  calc(); setIdentity(name); svMsg('sv_loaded', name);
+}
+// A home-screen shortcut is just this page's URL with ?a=<name>, plus a title and icon that carry the name.
+const BASE_TITLE = document.title;
+function setIdentity(name) {
+  document.title = name ? name + ' · ' + BASE_TITLE : BASE_TITLE;
+  document.querySelectorAll('link[data-acct-icon]').forEach(l => l.remove());
+  if (!name) { try { history.replaceState(null, '', location.pathname); } catch (e) {} return; }
+  try { history.replaceState(null, '', '?a=' + encodeURIComponent(name)); } catch (e) {}
+  let h = 0; for (const ch of name) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+  const c = document.createElement('canvas'); c.width = c.height = 180;
+  const g = c.getContext('2d'); if (!g) return;
+  g.fillStyle = `hsl(${h % 360} 55% 38%)`; g.fillRect(0, 0, 180, 180);
+  const words = name.split(/\s+/).filter(Boolean);
+  const ini = (words.length > 1 ? words[0][0] + words[1][0] : name.slice(0, 2)).toUpperCase();
+  g.fillStyle = '#fff'; g.font = '700 84px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(ini, 90, 96);
+  const url = c.toDataURL('image/png');
+  ['apple-touch-icon', 'icon'].forEach(rel => { const l = document.createElement('link'); l.rel = rel; l.href = url; l.setAttribute('data-acct-icon', ''); document.head.appendChild(l); });
+}
+function shortcutAcct() {
+  const name = $('sv-list').value; if (!(name in readSaves())) return;
+  loadAcct(); setIdentity(name);
+  const url = location.href;
+  if (navigator.share) { navigator.share({ title: name, url }).catch(() => {}); svMsg('sv_short_how'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).catch(() => {});
+  svMsg('sv_short_how');
+}
+function delAcct() {
+  const name = $('sv-list').value, all = readSaves();
+  if (!(name in all) || !confirm(t('sv_confirm', name))) return;
+  delete all[name]; writeSaves(all);
+  if ($('sv-name').value === name) { $('sv-name').value = ''; setIdentity(null); }
+  renderSaves(); svMsg('sv_deleted', name);
+}
+
 // ---------------- disclaimer ----------------
 function discAccepted() { try { return sessionStorage.getItem('pf-disc') === '1'; } catch (e) { return false; } }
 function openDisc() { const acc = discAccepted(); $('disc-check-wrap').hidden = acc; $('disc-go').disabled = !acc; $('disc').hidden = false; document.body.style.overflow = 'hidden'; $('disc-go').focus(); }
@@ -841,6 +938,9 @@ document.querySelectorAll('#stop-chips .pill').forEach(b => b.addEventListener('
   document.documentElement.setAttribute('data-theme', th);
   applyText();
   loadPlan('s1');
+  renderSaves();
+  const want = new URLSearchParams(location.search).get('a');
+  if (want && want in readSaves()) { renderSaves(want); loadAcct(); }
   if (!discAccepted()) openDisc();
 })();
 </script>
