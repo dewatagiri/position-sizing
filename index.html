@@ -176,6 +176,7 @@
       <p class="tag" data-i="tagline"></p>
     </div>
     <div class="tools">
+      <a class="pill" href="prop.html" style="text-decoration:none" data-i="propLink"></a>
       <div class="seg" role="group" aria-label="Language">
         <button id="l-en" onclick="setLang('en')">EN</button>
         <button id="l-bm" onclick="setLang('bm')">BM</button>
@@ -488,6 +489,7 @@ const state = { asset: 'crypto', side: 1, rr: 2, split: 1, lang: 'en', theme: 'l
 const TXT = {
  en: {
   title: 'Position Sizing',
+  propLink: 'Prop firm planner',
   emptyRisk: 'Type a risk % above 0.', errStopPct: 'For a buy, the stop size must be below 100%.',
   fee: 'Fee per side (%)', mmr: 'Maintenance margin (%)',
   feeHelpCrypto: 'Default 0.055% is a typical Bybit taker fee (assumed). Check your own fee tier. Size is cut so loss plus fees stays within your risk.',
@@ -565,6 +567,7 @@ const TXT = {
  },
  bm: {
   title: 'Saiz Posisi',
+  propLink: 'Perancang prop firm',
   emptyRisk: 'Taip % risiko melebihi 0.', errStopPct: 'Untuk beli, saiz stop mesti bawah 100%.',
   fee: 'Yuran setiap sisi (%)', mmr: 'Margin penyelenggaraan (%)',
   feeHelpCrypto: 'Lalai 0.055% ialah yuran taker biasa Bybit (andaian). Semak tahap yuran anda. Saiz dikurangkan supaya rugi campur yuran kekal dalam had risiko anda.',

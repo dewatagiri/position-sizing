@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prop Firm Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --bg: #ffffff; --panel: #f5f7f9; --ink: #141b24; --muted: #596473; --line: #dce1e7;
+    --accent: #2445b5; --accent-ink: #ffffff;
+    --win: #0e7a50; --win-bg: #e7f5ee; --loss: #bf2e3d; --loss-bg: #fbeced;
+    --warn: #7d4c00; --warn-bg: #fff3dc;
+    --r-lg: 14px; --r-sm: 9px;
+    color-scheme: light;
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161c; --panel: #1a2029; --ink: #e7ebf0; --muted: #9aa4b2; --line: #2b333e;
+      --accent: #8aa1f2; --accent-ink: #0e1320;
+      --win: #4cc38a; --win-bg: #15302a; --loss: #f07a86; --loss-bg: #3a1c21;
+      --warn: #f2b35b; --warn-bg: #3a2c14; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12161c; --panel: #1a2029; --ink: #e7ebf0; --muted: #9aa4b2; --line: #2b333e;
+    --accent: #8aa1f2; --accent-ink: #0e1320;
+    --win: #4cc38a; --win-bg: #15302a; --loss: #f07a86; --loss-bg: #3a1c21;
+    --warn: #f2b35b; --warn-bg: #3a2c14; color-scheme: dark;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  [hidden] { display: none !important; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 22px 18px 40px; }
+  header.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+  h1 { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; margin: 0; line-height: 1.15; }
+  .tag { margin: 4px 0 0; color: var(--muted); font-size: 14.5px; max-width: 56ch; }
+  .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--panel); }
+  .seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; padding: 5px 11px; border-radius: 999px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--bg); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+  a.pill { text-decoration: none; display: inline-block; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 30px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .form { display: flex; flex-direction: column; gap: 26px; }
+  .block { display: flex; flex-direction: column; gap: 14px; }
+  .block > h2 { font-size: 17px; margin: 0; letter-spacing: -0.01em; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .lbl { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+  .help { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+  .help b { color: var(--ink); font-weight: 600; }
+  .help.bad, .help.bad b { color: var(--loss); }
+  .in { width: 100%; font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); color: var(--ink); }
+  .in::placeholder { color: var(--muted); opacity: .8; }
+  .in:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+  button:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 460px) { .row2, .row3 { grid-template-columns: 1fr; } }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 12px; border-radius: 999px; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .pill:hover { border-color: var(--muted); }
+  .pill[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .inline .in { width: 92px; flex: none; }
+  .suffix { color: var(--muted); font-weight: 600; margin-left: -4px; }
+  .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sideb { font: inherit; font-size: 15px; font-weight: 700; padding: 10px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+  .sideb.buy[aria-pressed="true"] { background: var(--win); border-color: var(--win); color: #fff; }
+  .sideb.sell[aria-pressed="true"] { background: var(--loss); border-color: var(--loss); color: #fff; }
+  :root[data-theme="dark"] .sideb[aria-pressed="true"] { color: #0e1320; }
+  details.box { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 13px; background: var(--panel); }
+  details.box summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  .bgrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px 12px; margin-top: 10px; }
+  @media (max-width: 460px) { .bgrid { grid-template-columns: 1fr 1fr; } }
+  .bgrid .lbl { font-weight: 500; font-size: 12.5px; margin-bottom: 4px; }
+  .bgrid .in { font-size: 15px; padding: 8px 10px; }
+
+  .cards { display: flex; flex-direction: column; gap: 18px; position: sticky; top: 16px; }
+  @media (max-width: 900px) { .cards { position: static; } }
+  .card { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--bg); overflow: hidden; }
+  .c-head { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+  .c-head h3 { margin: 0; font-size: 15px; }
+  .c-head .right { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .c-body { padding: 16px 18px; }
+  .meter { margin-bottom: 14px; }
+  .meter-top { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; font-variant-numeric: tabular-nums; }
+  .meter-top span:last-child { color: var(--muted); }
+  .bar { height: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--win); width: 0; transition: width .25s; }
+  .bar i.mid { background: #c98a00; } .bar i.hi { background: var(--loss); }
+  @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; }
+  .stat { background: var(--bg); padding: 10px 12px; }
+  .stat span { display: block; font-size: 12px; color: var(--muted); }
+  .stat b { font-variant-numeric: tabular-nums; font-size: 18px; }
+  .stat small { display: block; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .stat.hl b { color: var(--loss); }
+  .warn { background: var(--warn-bg); color: var(--warn); border-radius: var(--r-sm); padding: 10px 12px; font-size: 13.5px; margin-top: 12px; }
+  .warn.bad { background: var(--loss-bg); color: var(--loss); }
+  .warn.ok { background: var(--win-bg); color: var(--win); }
+  .empty { padding: 30px 18px; color: var(--muted); text-align: center; }
+  .empty.bad { color: var(--loss); }
+
+  .badge { font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 6px; color: #fff; background: var(--win); }
+  .badge.sell { background: var(--loss); }
+  :root[data-theme="dark"] .badge { color: #0e1320; }
+  .size { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .size-num { font-size: 40px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .size-unit { font-size: 18px; font-weight: 600; color: var(--muted); }
+  .size-cap { width: 100%; font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
+  .lv { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 9px 10px; }
+  .lv.sl { border-color: var(--loss); } .lv.tp { border-color: var(--win); }
+  .lv span { display: block; font-size: 12px; color: var(--muted); }
+  .lv b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .lv small { display: block; font-size: 12.5px; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .lv.sl small { color: var(--loss); } .lv.tp small { color: var(--win); }
+  .checks { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; }
+  .checks li { display: grid; grid-template-columns: 22px 1fr; gap: 6px; align-items: start; }
+  .checks .y { color: var(--win); font-weight: 700; } .checks .n { color: var(--loss); font-weight: 700; } .checks .i { color: var(--muted); font-weight: 700; }
+  .btn { font: inherit; font-weight: 600; font-size: 14px; padding: 9px 14px; border-radius: var(--r-sm); border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .ok { font-size: 13px; color: var(--win); font-weight: 600; }
+  .odds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .odd { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px; text-align: center; }
+  .odd b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .odd span { font-size: 12px; color: var(--muted); }
+  .odd.p b { color: var(--win); } .odd.f b { color: var(--loss); }
+  .note { font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+  footer { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+  footer a { color: var(--accent); }
+  .linkbtn { font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; align-self: flex-start; }
+  .modal { position: fixed; inset: 0; background: rgba(10, 15, 25, .5); display: flex; align-items: center; justify-content: center; z-index: 50;
+           padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .sheet { background: var(--bg); color: var(--ink); max-width: 640px; width: 100%; max-height: 100%; overflow: auto; border-radius: var(--r-lg); padding: 22px 22px 18px; }
+  .sheet h2 { margin: 0 0 10px; font-size: 21px; }
+  .sheet p { font-size: 14px; margin: 0 0 10px; max-width: 70ch; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; font-weight: 600; margin: 14px 0; }
+  .check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 data-i="title"></h1>
+      <p class="tag" data-i="tagline"></p>
+    </div>
+    <div class="tools">
+      <a class="pill" href="index.html" data-i="backLink"></a>
+      <div class="seg" role="group" aria-label="Language">
+        <button id="l-en" onclick="setLang('en')">EN</button>
+        <button id="l-bm" onclick="setLang('bm')">BM</button>
+      </div>
+      <button class="pill" id="theme-btn" onclick="toggleTheme()"></button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="form">
+      <!-- challenge -->
+      <div class="block">
+        <h2 data-i="h_challenge"></h2>
+        <div class="row2">
+          <div>
+            <label class="lbl" for="firm" data-i="firm"></label>
+            <select class="in" id="firm" onchange="onFirm()">
+              <option value="bitfunded">Bitfunded</option>
+              <option value="custom" data-i="custom"></option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="acct" data-i="acctSize"></label>
+            <input class="in" id="acct" inputmode="decimal" value="100,000" oninput="onAcct()">
+          </div>
+        </div>
+        <div class="pills" id="size-chips">
+          <button class="pill" data-s="5000">5k</button>
+          <button class="pill" data-s="10000">10k</button>
+          <button class="pill" data-s="25000">25k</button>
+          <button class="pill" data-s="50000">50k</button>
+          <button class="pill" data-s="100000">100k</button>
+          <button class="pill" data-s="150000">150k</button>
+        </div>
+        <div id="plan-wrap">
+          <span class="lbl" data-i="plan"></span>
+          <div class="pills" id="plan-pills">
+            <button class="pill" data-p="s2a" data-i="p_s2a"></button>
+            <button class="pill" data-p="s2b" data-i="p_s2b"></button>
+            <button class="pill" data-p="s1" data-i="p_s1"></button>
+            <button class="pill" data-p="exp" data-i="p_exp"></button>
+            <button class="pill" data-p="inst" data-i="p_inst"></button>
+          </div>
+        </div>
+        <details class="box" id="rules-box">
+          <summary id="rules-sum"></summary>
+          <div class="bgrid">
+            <div><label class="lbl" for="r-target" data-i="r_target"></label><input class="in" id="r-target" inputmode="decimal" oninput="onRuleEdit()"></div>
+            <div><label class="lbl" for="r-daily" data-i="r_daily"></label><input class="in" id="r-daily" inputmode="decimal" oninput="onRuleEdit()"></div>
+            <div><label class="lbl" for="r-max" data-i="r_max"></label><input class="in" id="r-max" inputmode="decimal" oninput="onRuleEdit()"></div>
+            <div><label class="lbl" for="r-lev" data-i="r_lev"></label><input class="in" id="r-lev" inputmode="decimal" oninput="onRuleEdit()"></div>
+            <div><label class="lbl" for="r-fee" data-i="r_fee"></label><input class="in" id="r-fee" inputmode="decimal" oninput="onRuleEdit()"></div>
+            <div><label class="lbl" for="r-expo" data-i="r_expo"></label><input class="in" id="r-expo" inputmode="decimal" oninput="onRuleEdit()"></div>
+            <div><label class="lbl" for="r-pos" data-i="r_pos"></label><input class="in" id="r-pos" inputmode="numeric" oninput="onRuleEdit()"></div>
+          </div>
+          <p class="help" id="rules-src"></p>
+        </details>
+      </div>
+
+      <!-- now -->
+      <div class="block">
+        <h2 data-i="h_now"></h2>
+        <div class="row3">
+          <div><label class="lbl" for="bal" data-i="bal"></label><input class="in" id="bal" inputmode="decimal" oninput="calc()"></div>
+          <div><label class="lbl" for="today" data-i="today"></label><input class="in" id="today" inputmode="decimal" placeholder="0" oninput="calc()"></div>
+          <div><label class="lbl" for="float" data-i="float"></label><input class="in" id="float" inputmode="decimal" placeholder="0" oninput="calc()"></div>
+        </div>
+        <p class="help" style="margin-top:-6px" id="now-help"></p>
+        <div class="row2">
+          <div><label class="lbl" for="open-n" data-i="openN"></label><input class="in" id="open-n" inputmode="numeric" placeholder="0" oninput="calc()"></div>
+          <div><label class="lbl" for="mg-used" data-i="mgUsed"></label><input class="in" id="mg-used" inputmode="decimal" placeholder="0" oninput="calc()"></div>
+        </div>
+      </div>
+
+      <!-- plan -->
+      <div class="block">
+        <h2 data-i="h_plan"></h2>
+        <div>
+          <label class="lbl" for="risk" data-i="risk"></label>
+          <div class="inline">
+            <input class="in" id="risk" inputmode="decimal" value="1" oninput="calc()">
+            <span class="suffix">%</span>
+            <div class="pills" id="risk-chips">
+              <button class="pill" data-r="0.25">0.25%</button>
+              <button class="pill" data-r="0.5">0.5%</button>
+              <button class="pill" data-r="1">1%</button>
+              <button class="pill" data-r="2">2%</button>
+            </div>
+          </div>
+          <p class="help" id="risk-help"></p>
+        </div>
+        <div>
+          <span class="lbl" data-i="rr"></span>
+          <div class="inline">
+            <div class="pills" id="rr-chips">
+              <button class="pill" data-rr="1">1 : 1</button>
+              <button class="pill" data-rr="1.5">1 : 1.5</button>
+              <button class="pill" data-rr="2">1 : 2</button>
+              <button class="pill" data-rr="3">1 : 3</button>
+            </div>
+            <span class="suffix" style="margin-left:4px">1 :</span>
+            <input class="in" id="rr" inputmode="decimal" value="2" aria-label="Custom reward to risk" oninput="calc()">
+          </div>
+        </div>
+        <div class="row3">
+          <div><label class="lbl" for="cap" data-i="cap"></label><input class="in" id="cap" inputmode="numeric" value="2" oninput="calc()"></div>
+          <div><label class="lbl" for="tpd" data-i="tpd"></label><input class="in" id="tpd" inputmode="numeric" value="2" oninput="calc()"></div>
+          <div><label class="lbl" for="wr" data-i="wr"></label><input class="in" id="wr" inputmode="decimal" value="40" oninput="calc()"></div>
+        </div>
+        <p class="help" style="margin-top:-6px" data-i="planHelp"></p>
+      </div>
+
+      <!-- trade -->
+      <div class="block">
+        <h2 data-i="h_trade"></h2>
+        <div class="row2">
+          <div><label class="lbl" for="sym" data-i="sym"></label><input class="in" id="sym" value="BTCUSDT" autocomplete="off" spellcheck="false" oninput="calc()"></div>
+          <div><label class="lbl" for="lev" data-i="lev"></label><input class="in" id="lev" inputmode="decimal" value="5" oninput="calc()"></div>
+        </div>
+        <div class="sides">
+          <button class="sideb buy" id="s-buy" onclick="setSide(1)" data-i="buy"></button>
+          <button class="sideb sell" id="s-sell" onclick="setSide(-1)" data-i="sell"></button>
+        </div>
+        <div class="row2">
+          <div><label class="lbl" for="entry" data-i="entry"></label><input class="in" id="entry" inputmode="decimal" autocomplete="off" placeholder="83500" oninput="calc()"></div>
+          <div><label class="lbl" for="sl" data-i="sl"></label><input class="in" id="sl" inputmode="decimal" autocomplete="off" oninput="calc()"><p class="help" id="sl-help"></p></div>
+        </div>
+        <div>
+          <span class="lbl" data-i="stopSize"></span>
+          <div class="inline">
+            <div class="pills" id="stop-chips">
+              <button class="pill" data-st="0.5">0.5%</button>
+              <button class="pill" data-st="1">1%</button>
+              <button class="pill" data-st="2">2%</button>
+              <button class="pill" data-st="3">3%</button>
+            </div>
+            <input class="in" id="stop" inputmode="decimal" value="1" aria-label="Custom stop size in percent" oninput="onStopCustom()">
+            <span class="suffix">%</span>
+          </div>
+        </div>
+        <div class="row2">
+          <div><label class="lbl" for="step" data-i="step"></label><input class="in" id="step" inputmode="decimal" value="0.001" oninput="calc()"></div>
+          <div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cards" aria-live="polite">
+      <!-- room -->
+      <div class="card">
+        <div class="c-head"><h3 data-i="c_room"></h3><span class="right" id="room-right"></span></div>
+        <div class="c-body" id="room-body">
+          <div class="meter"><div class="meter-top"><span data-i="m_daily"></span><span id="m-daily-txt"></span></div><div class="bar"><i id="m-daily"></i></div></div>
+          <div class="meter"><div class="meter-top"><span data-i="m_max"></span><span id="m-max-txt"></span></div><div class="bar"><i id="m-max"></i></div></div>
+          <div class="meter" id="m-tgt-wrap"><div class="meter-top"><span data-i="m_tgt"></span><span id="m-tgt-txt"></span></div><div class="bar"><i id="m-tgt" style="background:var(--accent)"></i></div></div>
+          <div class="stats">
+            <div class="stat"><span data-i="s_today"></span><b id="s-today"></b><small id="s-today-n"></small></div>
+            <div class="stat"><span data-i="s_total"></span><b id="s-total"></b><small id="s-total-n"></small></div>
+            <div class="stat" id="s-tgt-cell"><span data-i="s_tgt"></span><b id="s-tgt"></b><small id="s-tgt-n"></small></div>
+            <div class="stat hl"><span data-i="s_death"></span><b id="s-death"></b><small id="s-death-n"></small></div>
+          </div>
+          <div id="room-warn"></div>
+        </div>
+      </div>
+
+      <!-- ticket -->
+      <div class="card">
+        <div class="c-head"><span class="badge" id="t-side"></span><h3 id="t-sym"></h3><span class="right" id="t-risk"></span></div>
+        <div class="empty" id="t-empty"></div>
+        <div class="c-body" id="t-body" hidden>
+          <div class="size">
+            <span class="size-num" id="t-size"></span>
+            <span class="size-unit" id="t-unit"></span>
+            <span class="size-cap" data-i="sizeCap"></span>
+          </div>
+          <div class="levels">
+            <div class="lv sl"><span data-i="slTag"></span><b id="lv-sl"></b><small id="lv-sl-n"></small></div>
+            <div class="lv"><span data-i="enTag"></span><b id="lv-en"></b><small id="lv-en-n">&nbsp;</small></div>
+            <div class="lv tp"><span data-i="tpTag"></span><b id="lv-tp"></b><small id="lv-tp-n"></small></div>
+          </div>
+          <div class="stats">
+            <div class="stat"><span data-i="s_expo"></span><b id="s-expo"></b><small id="s-expo-n"></small></div>
+            <div class="stat"><span data-i="s_fees"></span><b id="s-fees"></b><small id="s-fees-n"></small></div>
+          </div>
+          <ul class="checks" id="checks"></ul>
+          <div class="actions">
+            <button class="btn" onclick="copyOrder()" data-i="copy"></button>
+            <span class="ok" id="copy-ok" hidden></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- odds -->
+      <div class="card">
+        <div class="c-head"><h3 id="o-title"></h3><span class="right" id="o-right"></span></div>
+        <div class="c-body">
+          <div class="odds">
+            <div class="odd p"><b id="o-pass"></b><span id="o-pass-l"></span></div>
+            <div class="odd f"><b id="o-fail"></b><span data-i="o_fail"></span></div>
+            <div class="odd"><b id="o-days"></b><span id="o-days-l"></span></div>
+          </div>
+          <p class="note" id="o-note"></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span id="foot-src"></span>
+    <span data-i="foot"></span>
+    <button class="linkbtn" onclick="openDisc()" data-i="discOpen"></button>
+  </footer>
+</div>
+
+<div class="modal" id="disc" hidden role="dialog" aria-modal="true" aria-labelledby="disc-h">
+  <div class="sheet">
+    <h2 id="disc-h" data-i="discTitle"></h2>
+    <p data-i="disc1"></p><p data-i="disc2"></p><p data-i="disc3"></p><p data-i="disc4"></p>
+    <label class="check" id="disc-check-wrap"><input type="checkbox" id="disc-check" onchange="$('disc-go').disabled = !this.checked"><span data-i="discCheck"></span></label>
+    <button class="btn" id="disc-go" onclick="closeDisc()" disabled data-i="discGo"></button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(String(v ?? '').replace(/,/g, '').trim()); return isFinite(n) ? n : NaN; };
+const decOf = step => { const s = String(step); return s.includes('e-') ? parseInt(s.split('e-')[1], 10) : (s.includes('.') ? s.split('.')[1].length : 0); };
+const fmtN = (x, d) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtUsd = x => (x < 0 ? '-' : '') + '$' + fmtN(Math.abs(x), 2);
+const usd0 = x => (x < 0 ? '-' : '') + '$' + fmtN(Math.abs(x), 0);
+const sgn = x => (x >= 0 ? '+' : '-') + '$' + fmtN(Math.abs(x), 2);
+const trim = x => parseFloat((+x).toFixed(4));
+const pxDec = px => px >= 1000 ? 2 : px >= 1 ? 4 : 6;
+
+// Bitfunded rules, from bitfunded.com/faq (updated 23 Sep 2026) and bitfunded.gitbook.io/support (checked 17 Oct 2026)
+const BITFUNDED = {
+  common: { lev: 5, fee: 0.04, pos: 5 },
+  plans: {
+    s2a:  { target: 8,  daily: 5, max: 10, expo: 65, split: 80 },
+    s2b:  { target: 5,  daily: 5, max: 8,  expo: 65, split: 80 },
+    s1:   { target: 10, daily: 4, max: 6,  expo: 65, split: 80 },
+    exp:  { target: 9,  daily: 3, max: 3,  expo: 65, split: 80 },
+    inst: { target: 0,  daily: 4, max: 6,  expo: 55, split: 60 }
+  }
+};
+const MAJORS = ['BTC', 'ETH', 'BNB', 'XRP', 'SOL', 'TRX', 'HYPE', 'ZEC', 'DOGE', 'ADA'];
+const TRADFI = ['XAU', 'XAG', 'TSLA'];
+
+const state = { plan: 's1', side: 1, stopPct: 1, lang: 'en', theme: 'light', edited: false, last: null };
+
+const TXT = {
+ en: {
+  title: 'Prop Firm Planner', tagline: 'Know how much room you have left, and size every trade inside the rules.',
+  backLink: 'Position sizer', light: 'Light', dark: 'Dark', custom: 'Custom rules',
+  h_challenge: 'Your challenge', firm: 'Prop firm', acctSize: 'Account size ($)', plan: 'Plan',
+  p_s2a: '2-Step, stage 1', p_s2b: '2-Step, stage 2', p_s1: '1-Step', p_exp: '1-Step Express', p_inst: 'Instant Funding',
+  rulesSum: 'Rules: target %1%, daily loss %2%, max loss %3%, leverage up to %4x', rulesSumNoT: 'Rules: no target, daily loss %2%, max loss %3%, leverage up to %4x',
+  r_target: 'Profit target %', r_daily: 'Max daily loss %', r_max: 'Max loss %', r_lev: 'Max leverage (x)', r_fee: 'Fee per side %', r_expo: 'Exposure limit %', r_pos: 'Max open positions',
+  rulesSrc: 'Bitfunded: both limits are a fixed % of the starting balance (static) and include floating losses. The day resets at 00:00 UTC+8. Exposure above the limit does not fail you, but cuts your payout by 50–70%. Hedging, bots, scripts and copy trading are not allowed. Edit any value if the rules change.',
+  rulesSrcCustom: 'Custom rules: this page treats both limits as a fixed % of the starting balance (static drawdown).',
+  h_now: 'Where you are now', bal: 'Closed balance ($)', today: 'Today’s closed P&L', float: 'Open P&L now',
+  nowHelp: 'Use a minus sign for losses. Today means since the last reset (%1). To stay on the safe side, today’s profits and open profits are never counted as extra room.', resetBit: '00:00 UTC+8, midnight in Malaysia', resetCustom: 'your firm’s daily reset',
+  openN: 'Open positions now', mgUsed: 'Margin already in use ($)',
+  h_plan: 'Your risk plan', risk: 'Risk per trade (% of starting balance)', riskHelp: '%1 per trade. To survive 3 losses today, keep it under %2%.',
+  rr: 'Reward : risk', cap: 'Your daily stop (losing trades)', tpd: 'Trades per day', wr: 'Win rate %',
+  planHelp: 'Daily stop: after this many losses you stop for the day. Win rate and trades per day are only used for the odds below.',
+  h_trade: 'Size a trade', sym: 'Symbol', lev: 'Leverage you use (x)', buy: 'Buy / Long', sell: 'Sell / Short',
+  entry: 'Entry price', sl: 'Stop loss price (optional)', stopSize: 'Stop size (used when the stop price is blank)', step: 'Size step',
+  slAuto: 'Auto %1%: %2 %3', below: 'below entry', above: 'above entry',
+  c_room: 'Room left', m_daily: 'Daily loss used', m_max: 'Max loss used', m_tgt: 'Progress to target',
+  s_today: 'Room today', s_total: 'Room before max loss', s_tgt: 'To profit target', s_death: 'Days to breach, worst case',
+  nLosses: '%1 losing trades', nWins: '%1 winning trades', reached: 'Target reached', noTarget: 'No target on this plan',
+  deathN: 'at %1 losses a day', deathNA: 'Cannot trade', deathSub: 'every loss counts',
+  w_dailyHit: 'Daily loss limit breached. On Bitfunded this closes your positions and disqualifies the account.',
+  w_maxHit: 'Max loss limit breached. The account is disqualified.',
+  w_riskBig: 'One loss at this risk is bigger than today’s room. Lower the risk or stop for the day.',
+  w_close: 'Less than one full loss of room left today. Stop trading until the reset.',
+  w_capHigh: 'Your daily stop allows %1 losses, but today’s room only fits %2. The firm’s limit will stop you first.',
+  w_express: 'On this plan the daily and max loss are the same %1%, so a single bad day ends the challenge.',
+  sizeCap: 'Size to enter', slTag: 'Stop loss', enTag: 'Entry', tpTag: 'Take profit',
+  s_expo: 'Exposure (margin ÷ balance)', s_fees: 'Fees at stop / at target', expoSub: 'limit %1%, margin %2',
+  t_empty0: 'Fill in your account size to start.', t_empty1: 'Type your entry price to size a trade.', t_emptyRisk: 'Type a risk % above 0.',
+  t_slBuy: 'For a buy, the stop loss must be below the entry price.', t_slSell: 'For a sell, the stop loss must be above the entry price.',
+  t_tooSmall: 'Your risk is too small for this stop. The minimum size of %1 would lose %2.',
+  ck_daily: 'A stop-out (%1) fits inside today’s room (%2)', ck_dailyN: 'A stop-out (%1) would breach today’s limit. Room is %2.',
+  ck_max: 'A stop-out fits inside the max loss room (%1)', ck_maxN: 'A stop-out would breach the max loss. Room is %1.',
+  ck_expo: 'Exposure %1% is under the %2% limit', ck_expoN: 'Exposure %1% is over the %2% limit, which triggers a payout penalty. Max size inside the limit: %3.',
+  ck_lev: 'Leverage %1x is within the %2x maximum', ck_levN: 'Leverage %1x is above the %2x maximum',
+  ck_pos: 'Open positions after this trade: %1 of %2', ck_posN: 'This would be position %1, over the limit of %2',
+  ck_hold: 'Close by %1 days (%2 holding limit)', ck_act: 'Before a payout you need at least %1 closed trades, each held 10 minutes or more', ck_sl: 'Set the stop loss and take profit on the order. Bitfunded may penalise trades without them.',
+  holdMajor: 'major crypto', holdMinor: 'minor crypto', holdTradfi: 'traditional pair',
+  copy: 'Copy order', copied: 'Copied to clipboard', copyFail: 'Select and copy:',
+  o_titleP: 'Odds of passing', o_titleS: 'Odds of surviving 30 days', o_pass: 'pass', o_surv: 'survive', o_fail: 'breach or run out of room', o_days: 'median days to pass', o_daysS: 'median day of breach',
+  o_right: '%1% win rate, 1 : %2, %3 trades a day',
+  o_note: 'Simulation of %1 runs with your numbers, assuming you follow your daily stop and never take a trade that could breach today’s limit. %2% were still going after %3 days. Real results depend on your edge being real.',
+  o_noTrade: 'Fill in the trade or risk plan to see the odds.',
+  foot: 'Hobby project. Not affiliated with any prop firm. Educational calculator, not financial advice. Your inputs stay in your browser and are never sent or stored.',
+  footSrc: 'Bitfunded rules summarised from bitfunded.com/faq and the Bitfunded user guide, checked 17 Oct 2026. Rules change, so always check the latest before trading.',
+  discOpen: 'Read disclaimer', discTitle: 'Before you use this planner',
+  disc1: 'This is an educational calculator built as a hobby project. It is not financial advice and is not affiliated with, endorsed by or checked by Bitfunded or any other prop firm.',
+  disc2: 'Prop firm rules are summarised from public pages and can change at any time. The firm’s own rules and platform numbers always win. If this page disagrees with them, trust the firm.',
+  disc3: 'Sizes, fees, exposure and limits are estimates. Gaps, slippage and platform behaviour can make a real loss bigger than shown. The pass odds are a simulation, not a prediction.',
+  disc4: 'Your inputs are processed only in your browser and are not sent or stored anywhere. I accept no liability for any loss from using this page.',
+  discCheck: 'I have read this and I use the planner at my own risk.', discGo: 'Continue'
+ },
+ bm: {
+  title: 'Perancang Prop Firm', tagline: 'Tahu baki ruang anda, dan tetapkan saiz setiap dagangan dalam peraturan.',
+  backLink: 'Pengira saiz', light: 'Cerah', dark: 'Gelap', custom: 'Peraturan sendiri',
+  h_challenge: 'Cabaran anda', firm: 'Prop firm', acctSize: 'Saiz akaun ($)', plan: 'Pelan',
+  p_s2a: '2-Step, peringkat 1', p_s2b: '2-Step, peringkat 2', p_s1: '1-Step', p_exp: '1-Step Express', p_inst: 'Instant Funding',
+  rulesSum: 'Peraturan: sasaran %1%, rugi harian %2%, rugi maksimum %3%, leverage sehingga %4x', rulesSumNoT: 'Peraturan: tiada sasaran, rugi harian %2%, rugi maksimum %3%, leverage sehingga %4x',
+  r_target: 'Sasaran untung %', r_daily: 'Rugi harian maksimum %', r_max: 'Rugi maksimum %', r_lev: 'Leverage maksimum (x)', r_fee: 'Yuran setiap sisi %', r_expo: 'Had pendedahan %', r_pos: 'Posisi terbuka maksimum',
+  rulesSrc: 'Bitfunded: kedua-dua had ialah % tetap baki permulaan (statik) dan termasuk rugi terapung. Hari bertukar pada 00:00 UTC+8. Pendedahan melebihi had tidak menggagalkan anda, tetapi memotong bayaran 50–70%. Hedging, bot, skrip dan copy trading tidak dibenarkan. Ubah nilai jika peraturan berubah.',
+  rulesSrcCustom: 'Peraturan sendiri: halaman ini menganggap kedua-dua had sebagai % tetap baki permulaan (drawdown statik).',
+  h_now: 'Kedudukan anda sekarang', bal: 'Baki tertutup ($)', today: 'Untung/rugi tertutup hari ini', float: 'Untung/rugi terbuka',
+  nowHelp: 'Guna tanda tolak untuk rugi. Hari ini bermaksud sejak tetapan semula terakhir (%1). Untuk selamat, untung hari ini dan untung terbuka tidak dikira sebagai ruang tambahan.', resetBit: '00:00 UTC+8, tengah malam waktu Malaysia', resetCustom: 'tetapan semula harian firma anda',
+  openN: 'Posisi terbuka sekarang', mgUsed: 'Margin sedang digunakan ($)',
+  h_plan: 'Pelan risiko anda', risk: 'Risiko setiap dagangan (% baki permulaan)', riskHelp: '%1 setiap dagangan. Untuk bertahan 3 kerugian hari ini, kekalkan bawah %2%.',
+  rr: 'Ganjaran : risiko', cap: 'Had harian anda (dagangan rugi)', tpd: 'Dagangan sehari', wr: 'Kadar menang %',
+  planHelp: 'Had harian: selepas bilangan kerugian ini anda berhenti untuk hari itu. Kadar menang dan dagangan sehari hanya diguna untuk peluang di bawah.',
+  h_trade: 'Saiz dagangan', sym: 'Simbol', lev: 'Leverage yang anda guna (x)', buy: 'Beli / Long', sell: 'Jual / Short',
+  entry: 'Harga masuk', sl: 'Harga stop loss (pilihan)', stopSize: 'Saiz stop (diguna jika harga stop kosong)', step: 'Langkah saiz',
+  slAuto: 'Auto %1%: %2 %3', below: 'bawah harga masuk', above: 'atas harga masuk',
+  c_room: 'Baki ruang', m_daily: 'Rugi harian digunakan', m_max: 'Rugi maksimum digunakan', m_tgt: 'Kemajuan ke sasaran',
+  s_today: 'Ruang hari ini', s_total: 'Ruang sebelum rugi maksimum', s_tgt: 'Ke sasaran untung', s_death: 'Hari sebelum langgar had, paling teruk',
+  nLosses: '%1 dagangan rugi', nWins: '%1 dagangan menang', reached: 'Sasaran dicapai', noTarget: 'Tiada sasaran untuk pelan ini',
+  deathN: 'pada %1 kerugian sehari', deathNA: 'Tidak boleh berdagang', deathSub: 'setiap kerugian dikira',
+  w_dailyHit: 'Had rugi harian dilanggar. Di Bitfunded ini menutup posisi dan membatalkan akaun.',
+  w_maxHit: 'Had rugi maksimum dilanggar. Akaun dibatalkan.',
+  w_riskBig: 'Satu kerugian pada risiko ini lebih besar daripada ruang hari ini. Kurangkan risiko atau berhenti untuk hari ini.',
+  w_close: 'Ruang hari ini kurang daripada satu kerugian penuh. Berhenti sehingga tetapan semula.',
+  w_capHigh: 'Had harian anda membenarkan %1 kerugian, tetapi ruang hari ini hanya muat %2. Had firma akan menghentikan anda dahulu.',
+  w_express: 'Dalam pelan ini rugi harian dan maksimum sama %1%, jadi satu hari buruk menamatkan cabaran.',
+  sizeCap: 'Saiz untuk dimasukkan', slTag: 'Stop loss', enTag: 'Masuk', tpTag: 'Ambil untung',
+  s_expo: 'Pendedahan (margin ÷ baki)', s_fees: 'Yuran pada stop / sasaran', expoSub: 'had %1%, margin %2',
+  t_empty0: 'Isi saiz akaun anda untuk mula.', t_empty1: 'Taip harga masuk untuk kira saiz dagangan.', t_emptyRisk: 'Taip % risiko melebihi 0.',
+  t_slBuy: 'Untuk beli, stop loss mesti di bawah harga masuk.', t_slSell: 'Untuk jual, stop loss mesti di atas harga masuk.',
+  t_tooSmall: 'Risiko anda terlalu kecil untuk stop ini. Saiz minimum %1 akan rugi %2.',
+  ck_daily: 'Stop-out (%1) muat dalam ruang hari ini (%2)', ck_dailyN: 'Stop-out (%1) akan melanggar had hari ini. Ruang %2.',
+  ck_max: 'Stop-out muat dalam ruang rugi maksimum (%1)', ck_maxN: 'Stop-out akan melanggar rugi maksimum. Ruang %1.',
+  ck_expo: 'Pendedahan %1% bawah had %2%', ck_expoN: 'Pendedahan %1% melebihi had %2%, yang mencetuskan penalti bayaran. Saiz maksimum dalam had: %3.',
+  ck_lev: 'Leverage %1x dalam had %2x', ck_levN: 'Leverage %1x melebihi had %2x',
+  ck_pos: 'Posisi terbuka selepas dagangan ini: %1 daripada %2', ck_posN: 'Ini posisi ke-%1, melebihi had %2',
+  ck_hold: 'Tutup dalam %1 hari (had pegangan %2)', ck_act: 'Sebelum bayaran, anda perlu sekurang-kurangnya %1 dagangan tertutup, setiap satu dipegang 10 minit atau lebih', ck_sl: 'Letak stop loss dan take profit pada pesanan. Bitfunded mungkin mengenakan penalti tanpanya.',
+  holdMajor: 'kripto utama', holdMinor: 'kripto kecil', holdTradfi: 'pasangan tradisional',
+  copy: 'Salin pesanan', copied: 'Disalin', copyFail: 'Pilih dan salin:',
+  o_titleP: 'Peluang lulus', o_titleS: 'Peluang bertahan 30 hari', o_pass: 'lulus', o_surv: 'bertahan', o_fail: 'langgar had atau kehabisan ruang', o_days: 'median hari untuk lulus', o_daysS: 'median hari langgar had',
+  o_right: 'kadar menang %1%, 1 : %2, %3 dagangan sehari',
+  o_note: 'Simulasi %1 larian dengan angka anda, dengan andaian anda ikut had harian dan tidak ambil dagangan yang boleh melanggar had hari ini. %2% masih berjalan selepas %3 hari. Keputusan sebenar bergantung pada kelebihan anda benar-benar wujud.',
+  o_noTrade: 'Isi dagangan atau pelan risiko untuk melihat peluang.',
+  foot: 'Projek hobi. Tiada kaitan dengan mana-mana prop firm. Kalkulator pendidikan, bukan nasihat kewangan. Input anda kekal dalam pelayar dan tidak dihantar atau disimpan.',
+  footSrc: 'Peraturan Bitfunded diringkaskan dari bitfunded.com/faq dan panduan pengguna Bitfunded, disemak 17 Okt 2026. Peraturan berubah, jadi semak yang terkini sebelum berdagang.',
+  discOpen: 'Baca penafian', discTitle: 'Sebelum anda guna perancang ini',
+  disc1: 'Ini kalkulator pendidikan yang dibina sebagai projek hobi. Ia bukan nasihat kewangan dan tiada kaitan dengan, tidak disokong atau disemak oleh Bitfunded atau mana-mana prop firm.',
+  disc2: 'Peraturan prop firm diringkaskan dari halaman awam dan boleh berubah bila-bila masa. Peraturan dan angka platform firma sentiasa diutamakan. Jika halaman ini berbeza, percayalah firma.',
+  disc3: 'Saiz, yuran, pendedahan dan had ialah anggaran. Jurang harga, slippage dan tingkah laku platform boleh menjadikan rugi sebenar lebih besar. Peluang lulus ialah simulasi, bukan ramalan.',
+  disc4: 'Input anda diproses hanya dalam pelayar dan tidak dihantar atau disimpan. Saya tidak menerima liabiliti atas sebarang kerugian daripada penggunaan halaman ini.',
+  discCheck: 'Saya telah membaca ini dan menggunakan perancang ini atas risiko sendiri.', discGo: 'Teruskan'
+ }
+};
+function t(k, ...a) { let s = (TXT[state.lang] && TXT[state.lang][k]) ?? TXT.en[k] ?? k; a.forEach((v, i) => { s = s.split('%' + (i + 1)).join(v); }); return s; }
+function applyText() {
+  document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
+  document.documentElement.lang = state.lang === 'bm' ? 'ms' : 'en';
+  $('l-en').setAttribute('aria-pressed', state.lang === 'en');
+  $('l-bm').setAttribute('aria-pressed', state.lang === 'bm');
+  $('theme-btn').textContent = state.theme === 'light' ? t('dark') : t('light');
+  $('foot-src').textContent = t('footSrc');
+}
+function setLang(l) { state.lang = l; try { localStorage.setItem('ps-lang', l); } catch (e) {} applyText(); calc(); }
+function setTheme(th) { state.theme = th; document.documentElement.setAttribute('data-theme', th); try { localStorage.setItem('ps-theme', th); } catch (e) {} applyText(); }
+function toggleTheme() { setTheme(state.theme === 'light' ? 'dark' : 'light'); }
+
+// ---------------- inputs ----------------
+function loadPlan(p) {
+  state.plan = p;
+  const r = BITFUNDED.plans[p], c = BITFUNDED.common;
+  $('r-target').value = r.target; $('r-daily').value = r.daily; $('r-max').value = r.max;
+  $('r-lev').value = c.lev; $('r-fee').value = c.fee; $('r-expo').value = r.expo; $('r-pos').value = c.pos;
+  calc();
+}
+function onFirm() {
+  const bit = $('firm').value === 'bitfunded';
+  $('plan-wrap').hidden = !bit;
+  if (bit) loadPlan(state.plan); else { $('rules-box').open = true; calc(); }
+}
+function onRuleEdit() { calc(); }
+function onAcct() { $('bal').value = ''; calc(); }
+function setSide(s) { state.side = s; calc(); }
+function setStop(v) { state.stopPct = v; $('stop').value = v; $('sl').value = ''; calc(); }
+function onStopCustom() { const n = num($('stop').value); if (n > 0) { state.stopPct = n; $('sl').value = ''; calc(); } }
+
+function rules() {
+  const g = (id, d) => { const n = num($(id).value); return isFinite(n) && n >= 0 ? n : d; };
+  return { target: g('r-target', 0), daily: g('r-daily', 5), max: g('r-max', 10), lev: Math.max(1, g('r-lev', 5)), fee: g('r-fee', 0) / 100, expo: g('r-expo', 100), pos: Math.max(1, Math.round(g('r-pos', 5))) };
+}
+function holdInfo(sym) {
+  const base = sym.replace(/(USDT|USDC|USD|PERP|-|\/)+$/g, '');
+  if (TRADFI.includes(base)) return [5, t('holdTradfi')];
+  if (MAJORS.includes(base)) return [10, t('holdMajor')];
+  return [7, t('holdMinor')];
+}
+
+// worst case: take the most losses you are allowed each day (never breaching the daily limit) until the max loss is hit
+function daysToBreach(L, cap, roomToday, dailyLimit, roomTotal) {
+  if (!(L > 0)) return null;
+  let room = roomTotal;
+  for (let day = 1; day <= 2000; day++) {
+    const dayRoom = day === 1 ? roomToday : dailyLimit;
+    let n = Math.min(cap, Math.floor((dayRoom - 1e-9) / L));
+    if (day > 1 && n <= 0) return { days: null, perDay: 0 };
+    for (let i = 0; i < Math.max(n, 0); i++) { room -= L; if (room <= 1e-9) return { days: day, perDay: Math.min(cap, Math.floor((dailyLimit - 1e-9) / L)) }; }
+    if (room - L <= 1e-9 && n === 0 && day === 1) continue;
+  }
+  return { days: null, perDay: 0 };
+}
+
+// seeded RNG so the odds don't jitter on every keystroke
+function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; }; }
+function simulate(o) {
+  const R = rng(20261017), runs = 4000, maxDays = o.target > 0 ? 120 : 30;
+  let pass = 0, fail = 0, still = 0; const dPass = [], dFail = [];
+  for (let k = 0; k < runs; k++) {
+    let eq = o.equity, done = false;
+    for (let day = 1; day <= maxDays && !done; day++) {
+      let dayRoom = day === 1 ? o.roomToday : o.dailyLimit, losses = 0;
+      for (let tr = 0; tr < o.tpd; tr++) {
+        if (losses >= o.cap) break;
+        if (o.L >= dayRoom - 1e-9) break;                       // disciplined: skip a trade that could breach today
+        if (o.L >= eq - o.floor - 1e-9) { fail++; dFail.push(day); done = true; break; }   // out of room
+        if (R() < o.wr) { eq += o.W; }
+        else { eq -= o.L; dayRoom -= o.L; losses++; }
+        if (o.target > 0 && eq >= o.targetBal - 1e-9) { pass++; dPass.push(day); done = true; break; }
+      }
+    }
+    if (!done) { if (o.target > 0) still++; else pass++; }
+  }
+  const med = a => { if (!a.length) return null; a.sort((x, y) => x - y); return a[Math.floor(a.length / 2)]; };
+  return { runs, pass: pass / runs, fail: fail / runs, still: still / runs, medPass: med(dPass), medFail: med(dFail), maxDays };
+}
+
+function setBar(id, frac) {
+  const f = Math.max(0, Math.min(1, frac || 0));
+  $(id).style.width = (f * 100).toFixed(1) + '%';
+  $(id).className = f >= 0.8 ? 'hi' : f >= 0.5 ? 'mid' : '';
+}
+
+function calc() {
+  const r = rules(), bit = $('firm').value === 'bitfunded';
+  const size = num($('acct').value);
+  document.querySelectorAll('#plan-pills .pill').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === state.plan));
+  document.querySelectorAll('#size-chips .pill').forEach(b => b.setAttribute('aria-pressed', num(b.dataset.s) === size));
+  $('rules-sum').textContent = t(r.target > 0 ? 'rulesSum' : 'rulesSumNoT', trim(r.target), trim(r.daily), trim(r.max), trim(r.lev));
+  $('rules-src').textContent = bit ? t('rulesSrc') : t('rulesSrcCustom');
+  $('now-help').textContent = t('nowHelp', bit ? t('resetBit') : t('resetCustom'));
+  $('bal').placeholder = size > 0 ? fmtN(size, 0) : '';
+
+  const riskPct = num($('risk').value), rr = num($('rr').value) > 0 ? num($('rr').value) : 2;
+  document.querySelectorAll('#risk-chips .pill').forEach(b => b.setAttribute('aria-pressed', num(b.dataset.r) === riskPct));
+  document.querySelectorAll('#rr-chips .pill').forEach(b => b.setAttribute('aria-pressed', num(b.dataset.rr) === rr));
+  document.querySelectorAll('#stop-chips .pill').forEach(b => b.setAttribute('aria-pressed', num(b.dataset.st) === state.stopPct));
+  $('s-buy').setAttribute('aria-pressed', state.side === 1);
+  $('s-sell').setAttribute('aria-pressed', state.side === -1);
+  const capRaw = num($('cap').value);
+  const cap = isFinite(capRaw) ? Math.max(1, Math.round(capRaw)) : 2;
+  const tpd = Math.max(1, Math.round(num($('tpd').value) || 2));
+  const wr = Math.min(99, Math.max(1, num($('wr').value) || 40)) / 100;
+
+  if (!(size > 0)) {
+    ['s-today', 's-total', 's-tgt', 's-death'].forEach(id => $(id).textContent = '–');
+    $('room-warn').innerHTML = `<div class="warn">${t('t_empty0')}</div>`;
+    showTicketMsg(t('t_empty0'), false); oddsBlank(); return;
+  }
+
+  // ---------- room ----------
+  const bal = num($('bal').value) > 0 ? num($('bal').value) : size;
+  const todayPnl = num($('today').value) || 0, flt = num($('float').value) || 0;
+  const equity = bal + flt;
+  const eqSafe = bal + Math.min(0, flt);                       // open profit can vanish, so it never adds room
+  const dailyLimit = size * r.daily / 100, maxLimit = size * r.max / 100, floor = size - maxLimit;
+  const dayUsed = Math.max(0, -todayPnl) + Math.max(0, -flt);   // only losses count; today's profits never add extra room (safe side)
+  const roomToday = dailyLimit - dayUsed, roomTotal = eqSafe - floor;
+  const roomNow = Math.min(roomToday, roomTotal);
+  const targetBal = size * (1 + r.target / 100), toGo = Math.max(0, targetBal - bal);
+  const riskUsd = riskPct > 0 ? size * riskPct / 100 : 0;
+
+  $('room-right').textContent = `${t('p_' + state.plan) && bit ? t('p_' + state.plan) + ', ' : ''}${usd0(size)}`;
+  setBar('m-daily', dayUsed / dailyLimit);
+  $('m-daily-txt').textContent = `${fmtUsd(dayUsed)} / ${fmtUsd(dailyLimit)}`;
+  const maxUsed = Math.max(0, size - eqSafe);
+  setBar('m-max', maxUsed / maxLimit);
+  $('m-max-txt').textContent = `${fmtUsd(maxUsed)} / ${fmtUsd(maxLimit)}`;
+  $('m-tgt-wrap').hidden = !(r.target > 0); $('s-tgt-cell').hidden = false;
+  if (r.target > 0) { const prog = Math.max(0, bal - size) / (targetBal - size); $('m-tgt').style.width = (Math.min(1, prog) * 100).toFixed(1) + '%'; $('m-tgt-txt').textContent = `${fmtUsd(Math.max(0, bal - size))} / ${fmtUsd(targetBal - size)}`; }
+
+  // trade first (its loss incl. fees is the real per-trade loss), fall back to plain risk
+  const T = sizeTrade(r, size, bal, riskUsd, rr, roomToday, roomTotal);
+  const L = T && T.ok ? T.lossAll : riskUsd;
+  const W = T && T.ok ? T.net : riskUsd * rr;
+
+  $('s-today').textContent = fmtUsd(Math.max(0, Math.min(roomToday, roomTotal)));
+  $('s-total').textContent = fmtUsd(Math.max(0, roomTotal));
+  const nToday = L > 0 ? Math.max(0, Math.floor((Math.min(roomToday, roomTotal) - 1e-9) / L)) : 0;
+  const nTotal = L > 0 ? Math.max(0, Math.floor((roomTotal - 1e-9) / L)) : 0;
+  $('s-today-n').textContent = L > 0 ? t('nLosses', nToday) : '';
+  $('s-total-n').textContent = L > 0 ? t('nLosses', nTotal) : '';
+  if (r.target > 0) {
+    if (toGo <= 0) { $('s-tgt').textContent = t('reached'); $('s-tgt-n').textContent = ''; }
+    else { $('s-tgt').textContent = fmtUsd(toGo); $('s-tgt-n').textContent = W > 0 ? t('nWins', Math.ceil(toGo / W - 1e-9)) : ''; }
+  } else { $('s-tgt').textContent = '–'; $('s-tgt-n').textContent = t('noTarget'); }
+  const D = daysToBreach(L, cap, roomToday, dailyLimit, roomTotal);
+  if (D && D.days) { $('s-death').textContent = D.days; $('s-death-n').textContent = t('deathN', D.perDay); }
+  else { $('s-death').textContent = '–'; $('s-death-n').textContent = L > 0 ? t('deathNA') : ''; }
+
+  if (roomToday <= 0 || roomTotal <= 0) { $('s-death').textContent = '–'; $('s-death-n').textContent = ''; $('s-tgt-n').textContent = ''; }
+  const w = [];
+  if (roomToday <= 0) w.push(['bad', t('w_dailyHit')]);
+  if (roomTotal <= 0) w.push(['bad', t('w_maxHit')]);
+  if (roomToday > 0 && roomTotal > 0) {
+    if (L > roomNow) w.push(['bad', roomNow < riskUsd && L === riskUsd ? t('w_close') : t('w_riskBig')]);
+    else if (cap > nToday && nToday >= 0 && L > 0 && nToday < cap) w.push(['', t('w_capHigh', cap, nToday)]);
+  }
+  if (r.daily >= r.max) w.push(['', t('w_express', trim(r.max))]);
+  $('room-warn').innerHTML = w.map(([c, m]) => `<div class="warn ${c}">${m}</div>`).join('');
+  $('risk-help').textContent = riskUsd > 0 ? t('riskHelp', fmtUsd(riskUsd), fmtN(Math.floor(Math.max(0, roomNow - 0.01) / 3 / size * 10000) / 100, 2)) : '';
+
+  // ---------- odds ----------
+  if (!(L > 0) || roomToday <= 0 || roomTotal <= 0) { oddsBlank(); return; }
+  const S = simulate({ equity: eqSafe, roomToday, dailyLimit, floor, L, W, wr, tpd, cap, target: r.target, targetBal });
+  const hasT = r.target > 0;
+  $('o-title').textContent = hasT ? t('o_titleP') : t('o_titleS');
+  $('o-right').textContent = t('o_right', trim(wr * 100), trim(T && T.ok ? T.rr : rr), tpd);
+  $('o-pass').textContent = `${fmtN(S.pass * 100, 0)}%`;
+  $('o-pass-l').textContent = hasT ? t('o_pass') : t('o_surv');
+  $('o-fail').textContent = `${fmtN(S.fail * 100, 0)}%`;
+  $('o-days').textContent = hasT ? (S.medPass ?? '–') : (S.medFail ?? '–');
+  $('o-days-l').textContent = hasT ? t('o_days') : t('o_daysS');
+  $('o-note').textContent = t('o_note', fmtN(S.runs, 0), fmtN(S.still * 100, 0), S.maxDays);
+}
+function oddsBlank() {
+  $('o-title').textContent = t('o_titleP'); $('o-right').textContent = '';
+  ['o-pass', 'o-fail', 'o-days'].forEach(id => $(id).textContent = '–');
+  $('o-pass-l').textContent = t('o_pass'); $('o-days-l').textContent = t('o_days');
+  $('o-note').textContent = t('o_noTrade');
+}
+function showTicketMsg(msg, bad) {
+  $('t-empty').textContent = msg; $('t-empty').className = 'empty' + (bad ? ' bad' : '');
+  $('t-empty').hidden = false; $('t-body').hidden = true; state.last = null;
+}
+
+function sizeTrade(r, size, bal, riskUsd, rr, roomToday, roomTotal) {
+  const side = state.side;
+  const sym = (String($('sym').value || '').toUpperCase().replace(/[^A-Z0-9._\/-]/g, '')) || 'BTCUSDT';
+  const coin = sym.replace(/(USDT|USDC|USD|PERP|-|\/)+$/g, '') || sym;
+  const entry = num($('entry').value);
+  const step = num($('step').value) > 0 ? num($('step').value) : 0.001, sd = decOf(step);
+  const levUse = Math.max(1, num($('lev').value) || 1);
+  $('t-side').textContent = side === 1 ? (state.lang === 'bm' ? 'BELI' : 'BUY') : (state.lang === 'bm' ? 'JUAL' : 'SELL');
+  $('t-side').className = 'badge' + (side === -1 ? ' sell' : '');
+  $('t-sym').textContent = sym;
+  $('t-risk').textContent = riskUsd > 0 ? `${state.lang === 'bm' ? 'Risiko' : 'Risk'} ${fmtUsd(riskUsd)}` : '';
+
+  let sl = num($('sl').value), slAuto = false;
+  if (!(sl > 0) && entry > 0 && state.stopPct > 0 && (side === -1 || state.stopPct < 100)) { sl = entry * (1 - side * state.stopPct / 100); slAuto = true; }
+  const dec = entry > 0 ? pxDec(entry) : 2;
+  $('sl').placeholder = slAuto ? `Auto: ${fmtN(sl, dec)}` : '';
+  const slHelp = $('sl-help'); slHelp.className = 'help';
+  if (entry > 0 && sl > 0) {
+    const d = Math.abs(entry - sl);
+    slHelp.innerHTML = slAuto ? t('slAuto', trim(state.stopPct), `<b>${fmtN(d, dec)}</b>`, sl < entry ? t('below') : t('above')) : `<b>${fmtN(d, dec)}</b> (${fmtN(d / entry * 100, 2)}%) ${sl < entry ? t('below') : t('above')}`;
+    if ((entry - sl) * side <= 0) slHelp.className = 'help bad';
+  } else slHelp.textContent = '';
+
+  if (!(riskUsd > 0)) { showTicketMsg(t('t_emptyRisk'), true); return null; }
+  if (!(entry > 0)) { showTicketMsg(t('t_empty1'), false); return null; }
+  if (!(sl > 0) || (entry - sl) * side <= 0) { showTicketMsg(t(side === 1 ? 't_slBuy' : 't_slSell'), true); return null; }
+
+  const dist = Math.abs(entry - sl);
+  const costPer = dist + r.fee * (entry + sl);                  // loss + open/close fees per 1 unit
+  let qty = +(Math.floor(riskUsd / costPer / step + 1e-9) * step).toFixed(sd);
+  if (qty < step) { showTicketMsg(t('t_tooSmall', `${fmtN(step, sd)} ${coin}`, fmtUsd(step * costPer)), true); return null; }
+  const lossAll = qty * costPer, feeSl = qty * r.fee * (entry + sl);
+  const exit = entry + side * dist * rr;
+  const gain = exit > 0 ? qty * dist * rr : 0, feeTp = exit > 0 ? qty * r.fee * (entry + exit) : 0, net = gain - feeTp;
+  const lev = levUse, levEff = Math.min(levUse, r.lev), notional = qty * entry, margin = notional / levEff;   // platform won't go above its max
+  const mgUsed = Math.max(0, num($('mg-used').value) || 0);
+  const expo = (margin + mgUsed) / bal * 100;
+  const maxQtyExpo = Math.max(0, +(Math.floor(((r.expo / 100) * bal - mgUsed - 0.01) * levEff / entry / step) * step).toFixed(sd));
+  const openN = Math.max(0, Math.round(num($('open-n').value) || 0));
+  const [holdDays, holdCat] = holdInfo(sym);
+  const bit = $('firm').value === 'bitfunded', minTrades = state.plan === 'inst' ? 3 : 2;
+
+  $('t-empty').hidden = true; $('t-body').hidden = false;
+  $('t-size').textContent = fmtN(qty, sd); $('t-unit').textContent = coin;
+  $('lv-sl').textContent = fmtN(sl, dec); $('lv-sl-n').textContent = '-' + fmtUsd(lossAll);
+  $('lv-en').textContent = fmtN(entry, dec);
+  $('lv-tp').textContent = exit > 0 ? fmtN(exit, dec) : '–'; $('lv-tp-n').textContent = exit > 0 ? sgn(net) : '';
+  $('s-expo').textContent = `${fmtN(expo, 1)}%`; $('s-expo-n').textContent = t('expoSub', trim(r.expo), fmtUsd(margin));
+  $('s-fees').textContent = r.fee > 0 ? `${fmtUsd(feeSl)} / ${fmtUsd(feeTp)}` : '–'; $('s-fees-n').textContent = r.fee > 0 ? `${trim(r.fee * 100)}% / side` : '';
+
+  const ck = (ok, txt) => `<li><span class="${ok === null ? 'i' : ok ? 'y' : 'n'}">${ok === null ? 'i' : ok ? '✓' : '✗'}</span><span>${txt}</span></li>`;
+  const inDay = lossAll < roomToday, inMax = lossAll < roomTotal, inExpo = expo < r.expo, inLev = lev <= r.lev, inPos = openN + 1 <= r.pos;
+  $('checks').innerHTML =
+    ck(inDay, inDay ? t('ck_daily', fmtUsd(lossAll), fmtUsd(Math.max(0, roomToday))) : t('ck_dailyN', fmtUsd(lossAll), fmtUsd(Math.max(0, roomToday)))) +
+    ck(inMax, inMax ? t('ck_max', fmtUsd(Math.max(0, roomTotal))) : t('ck_maxN', fmtUsd(Math.max(0, roomTotal)))) +
+    ck(inExpo, inExpo ? t('ck_expo', fmtN(expo, 1), trim(r.expo)) : t('ck_expoN', fmtN(expo, 1), trim(r.expo), `${fmtN(maxQtyExpo, sd)} ${coin}`)) +
+    ck(inLev, inLev ? t('ck_lev', trim(lev), trim(r.lev)) : t('ck_levN', trim(lev), trim(r.lev))) +
+    ck(inPos, inPos ? t('ck_pos', openN + 1, r.pos) : t('ck_posN', openN + 1, r.pos)) +
+    (bit ? ck(null, t('ck_hold', holdDays, holdCat)) + ck(null, t('ck_act', minTrades)) + ck(null, t('ck_sl')) : '');
+
+  state.last = { side, sym, coin, qty: fmtN(qty, sd), entry: fmtN(entry, dec), sl: fmtN(sl, dec), tp: exit > 0 ? fmtN(exit, dec) : '-', loss: fmtUsd(lossAll), net: sgn(net), rr: trim(+rr.toFixed(2)), lev: trim(lev) };
+  return { ok: true, lossAll, net, rr };
+}
+
+function flash(id, text) { const el = $(id); el.textContent = text; el.hidden = false; clearTimeout(el._t); el._t = setTimeout(() => { el.hidden = true; }, 2200); }
+function copyOrder() {
+  const L = state.last; if (!L) return;
+  const text = `${L.side === 1 ? 'BUY' : 'SELL'} ${L.sym}  qty ${L.qty} ${L.coin}  ${L.lev}x\nEntry ${L.entry}\nStop loss ${L.sl}  (-${L.loss.replace('-', '')})\nTake profit ${L.tp}  (${L.net})  R:R 1:${L.rr}`;
+  const fallback = () => {
+    const ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta);
+    if (ok) flash('copy-ok', t('copied')); else window.prompt(t('copyFail'), text);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => flash('copy-ok', t('copied')), fallback); else fallback();
+}
+
+// ---------------- disclaimer ----------------
+function discAccepted() { try { return sessionStorage.getItem('pf-disc') === '1'; } catch (e) { return false; } }
+function openDisc() { const acc = discAccepted(); $('disc-check-wrap').hidden = acc; $('disc-go').disabled = !acc; $('disc').hidden = false; document.body.style.overflow = 'hidden'; $('disc-go').focus(); }
+function closeDisc() { if (!discAccepted()) { if (!$('disc-check').checked) return; try { sessionStorage.setItem('pf-disc', '1'); } catch (e) {} } $('disc').hidden = true; document.body.style.overflow = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('disc').hidden && discAccepted()) closeDisc(); });
+
+// ---------------- wiring ----------------
+document.querySelectorAll('#plan-pills .pill').forEach(b => b.addEventListener('click', () => loadPlan(b.dataset.p)));
+document.querySelectorAll('#size-chips .pill').forEach(b => b.addEventListener('click', () => { $('acct').value = fmtN(num(b.dataset.s), 0); onAcct(); }));
+document.querySelectorAll('#risk-chips .pill').forEach(b => b.addEventListener('click', () => { $('risk').value = b.dataset.r; calc(); }));
+document.querySelectorAll('#rr-chips .pill').forEach(b => b.addEventListener('click', () => { $('rr').value = b.dataset.rr; calc(); }));
+document.querySelectorAll('#stop-chips .pill').forEach(b => b.addEventListener('click', () => setStop(num(b.dataset.st))));
+
+(function init() {
+  let l = (navigator.language || '').toLowerCase().startsWith('ms') ? 'bm' : 'en', th = 'light';
+  try { l = localStorage.getItem('ps-lang') || l; th = localStorage.getItem('ps-theme') || th; } catch (e) {}
+  state.lang = l; state.theme = th;
+  document.documentElement.setAttribute('data-theme', th);
+  applyText();
+  loadPlan('s1');
+  if (!discAccepted()) openDisc();
+})();
+</script>
+</body>
+</html>
