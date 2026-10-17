@@ -1,1347 +1,1087 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Position Sizing v1.0 | Multi-Asset Risk & Execution Planner</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #080c14; color: #e2e8f0; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
-    .glow-cyan { box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.2); }
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scroll::-webkit-scrollbar-track { background: #0b1120; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    .hint { font-size: 11px; line-height: 1.45; color: #94a3b8; }
-    .step-badge { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:9999px; background:rgba(34,211,238,.15); color:#67e8f9; font-weight:700; font-size:11px; border:1px solid rgba(34,211,238,.3); flex-shrink:0; }
-      #lang-en, #lang-bm { background:#1e293b; color:#94a3b8; }
-    #lang-en.on, #lang-bm.on { background:#06b6d4; color:#020617; }
-        html.light body { background-color:#e9e6df; color:#2b2f36; }
-    html.light .keep-white { color:#fff !important; }
-    html.light .bg-gradient-to-br.from-slate-900 { background-image:none; background-color:#f4f1ea; }
-    html.light .glow-cyan { box-shadow: 0 8px 30px -10px rgba(8,145,178,.25); }
-    html.light .step-badge { background:rgba(8,145,178,.12); color:#0e7490; border-color:rgba(8,145,178,.35); }
-    html.light #lang-en, html.light #lang-bm { background:#ddd8cc; color:#5b616b; }
-    html.light #lang-en.on, html.light #lang-bm.on { background:#0891b2; color:#fff; }
-    html.light .custom-scroll::-webkit-scrollbar-track { background:#ebe7de; }
-    html.light .custom-scroll::-webkit-scrollbar-thumb { background:#cdc7b8; }
-    html.light select, html.light input { color-scheme: light; }
-    html.light .text-cyan-300, html.light .text-cyan-400 { color:#0e7490; }
-    html.light .text-emerald-400 { color:#059669; }
-    html.light .text-rose-400, html.light .text-rose-300 { color:#e11d48; }
-    html.light .text-emerald-300 { color:#047857; }
-    html.light .text-amber-300 { color:#b45309; }
-    html.light .text-orange-300 { color:#c2410c; }
-    html.light .bg-cyan-400.text-slate-950, html.light .bg-cyan-500.text-slate-950 { color:#fff; background-color:#0e7490; }
-    html.light .hover\:bg-cyan-400:hover { background-color:#0e7490; color:#fff; }
-    html.light .text-cyan-300.bg-cyan-500\/10, html.light .bg-cyan-500\/10 { background-color:rgba(8,145,178,.1); }
-    .light .bg-slate-800{background-color:#ddd8cc}
-    .light .bg-slate-800\/50{background-color:#ddd8cc}
-    .light .bg-slate-800\/60{background-color:#ddd8cc}
-    .light .bg-slate-800\/80{background-color:#ddd8cc}
-    .light .bg-slate-900{background-color:#f4f1ea}
-    .light .bg-slate-900\/40{background-color:#f4f1ea}
-    .light .bg-slate-900\/50{background-color:#f4f1ea}
-    .light .bg-slate-900\/60{background-color:#f4f1ea}
-    .light .bg-slate-900\/70{background-color:#f4f1ea}
-    .light .bg-slate-900\/80{background-color:#f4f1ea}
-    .light .bg-slate-950{background-color:#ebe7de}
-    .light .bg-slate-950\/60{background-color:#ebe7de}
-    .light .bg-slate-950\/70{background-color:#ebe7de}
-    .light .bg-slate-950\/80{background-color:#ebe7de}
-    .light .border-slate-600\/40{border-color:#a9a395}
-    .light .border-slate-700{border-color:#cdc7b8}
-    .light .border-slate-700\/60{border-color:#cdc7b8}
-    .light .border-slate-800{border-color:#cdc7b8}
-    .light .border-slate-800\/60{border-color:#cdc7b8}
-    .light .border-slate-800\/80{border-color:#cdc7b8}
-    .light .border-slate-800\/90{border-color:#cdc7b8}
-    .light .hover\:bg-slate-700:hover{background-color:#cdc7b8}
-    .light .hover\:bg-slate-800:hover{background-color:#ddd8cc}
-    .light .hover\:bg-slate-800\/40:hover{background-color:#ddd8cc}
-    .light .hover\:border-slate-700:hover{border-color:#cdc7b8}
-    .light .hover\:text-white:hover{color:#2b2f36}
-    .light .text-slate-100{color:#2b2f36}
-    .light .text-slate-200{color:#363b44}
-    .light .text-slate-300{color:#454b55}
-    .light .text-slate-400{color:#5b616b}
-    .light .text-slate-500{color:#6b7280}
-    .light .text-slate-600{color:#6b7280}
-    .light .text-white{color:#2b2f36}
-  </style>
-</head>
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased custom-scroll">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Position Sizing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --bg: #ffffff; --panel: #f5f7f9; --ink: #141b24; --muted: #596473; --line: #dce1e7;
+    --accent: #2445b5; --accent-ink: #ffffff;
+    --win: #0e7a50; --win-bg: #e7f5ee; --loss: #bf2e3d; --loss-bg: #fbeced;
+    --warn: #7d4c00; --warn-bg: #fff3dc;
+    --r-lg: 14px; --r-sm: 9px;
+    color-scheme: light;
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161c; --panel: #1a2029; --ink: #e7ebf0; --muted: #9aa4b2; --line: #2b333e;
+      --accent: #8aa1f2; --accent-ink: #0e1320;
+      --win: #4cc38a; --win-bg: #15302a; --loss: #f07a86; --loss-bg: #3a1c21;
+      --warn: #f2b35b; --warn-bg: #3a2c14; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12161c; --panel: #1a2029; --ink: #e7ebf0; --muted: #9aa4b2; --line: #2b333e;
+    --accent: #8aa1f2; --accent-ink: #0e1320;
+    --win: #4cc38a; --win-bg: #15302a; --loss: #f07a86; --loss-bg: #3a1c21;
+    --warn: #f2b35b; --warn-bg: #3a2c14; color-scheme: dark;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  [hidden] { display: none !important; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 22px 18px 40px; }
 
-  <!-- Header -->
-  <header class="border-b border-slate-800/80 bg-slate-900/70 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-        <span class="keep-white text-white font-mono font-bold text-sm">PS</span>
-      </div>
-      <div>
-        <div class="flex items-center space-x-2">
-          <span class="text-base font-bold tracking-tight text-white">Position Sizing</span>
-          <span class="text-xs bg-cyan-400/10 text-cyan-300 font-semibold px-2 py-0.5 rounded-full border border-cyan-400/20">v1.0</span>
-        </div>
-        <p class="text-[11px] text-slate-400">Multi-Asset Sizer & Compounding Planner</p>
-      </div>
+  header.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 27px; font-weight: 700; letter-spacing: -0.02em; margin: 0; line-height: 1.15; }
+  .tag { margin: 4px 0 0; color: var(--muted); font-size: 14.5px; max-width: 52ch; }
+  .tools { display: flex; gap: 8px; align-items: center; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; background: var(--panel); }
+  .seg button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; padding: 5px 11px; border-radius: 999px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--bg); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+
+  .tabs { display: flex; gap: 2px; margin: 18px 0 22px; border-bottom: 1px solid var(--line); }
+  .tabs button { font: inherit; font-size: 14.5px; font-weight: 600; color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; margin-bottom: -1px; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 30px; align-items: start; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .form { display: flex; flex-direction: column; gap: 18px; }
+  .lbl { display: block; font-size: 13.5px; font-weight: 600; margin-bottom: 6px; }
+  .help { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+  .help b { color: var(--ink); font-weight: 600; }
+  .help.bad, .help.bad b { color: var(--loss); }
+  .in { width: 100%; font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--bg); color: var(--ink); }
+  .in::placeholder { color: var(--muted); opacity: .8; }
+  .in:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+  button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 420px) { .row2 { grid-template-columns: 1fr; } }
+
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { border: 1px solid var(--line); background: var(--bg); color: var(--ink); font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 12px; border-radius: 999px; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .pill:hover { border-color: var(--muted); }
+  .pill[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .inline .in { width: 92px; flex: none; }
+  .suffix { color: var(--muted); font-weight: 600; margin-left: -4px; }
+
+  .sides { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .sideb { font: inherit; font-size: 15px; font-weight: 700; padding: 11px; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+  .sideb.buy[aria-pressed="true"] { background: var(--win); border-color: var(--win); color: #fff; }
+  .sideb.sell[aria-pressed="true"] { background: var(--loss); border-color: var(--loss); color: #fff; }
+  :root[data-theme="dark"] .sideb[aria-pressed="true"] { color: #0e1320; }
+
+  details.box { border: 1px solid var(--line); border-radius: var(--r-sm); padding: 11px 13px; background: var(--panel); }
+  details.box summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  .bgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; margin-top: 10px; }
+  .bgrid .lbl { font-weight: 500; font-size: 12.5px; margin-bottom: 4px; }
+  .bgrid .in { font-size: 15px; padding: 8px 10px; }
+  .linkbtn { font: inherit; font-size: 13px; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; }
+
+  /* ticket */
+  .ticket { position: sticky; top: 16px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--bg); overflow: hidden; }
+  @media (max-width: 860px) { .ticket { position: static; } }
+  .t-head { display: flex; align-items: center; gap: 10px; padding: 13px 18px; border-bottom: 1px solid var(--line); background: var(--panel); flex-wrap: wrap; }
+  .badge { font-size: 12.5px; font-weight: 700; padding: 3px 9px; border-radius: 6px; color: #fff; background: var(--win); }
+  .badge.sell { background: var(--loss); }
+  :root[data-theme="dark"] .badge { color: #0e1320; }
+  .t-sym { font-weight: 700; letter-spacing: .01em; }
+  .t-risk { margin-left: auto; font-size: 13.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .t-main { padding: 18px 18px 16px; }
+  .empty { padding: 44px 22px; color: var(--muted); text-align: center; font-size: 15px; }
+  .empty.bad { color: var(--loss); }
+  .size { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .size-num { font-size: 46px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .size-unit { font-size: 19px; font-weight: 600; color: var(--muted); }
+  .size-cap { width: 100%; font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+
+  .lad { margin: 22px 0 4px; }
+  .lad-row { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+  .lad-dot { width: 15px; height: 15px; border-radius: 50%; justify-self: center; background: currentColor; box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px currentColor; }
+  .lad-row.tp { color: var(--win); } .lad-row.sl { color: var(--loss); } .lad-row.en { color: var(--ink); }
+  .lad-name { display: block; font-size: 12.5px; color: var(--muted); }
+  .lad-price { font-size: 21px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .lad-amt { text-align: right; font-variant-numeric: tabular-nums; font-size: 12.5px; color: var(--muted); }
+  .lad-amt b { display: block; font-size: 16px; }
+  .lad-row.tp .lad-amt b { color: var(--win); } .lad-row.sl .lad-amt b { color: var(--loss); }
+  .lad-zone { display: grid; grid-template-columns: 22px 1fr; gap: 12px; }
+  .lad-zone i { justify-self: center; width: 5px; border-radius: 3px; display: block; }
+  .lad-zone.win i { background: var(--win); } .lad-zone.loss i { background: var(--loss); }
+  .lad-zone span { align-self: center; font-size: 12px; color: var(--muted); }
+
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-sm); overflow: hidden; margin-top: 18px; }
+  .stat { background: var(--bg); padding: 9px 12px; }
+  .stat span { display: block; font-size: 12px; color: var(--muted); }
+  .stat b { font-variant-numeric: tabular-nums; font-size: 15px; }
+  .warn { background: var(--warn-bg); color: var(--warn); border-radius: var(--r-sm); padding: 10px 12px; font-size: 13.5px; margin-top: 12px; }
+  .warn.bad { background: var(--loss-bg); color: var(--loss); }
+  .actions { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
+  .btn { font: inherit; font-weight: 600; font-size: 14px; padding: 10px 15px; border-radius: var(--r-sm); border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); cursor: pointer; }
+  .btn.ghost { background: transparent; color: var(--accent); }
+  .ok { font-size: 13px; color: var(--win); font-weight: 600; }
+  details.more { border-top: 1px solid var(--line); padding: 12px 18px 16px; }
+  details.more summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+  .sub { font-size: 13px; font-weight: 600; margin: 14px 0 6px; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .tbl th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12.5px; padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .tbl td { padding: 7px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .tbl tr.amber td { background: var(--warn-bg); }
+  .scroll { overflow-x: auto; }
+  .note { font-size: 12px; color: var(--muted); margin-top: 12px; }
+
+  /* planner */
+  .pgrid { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 30px; align-items: start; }
+  @media (max-width: 860px) { .pgrid { grid-template-columns: 1fr; } }
+  .card { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px 18px; }
+  .big { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 2px 0 4px; }
+  svg text { fill: var(--muted); font-size: 11px; font-family: inherit; }
+  .tblwrap { margin-top: 22px; }
+  .usebtn { font: inherit; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--accent); cursor: pointer; }
+
+  footer { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+
+  .modal { position: fixed; inset: 0; background: rgba(10, 15, 25, .5); display: flex; align-items: center; justify-content: center; z-index: 50;
+           padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+  .sheet { background: var(--bg); color: var(--ink); max-width: 640px; width: 100%; max-height: 100%; overflow: auto; border-radius: var(--r-lg); padding: 22px 22px 18px; }
+  .sheet h2 { margin: 0 0 10px; font-size: 21px; letter-spacing: -0.01em; }
+  .sheet p { font-size: 14px; margin: 0 0 10px; max-width: 70ch; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; font-weight: 600; margin: 14px 0; }
+  .check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .mbar { display: none; }
+  @media (max-width: 860px) {
+    .mbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; gap: 12px; align-items: center; justify-content: space-between;
+            background: var(--bg); border-top: 1px solid var(--line); padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+            font-variant-numeric: tabular-nums; font-size: 13.5px; box-shadow: 0 -6px 18px rgba(0, 0, 0, .07); }
+    body.has-mbar .wrap { padding-bottom: 96px; }
+  }
+  .mbar b { font-size: 16px; } .mbar span { color: var(--muted); }
+  .mbar .m-sl { color: var(--loss); font-weight: 600; } .mbar .m-tp { color: var(--win); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 data-i="title">Position Sizing</h1>
+      <p class="tag" data-i="tagline"></p>
     </div>
-    <div class="flex items-center gap-2">
-      <div class="hidden md:flex items-center gap-1.5 bg-slate-800/60 px-3 py-1.5 rounded-lg border border-slate-700/60 text-xs">
-        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span class="text-slate-300 font-medium">Zero-Cloud Storage (PDPA Clean)</span>
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Language">
+        <button id="l-en" onclick="setLang('en')">EN</button>
+        <button id="l-bm" onclick="setLang('bm')">BM</button>
       </div>
-      <div class="flex items-center rounded-lg border border-slate-700 overflow-hidden text-xs font-semibold" role="group" aria-label="Language">
-        <button id="lang-en" onclick="setLang('en')" class="px-2.5 py-1.5">EN</button>
-        <button id="lang-bm" onclick="setLang('bm')" class="px-2.5 py-1.5">BM</button>
-      </div>
-      <button id="theme-btn" onclick="toggleTheme()" class="text-xs px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors border border-slate-700" aria-label="Toggle day/night theme">🌙</button>
-      <button onclick="openDisclaimer()" class="text-xs px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 rounded-lg text-amber-300 transition-colors border border-amber-500/30 font-semibold">
-        ⚠ Disclaimer
-      </button>
-      <button onclick="toggleGuide(true)" class="text-xs px-3 py-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 rounded-lg text-cyan-300 transition-colors border border-cyan-500/30 font-semibold">
-        ? How to use
-      </button>
-      <button onclick="resetToDefaults()" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition-colors border border-slate-700">
-        Reset
-      </button>
+      <button class="pill" id="theme-btn" onclick="toggleTheme()"></button>
     </div>
   </header>
 
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-sizer" aria-selected="true" onclick="showTab('sizer')" data-i="tabSizer"></button>
+    <button role="tab" id="tab-plan" aria-selected="false" onclick="showTab('plan')" data-i="tabPlan"></button>
+  </nav>
 
-  <!-- Full-page disclaimer -->
-  <div id="disclaimer-page" class="hidden fixed inset-0 z-[60] bg-slate-950 overflow-y-auto custom-scroll" role="dialog" aria-modal="true" aria-labelledby="disc-title">
-    <div class="max-w-3xl mx-auto px-5 py-8 space-y-6">
-      <div class="flex items-start justify-between gap-4">
-        <div class="space-y-1">
-          <span class="text-xs font-mono tracking-widest text-amber-400 font-semibold uppercase">Position Sizing v1.0</span>
-          <h1 id="disc-title" class="text-2xl font-black text-white">Important Disclaimer &amp; Risk Warning</h1>
-          <p class="text-xs text-slate-400">Please read this page carefully before using the calculator.</p>
+  <!-- ===================== SIZER ===================== -->
+  <main id="v-sizer" class="grid">
+    <section class="form">
+      <div>
+        <span class="lbl" data-i="instrument"></span>
+        <div class="pills" id="asset-pills">
+          <button class="pill" data-a="crypto" data-i="a_crypto"></button>
+          <button class="pill" data-a="gold" data-i="a_gold"></button>
+          <button class="pill" data-a="fxusd" data-i="a_fxusd"></button>
+          <button class="pill" data-a="usdxxx" data-i="a_usdxxx"></button>
+          <button class="pill" data-a="index" data-i="a_index"></button>
         </div>
-        <button id="disc-x" onclick="closeDisclaimer()" class="hidden text-slate-400 hover:text-white text-sm font-bold" aria-label="Close">✕</button>
+        <p class="help" id="asset-ex"></p>
       </div>
-      <div class="p-4 rounded-xl border border-rose-500/30 bg-rose-500/10 text-sm leading-relaxed text-rose-200 font-semibold">
-        Trading leveraged products is risky and you can lose all of your money. This tool is an educational calculator, not financial advice.
-      </div>
-      <div class="space-y-5">
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">1. Educational tool – not advice</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">Position Sizing v1.0 is a mathematical calculator provided for education and information only. It is not financial, investment, trading, tax or legal advice, and it is not a recommendation or solicitation to buy or sell any instrument. Nothing here takes your personal objectives, financial situation or experience into account. The creator is not a licensed or registered financial adviser, and this tool has not been reviewed or approved by any financial regulator.</p>
-        </section>
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">2. Trading carries a high risk of loss</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">Forex, gold, index and cryptocurrency CFDs are leveraged products. You can lose money quickly, and depending on your broker and account type you can lose more than you deposit. Regulators report that a majority of retail CFD accounts lose money. Only trade with money you can afford to lose entirely, and seek independent advice from a licensed professional if you are unsure.</p>
-        </section>
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">3. Results are estimates – verify with your broker</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">Lot size, risk, profit and margin figures are estimates built on simplified assumptions. Forex assumes $10 per pip per standard lot, which is true for USD-quoted pairs such as EURUSD and GBPUSD but not for pairs such as USDJPY or cross pairs. Gold assumes 100 oz per lot and 1 pip = $0.10. Crypto and Indices assume $1 per point per lot. Micro and Cent accounts are scaled by 0.1 and 0.01. Brokers differ in contract size, pip definition, minimum lot, lot step, leverage, margin rules and symbol names. Always confirm these in your broker's contract specifications and check the order ticket before you trade. If this tool and your broker disagree, trust your broker.</p>
-        </section>
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">4. Rounding, minimum lot and stop-outs</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">Lot sizes are rounded down to the nearest 0.01 lot. When the calculated size is below 0.01 the tool shows 0.01, which can risk more than the percentage you chose. Stop losses are not guaranteed: slippage, price gaps, news events, thin liquidity, weekend gaps and platform or connection failures can make your actual loss larger than the maximum loss shown. Figures also exclude spread, commission, swap or funding fees and currency-conversion costs.</p>
-        </section>
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">5. The Stepped Compounding Plan is hypothetical</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">The plan assumes every step succeeds and the same percentage gain is made on every trade. Real trading includes losing trades, drawdowns and periods without trades, so the goal is never guaranteed. A plan that needs a high risk per trade, flagged by the amber warnings, can wipe out an account in a short losing streak. The goal, growth rate, steps and lot sizes are illustrations, not forecasts, targets or promises of return. Past performance and theoretical compounding curves do not guarantee future results.</p>
-        </section>
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">6. Cent and Micro accounts</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">Enter your equity in real US dollars (for example 10,000 USC = $100). Dollar figures shown are real dollars; multiply by 100 to see USC. Lot definitions for Cent and Micro accounts vary by broker, so confirm yours before relying on the lot size.</p>
-        </section>
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">7. Your responsibility and legality</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">You are solely responsible for your trading decisions and for making sure that trading, CFDs and crypto products are lawful for you where you live. Some products may be restricted or unavailable in your jurisdiction. This tool is intended for adults of legal age only.</p>
-        </section>
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">8. No warranty and limitation of liability</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">This tool is provided “as is” and “as available” without warranties of any kind, express or implied, including accuracy, completeness, reliability or fitness for a particular purpose. Errors, browser differences or software defects may exist despite testing. To the fullest extent permitted by law, the creator and contributors accept no liability for any loss or damage, including trading losses, lost profits and indirect or consequential loss, arising from use of or reliance on this tool. You use it entirely at your own risk.</p>
-        </section>
-        <section class="space-y-1.5">
-          <h2 class="text-sm font-bold text-white">9. Privacy</h2>
-          <p class="text-[13px] leading-relaxed text-slate-300">Your inputs are processed only in your browser and are not sent to or stored on any server by this tool. Your language and theme choice, and whether you have accepted this notice in the current tab session, are remembered in your browser only. The page loads open-source libraries (Tailwind CSS and Chart.js) from public CDNs, which may see standard web request data such as your IP address. See the PDPA notice at the bottom of the main page.</p>
-        </section>
-      </div>
-      <div class="border-t border-slate-800 pt-5 space-y-4">
-        <label id="disc-check-wrap" class="flex items-start gap-3 text-sm text-slate-200 cursor-pointer">
-          <input type="checkbox" id="disc-check" onchange="document.getElementById('disc-btn').disabled=!this.checked" class="mt-1 accent-cyan-400">
-          <span>I have read and understood this disclaimer, and I accept that I use this tool at my own risk.</span>
-        </label>
-        <button id="disc-btn" onclick="closeDisclaimer(true)" disabled class="w-full py-2.5 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold hover:bg-cyan-400 disabled:opacity-40 disabled:cursor-not-allowed">I understand – continue</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- How-to-use modal -->
-  <div id="guide-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4" onclick="if(event.target===this)toggleGuide(false)">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto custom-scroll p-6 space-y-5">
-      <div class="flex items-start justify-between">
+      <div class="row2">
         <div>
-          <h2 class="text-lg font-black text-white">How to use in 30 seconds</h2>
-          <p class="hint">Everything updates live as you type. Your inputs are never saved or sent anywhere.</p>
+          <label class="lbl" for="symbol" data-i="symbol"></label>
+          <input class="in" id="symbol" autocomplete="off" spellcheck="false" oninput="calc()">
         </div>
-        <button onclick="toggleGuide(false)" class="text-slate-400 hover:text-white text-sm font-bold">✕</button>
+        <div>
+          <label class="lbl" for="equity" data-i="equity"></label>
+          <input class="in" id="equity" inputmode="decimal" autocomplete="off" value="100,000" oninput="calc()">
+        </div>
       </div>
 
-      <div class="space-y-3 text-sm">
-        <div class="flex gap-3"><span class="step-badge">1</span><p><strong class="text-white">Pick your instrument</strong> (Forex, Gold, Crypto, Indices) and enter your <strong class="text-white">account equity</strong>.</p></div>
-        <div class="flex gap-3"><span class="step-badge">2</span><p><strong class="text-white">Choose how much you risk</strong> per trade (1–2% is common). This is the most you lose if your stop loss is hit.</p></div>
-        <div class="flex gap-3"><span class="step-badge">3</span><p><strong class="text-white">Enter your stop loss distance</strong> – how far (in pips/points) price can move against you before you exit.</p></div>
-        <div class="flex gap-3"><span class="step-badge">4</span><p><strong class="text-white">Read the Recommended Broker Order</strong>. Type the lot size into your platform. Pick 2–4 layers to split it into several smaller entries.</p></div>
-        <div class="flex gap-3"><span class="step-badge">5</span><p>Use the <strong class="text-white">Stepped Compounding Plan</strong> tab to map a path from your starting balance to a goal, then click <em>Load Sizer</em> on any step.</p></div>
-      </div>
-
-      <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 space-y-1">
-        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-300">The formula</div>
-        <code class="mono text-xs text-cyan-300 block">Lots = (Equity × Risk%) ÷ (Stop Loss × Pip Value)</code>
-        <p class="hint">Example: $1,000 × 1.5% = $15 risk. 20 pips × $10 = $200 per lot → 0.07 lots.</p>
-      </div>
-
-      <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-300">
-        <div class="bg-slate-800/60 rounded-lg p-2"><strong class="text-white">Presets</strong><br>One-click setups for common styles.</div>
-        <div class="bg-slate-800/60 rounded-lg p-2"><strong class="text-white">Layers</strong><br>Splits total lots into equal entries.</div>
-        <div class="bg-slate-800/60 rounded-lg p-2"><strong class="text-white">R:R targets</strong><br>Profit if price hits 1.5×, 2× or 3× your risk.</div>
-        <div class="bg-slate-800/60 rounded-lg p-2"><strong class="text-white">Warnings</strong><br>Yellow/red banner = lot size too big for your risk.</div>
-      </div>
-
-      <p class="text-[10px] text-slate-500">Educational calculator only – not financial advice. Always verify pip value and contract size with your broker.</p>
-      <button onclick="toggleGuide(false)" class="w-full py-2 rounded-xl bg-cyan-500 text-slate-950 text-sm font-bold hover:bg-cyan-400">Got it</button>
-    </div>
-  </div>
-
-  <main class="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
-
-    <!-- Quick start banner -->
-    <div id="quickstart" class="flex items-start gap-3 bg-cyan-500/5 border border-cyan-500/20 rounded-2xl px-4 py-3 text-xs text-slate-300">
-      <span class="text-base">💡</span>
-      <p class="flex-1 leading-relaxed"><strong class="text-cyan-300">Quick start:</strong> pick a <strong>preset</strong> below (or fill the 3 boxes: <em>equity → risk % → stop loss</em>) and read the <strong>Recommended Broker Order</strong> on the right. Press <strong>? How to use</strong> for a 30-second guide.</p>
-      <button onclick="document.getElementById('quickstart').remove()" class="text-slate-500 hover:text-white" aria-label="Dismiss">✕</button>
-    </div>
-
-    <!-- Mode Selector & Preset Bar -->
-    <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-900/50 p-2 rounded-2xl border border-slate-800">
-      <div class="flex items-center gap-1">
-        <button id="tab-sizer" onclick="switchMainTab('sizer')" class="px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-cyan-500 text-slate-950 shadow-md">
-          🎯 1-Touch Position Sizer
-        </button>
-        <button id="tab-planner" onclick="switchMainTab('planner')" class="px-4 py-2 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800">
-          📈 Stepped Compounding Plan
-        </button>
-      </div>
-
-      <div class="flex items-center gap-1 text-xs overflow-x-auto py-1">
-        <span class="text-slate-500 font-medium mr-1 text-[11px]">PRESETS:</span>
-        <button onclick="applyPreset('gold-scalp')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-amber-300 border border-amber-500/20 font-mono text-[11px]">Gold Scalp (30 pips)</button>
-        <button onclick="applyPreset('forex-swing')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-cyan-300 border border-cyan-500/20 font-mono text-[11px]">Forex Swing (25p)</button>
-        <button onclick="applyPreset('btc-intraday')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-orange-300 border border-orange-500/20 font-mono text-[11px]">BTC 2% Risk</button>
-        <button onclick="applyPreset('cent-boost')" class="whitespace-nowrap px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-emerald-300 border border-emerald-500/20 font-mono text-[11px]">Cent Account (10k USC)</button>
-      </div>
-    </div>
-
-    <!-- SECTION 1: POSITION SIZER -->
-    <div id="section-sizer" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-      <div class="lg:col-span-5 space-y-5">
-        <div class="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-5 space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-sm font-bold tracking-wide text-white uppercase flex items-center gap-2">
-              <span class="text-cyan-400">01.</span> Your Trade Setup
-            </h2>
-            <span class="text-[10px] text-slate-500 uppercase tracking-widest font-mono">Live</span>
+      <div>
+        <label class="lbl" for="riskpct" data-i="risk"></label>
+        <div class="inline">
+          <input class="in" id="riskpct" inputmode="decimal" autocomplete="off" value="2" oninput="calc()">
+          <span class="suffix">%</span>
+          <div class="pills" id="risk-chips">
+            <button class="pill" data-r="0.5">0.5%</button>
+            <button class="pill" data-r="1">1%</button>
+            <button class="pill" data-r="2">2%</button>
+            <button class="pill" data-r="3">3%</button>
           </div>
+        </div>
+        <p class="help" data-i="riskHelp"></p>
+      </div>
 
+      <div>
+        <span class="lbl" data-i="side"></span>
+        <div class="sides">
+          <button class="sideb buy" id="s-buy" onclick="setSide(1)" data-i="buy"></button>
+          <button class="sideb sell" id="s-sell" onclick="setSide(-1)" data-i="sell"></button>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label class="lbl" for="entry" data-i="entry"></label>
+          <input class="in" id="entry" inputmode="decimal" autocomplete="off" oninput="calc()">
+          <p class="help" data-i="entryHelp"></p>
+        </div>
+        <div>
+          <label class="lbl" for="sl" data-i="sl"></label>
+          <input class="in" id="sl" inputmode="decimal" autocomplete="off" oninput="calc()">
+          <p class="help" id="sl-help"></p>
+        </div>
+      </div>
+
+      <div>
+        <span class="lbl" data-i="stopSize"></span>
+        <div class="inline">
+          <div class="pills" id="stop-chips">
+            <button class="pill" data-s="0.25">0.25%</button>
+            <button class="pill" data-s="0.5">0.5%</button>
+            <button class="pill" data-s="1">1%</button>
+            <button class="pill" data-s="2">2%</button>
+          </div>
+          <input class="in" id="stop-custom" inputmode="decimal" autocomplete="off" aria-label="Custom stop size in percent" oninput="onStopCustom()">
+          <span class="suffix">%</span>
+        </div>
+        <p class="help" data-i="stopHelp"></p>
+      </div>
+
+      <div>
+        <span class="lbl" data-i="rr"></span>
+        <div class="inline">
+          <div class="pills" id="rr-chips">
+            <button class="pill" data-rr="1">1 : 1</button>
+            <button class="pill" data-rr="1.5">1 : 1.5</button>
+            <button class="pill" data-rr="2">1 : 2</button>
+            <button class="pill" data-rr="3">1 : 3</button>
+          </div>
+          <span class="suffix" style="margin-left:4px">1 :</span>
+          <input class="in" id="rr-custom" inputmode="decimal" autocomplete="off" value="2" aria-label="Custom reward to risk" oninput="onRRCustom()">
+        </div>
+      </div>
+
+      <div>
+        <label class="lbl" for="exit" data-i="exit"></label>
+        <input class="in" id="exit" inputmode="decimal" autocomplete="off" oninput="calc()">
+        <p class="help" id="exit-help" data-i="exitHelp"></p>
+      </div>
+
+      <details class="box" id="broker">
+        <summary data-i="broker"></summary>
+        <p class="help" data-i="brokerHelp"></p>
+        <div class="bgrid">
           <div>
-            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-2"><span class="step-badge mr-1">1</span> What are you trading?</label>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="asset-pills">
-              <button onclick="setAsset('forex')" data-asset="forex" class="asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 flex flex-col items-center">
-                <span>Forex</span><span class="text-[9px] text-slate-400 font-normal">EURUSD / GBP</span>
-              </button>
-              <button onclick="setAsset('gold')" data-asset="gold" class="asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-800/50 text-slate-300 hover:border-slate-700 flex flex-col items-center">
-                <span>Gold Metals</span><span class="text-[9px] text-slate-400 font-normal">XAUUSD</span>
-              </button>
-              <button onclick="setAsset('crypto')" data-asset="crypto" class="asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-800/50 text-slate-300 hover:border-slate-700 flex flex-col items-center">
-                <span>Crypto</span><span class="text-[9px] text-slate-400 font-normal">BTC / ETH</span>
-              </button>
-              <button onclick="setAsset('indices')" data-asset="indices" class="asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-800/50 text-slate-300 hover:border-slate-700 flex flex-col items-center">
-                <span>Indices</span><span class="text-[9px] text-slate-400 font-normal">US30 / NAS100</span>
-              </button>
-            </div>
+            <label class="lbl" for="b-acct" data-i="acct"></label>
+            <select class="in" id="b-acct" onchange="calc()">
+              <option value="1" data-i="std"></option>
+              <option value="0.1" data-i="micro"></option>
+              <option value="0.01" data-i="cent"></option>
+            </select>
           </div>
-
-          <div class="space-y-2">
-            <div class="flex items-center justify-between gap-2">
-              <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Entry Price (optional)</label>
-              <div class="flex items-center rounded-lg border border-slate-700 overflow-hidden text-[11px] font-semibold" role="group">
-                <button id="dir-long" onclick="setDirection(1)" class="px-2.5 py-1">Buy / Long</button>
-                <button id="dir-short" onclick="setDirection(-1)" class="px-2.5 py-1">Sell / Short</button>
-              </div>
-            </div>
-            <input type="number" id="entry-price" step="any" min="0" placeholder="83500" oninput="calculateSizer()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-            <p class="hint">Type the current price to see the exact Stop Loss and Take Profit prices. Leave blank to skip.</p>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="text-[11px] font-medium text-slate-400 block mb-1">Account Type</label>
-              <select id="acc-type" onchange="calculateSizer()" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400">
-                <option value="standard">Standard ($10/pip per lot)</option>
-                <option value="cent">Cent Account (USC)</option>
-                <option value="micro">Micro Account</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-[11px] font-medium text-slate-400 block mb-1"><span class="step-badge mr-1">2</span> Account Equity ($)</label>
-              <input type="number" id="acc-balance" value="1000" step="50" min="0" oninput="calculateSizer()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-            </div>
-          </div>
-          <p class="hint -mt-2">Not sure? Leave Account Type on <em>Standard</em>. Use <em>Cent</em> only if your broker offers cent accounts.</p>
-
-          <div class="space-y-2">
-            <div class="flex items-center justify-between">
-              <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider">Leverage</label>
-              <div class="flex items-center gap-1 text-[11px] mono"><span class="text-slate-500">1 :</span>
-                <input type="number" id="lev-input" value="20" min="1" step="1" oninput="syncLevInput(this.value)" class="mono w-16 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-right text-white">
-              </div>
-            </div>
-            <div class="grid grid-cols-6 gap-1.5">
-              <button onclick="setLeverage(5)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:5</button>
-              <button onclick="setLeverage(10)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:10</button>
-              <button onclick="setLeverage(20)" class="lev-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono">1:20</button>
-              <button onclick="setLeverage(50)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:50</button>
-              <button onclick="setLeverage(100)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:100</button>
-              <button onclick="setLeverage(500)" class="lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1:500</button>
-            </div>
-            <p class="hint">Your broker's maximum leverage (e.g. prop firms often allow 1:5 to 1:20). Used for the margin check.</p>
-          </div>
-
-          <hr class="border-slate-800">
-
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <label class="text-[11px] font-bold text-slate-300 uppercase tracking-wider"><span class="step-badge mr-1">3</span> Risk Per Trade</label>
-              <div class="flex items-center gap-1 text-[11px] mono">
-                <span id="risk-cash-display" data-nt class="text-cyan-400 font-bold">$15.00</span>
-                <span class="text-slate-500">at risk</span>
-              </div>
-            </div>
-            <div class="grid grid-cols-5 gap-1.5">
-              <button onclick="setRiskPct(0.5)" class="risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">0.5%</button>
-              <button onclick="setRiskPct(1.0)" class="risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">1.0%</button>
-              <button onclick="setRiskPct(1.5)" class="risk-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono">1.5%</button>
-              <button onclick="setRiskPct(2.0)" class="risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">2.0%</button>
-              <button onclick="setRiskPct(3.0)" class="risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">3.0%</button>
-            </div>
-            <div class="flex items-center gap-2">
-              <input type="range" id="risk-pct-slider" min="0.1" max="10" step="0.1" value="1.5" oninput="syncRiskSlider(this.value)" class="w-full accent-cyan-400 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
-              <div class="flex items-center">
-                <input type="number" id="risk-pct-input" value="1.5" step="0.1" oninput="syncRiskInput(this.value)" class="mono w-16 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-right text-white">
-                <span class="text-xs text-slate-400 ml-1">%</span>
-              </div>
-            </div>
-            <p class="hint">The % of your equity you accept losing if the stop loss hits. Most traders stay at 1–2%.</p>
-          </div>
-
-          <hr class="border-slate-800">
-
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <label id="sl-label" data-nt class="text-[11px] font-bold text-slate-300 uppercase tracking-wider"><span class="step-badge mr-1">4</span> Stop Loss Distance (Pips)</label>
-              <span id="sl-unit-helper" data-nt class="text-[11px] font-mono text-slate-500">1 pip = 10 points</span>
-            </div>
-            <div class="grid grid-cols-5 gap-1.5" id="sl-chips">
-              <button onclick="setSLValue(10)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">10</button>
-              <button onclick="setSLValue(20)" class="sl-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono">20</button>
-              <button onclick="setSLValue(30)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">30</button>
-              <button onclick="setSLValue(50)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">50</button>
-              <button onclick="setSLValue(100)" class="sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono">100</button>
-            </div>
-            <div class="flex items-center gap-2">
-              <input type="number" id="sl-distance" value="20" step="1" min="1" oninput="onSLInput()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-              <span id="sl-unit-tag" data-nt class="text-xs font-mono text-slate-400 px-2.5 py-2 bg-slate-800 rounded-xl border border-slate-700 whitespace-nowrap">PIPS</span>
-            </div>
-            <p class="hint">Distance between your entry price and your stop loss. Tighter stop = bigger lot size for the same risk.</p>
-          </div>
-
-          <hr class="border-slate-800">
-
-          <div class="pt-1">
-            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1.5"><span class="step-badge mr-1">5</span> Split into entries (optional)</label>
-            <div class="grid grid-cols-4 gap-1.5">
-              <button onclick="setLayers(1)" data-layers="1" class="layer-pill py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-slate-800 text-slate-300">1 Entry</button>
-              <button onclick="setLayers(2)" data-layers="2" class="layer-pill py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-slate-800 text-slate-300">2 Layers</button>
-              <button onclick="setLayers(3)" data-layers="3" class="layer-pill py-1.5 rounded-lg text-xs font-medium border border-cyan-500/50 bg-cyan-500/10 text-cyan-300 font-bold">3 Layers</button>
-              <button onclick="setLayers(4)" data-layers="4" class="layer-pill py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-slate-800 text-slate-300">4 Layers</button>
-            </div>
-            <p class="hint mt-1.5">Layers = several smaller orders that together equal the total lot size (all share the same stop loss).</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="lg:col-span-7 space-y-5">
-        <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 border border-slate-800 rounded-2xl p-6 glow-cyan space-y-6">
-          <div class="flex items-start justify-between">
-            <div>
-              <span class="text-xs font-mono tracking-widest text-cyan-400 font-semibold uppercase">Recommended broker order</span>
-              <h3 id="display-order-title" data-nt class="text-2xl font-black text-white mt-0.5">0.07 Total Lots</h3>
-              <p class="hint">Enter this lot size in your trading platform.</p>
-            </div>
-            <div class="text-right">
-              <div class="text-xs text-slate-400">Max loss if stopped out</div>
-              <div id="display-risk-cash" data-nt class="text-lg font-mono font-bold text-rose-400">-$14.00 (-1.4%)</div>
-            </div>
-          </div>
-
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between text-xs text-slate-400 px-1">
-              <span>Order breakdown</span>
-              <span id="display-split-ratio" data-nt class="font-mono text-slate-500">Equal split</span>
-            </div>
-            <div id="layer-ticket-container" data-nt class="space-y-2"></div>
-          </div>
-
-          <div id="guardrail-alert" class="hidden p-3 rounded-xl border text-xs flex items-center gap-2.5">
-            <span id="guardrail-icon" class="text-base">⚠️</span>
-            <span id="guardrail-msg" data-nt class="leading-relaxed"></span>
-          </div>
-
-          <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase">Margin check</span>
-              <span id="mg-lev" data-nt class="text-[11px] font-mono text-slate-500">1:20</span>
-            </div>
-            <div id="mg-body" class="hidden grid grid-cols-3 gap-3 text-center">
-              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-mono">Margin required</div>
-                <div id="mg-req" data-nt class="text-white font-bold mono text-sm mt-0.5">-</div>
-              </div>
-              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-mono">% of equity</div>
-                <div id="mg-pct" data-nt class="text-white font-bold mono text-sm mt-0.5">-</div>
-              </div>
-              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-mono">Max lots at this leverage</div>
-                <div id="mg-max" data-nt class="text-white font-bold mono text-sm mt-0.5">-</div>
-              </div>
-            </div>
-            <div id="mg-alert" data-nt class="hidden p-2.5 rounded-lg border text-xs leading-relaxed"></div>
-            <p id="mg-hint" class="hint">Enter an entry price to check the margin and maximum lots at your leverage.</p>
-            <p class="hint">Approximate: assumes 100,000 units per lot for Forex, 100 oz for Gold and 1 unit for Crypto/Indices. Check your broker's contract specs.</p>
-          </div>
-
-          <div class="bg-slate-950/60 rounded-xl p-4 border border-slate-800 space-y-3">
-            <div id="levels-wrap" class="hidden space-y-2">
-              <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase block">Your price levels</span>
-              <div class="grid grid-cols-2 gap-3 text-center">
-                <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                  <div class="text-[10px] text-slate-400 font-mono">ENTRY</div>
-                  <div id="lvl-entry" data-nt class="text-white font-bold mono text-sm mt-0.5">-</div>
-                </div>
-                <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                  <div class="text-[10px] text-slate-400 font-mono">STOP LOSS</div>
-                  <div id="lvl-sl" data-nt class="text-rose-400 font-bold mono text-sm mt-0.5">-</div>
-                </div>
-              </div>
-            </div>
-            <span class="text-[11px] font-bold tracking-wider text-slate-400 uppercase block">If the trade wins (reward : risk)</span>
-            <div class="grid grid-cols-3 gap-3 text-center">
-              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-mono">TP1 · 1 : 1.5</div>
-                <div id="tp-price-15" data-nt class="text-white font-bold mono text-xs mt-0.5"></div>
-                <div id="tp-gain-15" data-nt class="text-emerald-400 font-bold mono text-sm mt-0.5">+$21.00</div>
-                <div id="tp-pips-15" data-nt class="text-[10px] text-slate-500 font-mono mt-0.5">+30.0 pips</div>
-              </div>
-              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-mono">TP2 · 1 : 2.0</div>
-                <div id="tp-price-20" data-nt class="text-white font-bold mono text-xs mt-0.5"></div>
-                <div id="tp-gain-20" data-nt class="text-emerald-400 font-bold mono text-sm mt-0.5">+$28.00</div>
-                <div id="tp-pips-20" data-nt class="text-[10px] text-slate-500 font-mono mt-0.5">+40.0 pips</div>
-              </div>
-              <div class="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
-                <div class="text-[10px] text-slate-400 font-mono">TP3 · 1 : 3.0</div>
-                <div id="tp-price-30" data-nt class="text-white font-bold mono text-xs mt-0.5"></div>
-                <div id="tp-gain-30" data-nt class="text-emerald-400 font-bold mono text-sm mt-0.5">+$42.00</div>
-                <div id="tp-pips-30" data-nt class="text-[10px] text-slate-500 font-mono mt-0.5">+60.0 pips</div>
-              </div>
-            </div>
-            <p class="hint">Set your take-profit this many pips/points from entry to hit the target. Enter an entry price to see the exact price levels.</p>
-          </div>
-
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800 text-[11px] font-mono text-slate-500">
-            <span>Pip Value: <strong id="debug-pipval" data-nt class="text-slate-300">$10.00/lot</strong></span>
-            <span>Contract: <strong id="debug-contract" data-nt class="text-slate-300">100,000 units</strong></span>
-            <span>Min step: <strong class="text-slate-300">0.01 lot</strong></span>
-          </div>
-        </div>
-
-        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 text-xs text-slate-400 space-y-2">
-          <div class="font-bold text-slate-200 uppercase tracking-wide text-[11px]">Good to know</div>
-          <ul class="space-y-1 list-disc list-inside">
-            <li>Add a small buffer to your stop loss for spread and liquidity sweeps.</li>
-            <li>On Gold (XAUUSD), a $1.00 price move = 10 pips (100 points).</li>
-            <li>On Cent accounts, enter your equity in real US dollars (10,000 USC = $100). Dollar figures shown are real dollars – multiply by 100 to see USC.</li>
-            <li>Price levels assume 1 pip = 0.0001 for Forex (JPY pairs use 0.01) and 1 pip = $0.10 for Gold.</li>
-            <li>Pip values here are approximations – confirm with your broker's contract specs.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECTION 2: COMPOUNDING PLANNER -->
-    <div id="section-planner" class="hidden space-y-6">
-
-      <div class="bg-cyan-500/5 border border-cyan-500/20 rounded-2xl px-4 py-3 text-xs text-slate-300 leading-relaxed">
-        <strong class="text-cyan-300">How this works:</strong> enter your starting balance, goal and number of steps (trades). The planner calculates the growth % each step must deliver. You can also type a growth % directly. Click <em>Load Sizer</em> on any row to size that step's trade.
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
-        <div>
-          <label class="text-[11px] font-medium text-slate-400 block mb-1">Starting Balance ($)</label>
-          <input type="number" id="cp-start" value="100" step="50" oninput="solveGainFromGoal()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-        </div>
-        <div>
-          <label class="text-[11px] font-medium text-slate-400 block mb-1">Target End Goal ($)</label>
-          <input type="number" id="cp-goal" value="1000" step="50" oninput="solveGainFromGoal()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-        </div>
-        <div>
-          <label class="text-[11px] font-medium text-slate-400 block mb-1">Steps / Milestone Trades</label>
-          <input type="number" id="cp-steps" value="20" min="3" max="100" oninput="solveGainFromGoal()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-        </div>
-        <div>
-          <label class="text-[11px] font-medium text-slate-400 block mb-1">Growth Per Step (%) – auto or manual</label>
-          <div class="flex items-center gap-2">
-            <input type="number" id="cp-growth-pct" value="12.2018" step="any" oninput="generateCompoundPlan()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-bold text-cyan-300 focus:outline-none focus:border-cyan-400">
-            <span class="text-xs font-mono text-slate-400">%</span>
-          </div>
-        </div>
-        <div>
-          <label class="text-[11px] font-medium text-slate-400 block mb-1">Stop Loss Distance</label>
-          <div class="flex items-center gap-2">
-            <input type="number" id="cp-sl" value="25" min="1" step="any" oninput="generateCompoundPlan()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-            <span id="cp-sl-unit" data-nt class="text-xs font-mono text-slate-400">pips</span>
-          </div>
-        </div>
-        <div>
-          <label class="text-[11px] font-medium text-slate-400 block mb-1">Reward : Risk</label>
-          <select id="cp-rr" onchange="generateCompoundPlan()" class="mono w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm font-semibold text-white focus:outline-none focus:border-cyan-400">
-            <option value="1">1 : 1</option>
-            <option value="1.5">1 : 1.5</option>
-            <option value="2" selected>1 : 2</option>
-            <option value="3">1 : 3</option>
-          </select>
-        </div>
-        <div class="md:col-span-2 flex items-end">
-          <p id="cp-info" data-nt class="text-[11px] text-slate-400 leading-relaxed"></p>
-        </div>
-      </div>
-      <div id="cp-warn" data-nt class="hidden"></div>
-
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
-        <div class="flex items-center justify-between">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-300">Equity Milestone Trajectory</h3>
-          <span class="text-xs font-mono text-cyan-400" id="chart-summary-stat" data-nt>$100.00 ➔ $1,000.00</span>
-        </div>
-        <div class="h-64 w-full"><canvas id="compoundingChart"></canvas></div>
-      </div>
-
-      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden">
-        <div class="p-4 border-b border-slate-800 flex items-center justify-between">
           <div>
-            <h3 class="text-sm font-bold text-white">Execution Milestones</h3>
-            <p class="text-[11px] text-slate-400">Lots are sized from your stop loss and reward : risk, so hitting the target on each trade delivers that step's gain</p>
+            <label class="lbl" for="b-lev" data-i="lev"></label>
+            <input class="in" id="b-lev" inputmode="decimal" value="20" oninput="calc()">
           </div>
-          <button onclick="exportPlanCSV()" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 flex items-center gap-1.5">
-            <span>📥 Export CSV</span>
-          </button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs font-mono">
-            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800">
-              <tr>
-                <th class="p-3"># Step</th>
-                <th class="p-3">Start Balance</th>
-                <th class="p-3">Gain Required</th>
-                <th class="p-3">Risk at Stop</th>
-                <th class="p-3">Total Lots</th>
-                <th class="p-3">Layer Ticket (3x)</th>
-                <th class="p-3">End Balance</th>
-                <th class="p-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody id="planner-table-body" data-nt class="divide-y divide-slate-800/60"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="pt-8 pb-4 border-t border-slate-800/90 text-slate-500 space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-[10px] leading-relaxed text-slate-500 font-mono">
-        <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/60 space-y-1.5">
-          <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between"><span class="flex items-center gap-1.5"><span>⚖️</span> Financial & Execution Risk Disclosure</span><button onclick="openDisclaimer()" class="text-amber-400 underline hover:text-amber-300 cursor-pointer normal-case">Read full disclaimer</button></div>
-          <p>Trading foreign exchange, precious metals, indices, and crypto CFDs carries high risk and may not be suitable for all investors. Position Sizing v1.0 provides purely mathematical modeling and theoretical exposure estimates based on user inputs. Past performance and theoretical compounding curves do not guarantee future market returns. Actual order execution may experience slippage, broker commission variations, and spread expansion during volatile sessions.</p>
-        </div>
-        <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800/60 space-y-1.5">
-          <div class="font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-            <span class="flex items-center gap-1.5"><span>🔒</span> PDPA 2010 & Data Processing Notice</span>
-            <button onclick="togglePrivacyDrawer()" class="text-cyan-400 underline hover:text-cyan-300 cursor-pointer">View Legal Details</button>
+          <div>
+            <label class="lbl" for="b-contract" id="b-contract-lbl"></label>
+            <input class="in" id="b-contract" inputmode="decimal" oninput="calc()">
           </div>
-          <p>In compliance with the <strong>Personal Data Protection Act 2010 (Malaysia)</strong>, this application operates on a <em>Zero-Knowledge Client-Side Architecture</em>. All equity amounts, lot sizes, and parameters are calculated strictly inside your local browser runtime memory (RAM) and are not collected, processed, or stored on external servers. Static assets are served via secure Content Delivery Networks (CDNs) hosted across international edge nodes outside Malaysia.</p>
+          <div>
+            <label class="lbl" for="b-step" data-i="step"></label>
+            <input class="in" id="b-step" inputmode="decimal" oninput="calc()">
+          </div>
+          <div>
+            <label class="lbl" for="b-min" data-i="min"></label>
+            <input class="in" id="b-min" inputmode="decimal" oninput="calc()">
+          </div>
+          <div>
+            <label class="lbl" for="b-fee" data-i="fee"></label>
+            <input class="in" id="b-fee" inputmode="decimal" oninput="calc()">
+          </div>
+          <div id="mmr-wrap">
+            <label class="lbl" for="b-mmr" data-i="mmr"></label>
+            <input class="in" id="b-mmr" inputmode="decimal" oninput="calc()">
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="linkbtn" onclick="resetBroker()" data-i="resetBroker"></button>
+          </div>
         </div>
-      </div>
+        <p class="help" id="fee-help"></p>
+        <p class="help" id="acct-help" hidden data-i="centHelp"></p>
+      </details>
+    </section>
 
-      <div id="privacy-drawer" class="hidden bg-slate-900/70 border border-slate-700/60 rounded-xl p-4 text-[10px] text-slate-400 leading-relaxed font-mono space-y-2">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-          <span class="font-bold text-cyan-300 uppercase">Cross-Border Data Transfer & Infrastructure Statement (Section 129 PDPA)</span>
-          <button onclick="togglePrivacyDrawer()" class="text-slate-400 hover:text-white font-bold text-xs">✕ Close</button>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-          <div><strong class="text-slate-200 block mb-0.5">1. Zero PII Collection</strong>This tool does not capture Personally Identifiable Information (PII) such as NRIC, full name, email address, phone number, or live MT4/MT5 broker login credentials.</div>
-          <div><strong class="text-slate-200 block mb-0.5">2. Edge Network Delivery</strong>Web application binaries (HTML/JS) are hosted on globally distributed edge networks (including US/EU data centers). By accessing this tool, you acknowledge international transmission of static web assets.</div>
-          <div><strong class="text-slate-200 block mb-0.5">3. No Persistence</strong>This tool does not store your inputs. Values exist only in your browser's memory for the current session and disappear when you close or reload the page. Only your language and theme choice are remembered in your browser.</div>
-        </div>
+    <section class="ticket" aria-live="polite">
+      <div class="t-head">
+        <span class="badge" id="t-side"></span>
+        <span class="t-sym" id="t-sym"></span>
+        <span class="t-risk" id="t-risk"></span>
       </div>
-
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 text-[9px] text-slate-600 font-mono">
-        <div>&copy; 2026 Position Sizing v1.0 &bull; Risk & Compounding Planner</div>
-        <div class="flex items-center gap-3">
-          <span>Client-Side Execution</span><span>&bull;</span><span>Zero Server Telemetry</span><span>&bull;</span><span>PDPA 2010 (MY)</span>
+      <div class="empty" id="t-empty"></div>
+      <div id="t-body" hidden>
+        <div class="t-main">
+          <div class="size">
+            <span class="size-num" id="t-size"></span>
+            <span class="size-unit" id="t-unit"></span>
+            <span class="size-cap" data-i="sizeCap"></span>
+          </div>
+          <p class="help" id="t-auto" hidden></p>
+          <div class="lad" id="ladder"></div>
+          <div class="stats">
+            <div class="stat"><span data-i="statRR"></span><b id="st-rr"></b></div>
+            <div class="stat"><span data-i="statBE"></span><b id="st-be"></b></div>
+            <div class="stat"><span data-i="statValue"></span><b id="st-val"></b></div>
+            <div class="stat"><span id="st-mg-lbl"></span><b id="st-mg"></b></div>
+            <div class="stat"><span data-i="statFees"></span><b id="st-fee"></b></div>
+            <div class="stat"><span data-i="statLiq"></span><b id="st-liq"></b></div>
+          </div>
+          <div id="t-warn"></div>
+          <div class="actions">
+            <button class="btn" onclick="copyOrder()" data-i="copy"></button>
+            <span class="ok" id="copy-ok" hidden></span>
+          </div>
         </div>
+        <details class="more">
+          <summary data-i="details"></summary>
+          <div class="sub" data-i="dTargets"></div>
+          <div class="scroll"><table class="tbl" id="tp-table"></table></div>
+          <div class="sub" data-i="dSplit"></div>
+          <div class="pills" id="split-chips">
+            <button class="pill" data-n="1">1</button>
+            <button class="pill" data-n="2">2</button>
+            <button class="pill" data-n="3">3</button>
+            <button class="pill" data-n="4">4</button>
+          </div>
+          <p class="help" data-i="dSplitHelp"></p>
+          <div class="scroll"><table class="tbl" id="split-table"></table></div>
+          <div class="sub" data-i="dMore"></div>
+          <div class="scroll"><table class="tbl" id="more-table"></table></div>
+          <p class="note" data-i="assume"></p>
+        </details>
       </div>
-    </footer>
+    </section>
   </main>
 
-  <script>
-    let appState = {
-      activeTab: 'sizer',
-      currentAsset: 'forex',
-      accountType: 'standard',
-      balance: 1000,
-      riskPct: 1.5,
-      slDistance: 20,
-      layers: 3,
-      direction: 1,
-      leverage: 20,
-      assetProfiles: {
-        forex:   { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helperKey: 'h_forex', priceUnit: 0.0001, contract: 100000, dec: 5, ph: '1.08500' },
-        gold:    { pipVal: 10.0, unit: 'PIPS',   short: 'pips', helperKey: 'h_gold', priceUnit: 0.1, contract: 100, dec: 2, ph: '2650.00' },
-        crypto:  { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helperKey: 'h_crypto', priceUnit: 1, contract: 1, dec: 2, ph: '83500' },
-        indices: { pipVal: 1.0,  unit: 'POINTS', short: 'pts',  helperKey: 'h_indices', priceUnit: 1, contract: 1, dec: 2, ph: '42000' }
-      }
-    };
-
-    let chartInstance = null;
-
-    // --- LANGUAGE (EN / BM) & THEME (night / day) ---
-    const BM = {
- "⚠ Disclaimer": "⚠ Penafian",
- "Read full disclaimer": "Baca penafian penuh",
- "Important Disclaimer & Risk Warning": "Penafian Penting & Amaran Risiko",
- "Please read this page carefully before using the calculator.": "Sila baca halaman ini dengan teliti sebelum menggunakan kalkulator.",
- "Trading leveraged products is risky and you can lose all of your money. This tool is an educational calculator, not financial advice.": "Berdagang produk berleverage adalah berisiko dan anda boleh kehilangan semua wang anda. Alat ini ialah kalkulator pendidikan, bukan nasihat kewangan.",
- "I have read and understood this disclaimer, and I accept that I use this tool at my own risk.": "Saya telah membaca dan memahami penafian ini, dan saya terima bahawa saya menggunakan alat ini atas risiko sendiri.",
- "1. Educational tool – not advice": "1. Alat pendidikan – bukan nasihat",
- "Position Sizing v1.0 is a mathematical calculator provided for education and information only. It is not financial, investment, trading, tax or legal advice, and it is not a recommendation or solicitation to buy or sell any instrument. Nothing here takes your personal objectives, financial situation or experience into account. The creator is not a licensed or registered financial adviser, and this tool has not been reviewed or approved by any financial regulator.": "Position Sizing v1.0 ialah kalkulator matematik yang disediakan untuk pendidikan dan maklumat sahaja. Ia bukan nasihat kewangan, pelaburan, dagangan, cukai atau undang-undang, dan bukan cadangan atau permintaan untuk membeli atau menjual sebarang instrumen. Tiada apa-apa di sini mengambil kira matlamat peribadi, keadaan kewangan atau pengalaman anda. Pencipta bukan penasihat kewangan berlesen atau berdaftar, dan alat ini tidak disemak atau diluluskan oleh mana-mana pengawal selia kewangan.",
- "2. Trading carries a high risk of loss": "2. Dagangan mempunyai risiko kerugian yang tinggi",
- "Forex, gold, index and cryptocurrency CFDs are leveraged products. You can lose money quickly, and depending on your broker and account type you can lose more than you deposit. Regulators report that a majority of retail CFD accounts lose money. Only trade with money you can afford to lose entirely, and seek independent advice from a licensed professional if you are unsure.": "CFD Forex, emas, indeks dan mata wang kripto ialah produk berleverage. Anda boleh rugi dengan cepat, dan bergantung pada broker serta jenis akaun, anda boleh rugi lebih daripada deposit anda. Pengawal selia melaporkan bahawa majoriti akaun CFD runcit mengalami kerugian. Berdagang hanya dengan wang yang anda mampu rugi sepenuhnya, dan dapatkan nasihat bebas daripada profesional berlesen jika anda tidak pasti.",
- "3. Results are estimates – verify with your broker": "3. Keputusan ialah anggaran – sahkan dengan broker anda",
- "Lot size, risk, profit and margin figures are estimates built on simplified assumptions. Forex assumes $10 per pip per standard lot, which is true for USD-quoted pairs such as EURUSD and GBPUSD but not for pairs such as USDJPY or cross pairs. Gold assumes 100 oz per lot and 1 pip = $0.10. Crypto and Indices assume $1 per point per lot. Micro and Cent accounts are scaled by 0.1 and 0.01. Brokers differ in contract size, pip definition, minimum lot, lot step, leverage, margin rules and symbol names. Always confirm these in your broker's contract specifications and check the order ticket before you trade. If this tool and your broker disagree, trust your broker.": "Angka saiz lot, risiko, keuntungan dan margin ialah anggaran berdasarkan andaian yang dipermudahkan. Forex mengandaikan $10 setiap pip bagi setiap lot standard, yang benar untuk pasangan berkuotkan USD seperti EURUSD dan GBPUSD tetapi tidak untuk pasangan seperti USDJPY atau pasangan silang. Emas mengandaikan 100 oz setiap lot dan 1 pip = $0.10. Kripto dan Indeks mengandaikan $1 setiap point bagi setiap lot. Akaun Micro dan Cent diskalakan dengan 0.1 dan 0.01. Broker berbeza dari segi saiz kontrak, definisi pip, lot minimum, langkah lot, leverage, peraturan margin dan nama simbol. Sentiasa sahkan perkara ini dalam spesifikasi kontrak broker anda dan semak tiket pesanan sebelum berdagang. Jika alat ini dan broker anda tidak sama, percayalah angka broker anda.",
- "4. Rounding, minimum lot and stop-outs": "4. Pembundaran, lot minimum dan stop-out",
- "Lot sizes are rounded down to the nearest 0.01 lot. When the calculated size is below 0.01 the tool shows 0.01, which can risk more than the percentage you chose. Stop losses are not guaranteed: slippage, price gaps, news events, thin liquidity, weekend gaps and platform or connection failures can make your actual loss larger than the maximum loss shown. Figures also exclude spread, commission, swap or funding fees and currency-conversion costs.": "Saiz lot dibundarkan ke bawah kepada 0.01 lot terdekat. Apabila saiz yang dikira kurang daripada 0.01, alat ini memaparkan 0.01, yang boleh meletakkan risiko lebih daripada peratusan pilihan anda. Stop loss tidak dijamin: slippage, jurang harga, peristiwa berita, kecairan nipis, jurang hujung minggu dan kegagalan platform atau sambungan boleh menjadikan kerugian sebenar lebih besar daripada kerugian maksimum yang dipaparkan. Angka juga tidak termasuk spread, komisen, swap atau yuran pembiayaan dan kos pertukaran mata wang.",
- "5. The Stepped Compounding Plan is hypothetical": "5. Pelan Kompaun Berperingkat bersifat hipotetikal",
- "The plan assumes every step succeeds and the same percentage gain is made on every trade. Real trading includes losing trades, drawdowns and periods without trades, so the goal is never guaranteed. A plan that needs a high risk per trade, flagged by the amber warnings, can wipe out an account in a short losing streak. The goal, growth rate, steps and lot sizes are illustrations, not forecasts, targets or promises of return. Past performance and theoretical compounding curves do not guarantee future results.": "Pelan ini mengandaikan setiap langkah berjaya dan peratusan keuntungan yang sama diperoleh pada setiap dagangan. Dagangan sebenar melibatkan dagangan rugi, drawdown dan tempoh tanpa dagangan, jadi sasaran tidak pernah dijamin. Pelan yang memerlukan risiko tinggi bagi setiap dagangan, ditandakan dengan amaran amber, boleh menghapuskan akaun dalam rentetan kerugian yang singkat. Sasaran, kadar pertumbuhan, langkah dan saiz lot ialah ilustrasi, bukan ramalan, sasaran atau janji pulangan. Prestasi lalu dan lengkung kompaun teori tidak menjamin keputusan masa depan.",
- "6. Cent and Micro accounts": "6. Akaun Cent dan Micro",
- "Enter your equity in real US dollars (for example 10,000 USC = $100). Dollar figures shown are real dollars; multiply by 100 to see USC. Lot definitions for Cent and Micro accounts vary by broker, so confirm yours before relying on the lot size.": "Masukkan ekuiti anda dalam dolar AS sebenar (contohnya 10,000 USC = $100). Angka dolar yang dipaparkan ialah dolar sebenar; darabkan dengan 100 untuk melihat USC. Definisi lot bagi akaun Cent dan Micro berbeza mengikut broker, jadi sahkan milik anda sebelum bergantung pada saiz lot.",
- "7. Your responsibility and legality": "7. Tanggungjawab anda dan kesahihan undang-undang",
- "You are solely responsible for your trading decisions and for making sure that trading, CFDs and crypto products are lawful for you where you live. Some products may be restricted or unavailable in your jurisdiction. This tool is intended for adults of legal age only.": "Anda bertanggungjawab sepenuhnya atas keputusan dagangan anda dan memastikan dagangan, CFD dan produk kripto adalah sah bagi anda di tempat anda tinggal. Sesetengah produk mungkin dihadkan atau tidak tersedia di bidang kuasa anda. Alat ini ditujukan kepada orang dewasa yang cukup umur sahaja.",
- "8. No warranty and limitation of liability": "8. Tiada waranti dan had liabiliti",
- "This tool is provided “as is” and “as available” without warranties of any kind, express or implied, including accuracy, completeness, reliability or fitness for a particular purpose. Errors, browser differences or software defects may exist despite testing. To the fullest extent permitted by law, the creator and contributors accept no liability for any loss or damage, including trading losses, lost profits and indirect or consequential loss, arising from use of or reliance on this tool. You use it entirely at your own risk.": "Alat ini disediakan “sebagaimana adanya” dan “sebagaimana tersedia” tanpa sebarang waranti, tersurat atau tersirat, termasuk ketepatan, kelengkapan, kebolehpercayaan atau kesesuaian untuk tujuan tertentu. Ralat, perbezaan pelayar atau kecacatan perisian mungkin wujud walaupun telah diuji. Setakat yang dibenarkan undang-undang, pencipta dan penyumbang tidak menerima liabiliti atas sebarang kerugian atau kerosakan, termasuk kerugian dagangan, keuntungan yang hilang dan kerugian tidak langsung atau berbangkit, yang timbul daripada penggunaan atau pergantungan pada alat ini. Anda menggunakannya sepenuhnya atas risiko sendiri.",
- "9. Privacy": "9. Privasi",
- "Your inputs are processed only in your browser and are not sent to or stored on any server by this tool. Your language and theme choice, and whether you have accepted this notice in the current tab session, are remembered in your browser only. The page loads open-source libraries (Tailwind CSS and Chart.js) from public CDNs, which may see standard web request data such as your IP address. See the PDPA notice at the bottom of the main page.": "Input anda diproses hanya dalam pelayar anda dan tidak dihantar atau disimpan pada mana-mana pelayan oleh alat ini. Pilihan bahasa dan tema anda, serta sama ada anda telah menerima notis ini dalam sesi tab semasa, hanya diingati dalam pelayar anda. Halaman ini memuatkan pustaka sumber terbuka (Tailwind CSS dan Chart.js) daripada CDN awam, yang mungkin melihat data permintaan web standard seperti alamat IP anda. Lihat notis PDPA di bahagian bawah halaman utama.",
- "Leverage": "Leverage",
- "Your broker's maximum leverage (e.g. prop firms often allow 1:5 to 1:20). Used for the margin check.": "Leverage maksimum broker anda (cth. firma prop biasanya benarkan 1:5 hingga 1:20). Digunakan untuk semakan margin.",
- "Margin check": "Semakan margin",
- "Margin required": "Margin diperlukan",
- "% of equity": "% ekuiti",
- "Max lots at this leverage": "Lot maksimum pada leverage ini",
- "Enter an entry price to check the margin and maximum lots at your leverage.": "Masukkan harga kemasukan untuk menyemak margin dan lot maksimum pada leverage anda.",
- "Approximate: assumes 100,000 units per lot for Forex, 100 oz for Gold and 1 unit for Crypto/Indices. Check your broker's contract specs.": "Anggaran: andaian 100,000 unit setiap lot untuk Forex, 100 oz untuk Emas dan 1 unit untuk Kripto/Indeks. Semak spesifikasi kontrak broker anda.",
- "Entry Price (optional)": "Harga Kemasukan (pilihan)",
- "Buy / Long": "Beli / Long",
- "Sell / Short": "Jual / Short",
- "Type the current price to see the exact Stop Loss and Take Profit prices. Leave blank to skip.": "Taip harga semasa untuk melihat harga Stop Loss dan Take Profit yang tepat. Biarkan kosong untuk langkau.",
- "Your price levels": "Aras harga anda",
- "ENTRY": "KEMASUKAN",
- "STOP LOSS": "STOP LOSS",
- "Set your take-profit this many pips/points from entry to hit the target. Enter an entry price to see the exact price levels.": "Letak take-profit sejauh ini (pips/points) dari kemasukan untuk capai sasaran. Masukkan harga kemasukan untuk melihat aras harga yang tepat.",
- "Price levels assume 1 pip = 0.0001 for Forex (JPY pairs use 0.01) and 1 pip = $0.10 for Gold.": "Aras harga mengandaikan 1 pip = 0.0001 untuk Forex (pasangan JPY guna 0.01) dan 1 pip = $0.10 untuk Emas.",
- "Multi-Asset Sizer & Compounding Planner": "Pengira Saiz Pelbagai Aset & Perancang Kompaun",
- "Zero-Cloud Storage (PDPA Clean)": "Tiada Storan Awan (Patuh PDPA)",
- "? How to use": "? Cara guna",
- "Reset": "Set semula",
- "How to use in 30 seconds": "Cara guna dalam 30 saat",
- "Everything updates live as you type. Your inputs are never saved or sent anywhere.": "Semua dikemas kini serta-merta semasa anda menaip. Input anda tidak pernah disimpan atau dihantar ke mana-mana.",
- "Pick your instrument": "Pilih instrumen anda",
- "(Forex, Gold, Crypto, Indices) and enter your": "(Forex, Emas, Kripto, Indeks) dan masukkan",
- "account equity": "ekuiti akaun",
- ".": ".",
- "Choose how much you risk": "Pilih berapa banyak anda risikokan",
- "per trade (1–2% is common). This is the most you lose if your stop loss is hit.": "setiap dagangan (1–2% biasa). Ini jumlah maksimum yang anda rugi jika stop loss terkena.",
- "Enter your stop loss distance": "Masukkan jarak stop loss",
- "– how far (in pips/points) price can move against you before you exit.": "– sejauh mana (dalam pips/points) harga boleh bergerak melawan anda sebelum anda keluar.",
- "Read the Recommended Broker Order": "Baca Pesanan Broker Disyorkan",
- ". Type the lot size into your platform. Pick 2–4 layers to split it into several smaller entries.": ". Masukkan saiz lot ke dalam platform anda. Pilih 2–4 lapisan untuk membahagikannya kepada beberapa kemasukan lebih kecil.",
- "Use the": "Gunakan tab",
- "Stepped Compounding Plan": "Pelan Kompaun Berperingkat",
- "tab to map a path from your starting balance to a goal, then click": "untuk merancang laluan dari baki permulaan ke sasaran, kemudian klik",
- "Load Sizer": "Muat ke Pengira",
- "on any step.": "pada mana-mana langkah.",
- "The formula": "Formula",
- "Example: $1,000 × 1.5% = $15 risk. 20 pips × $10 = $200 per lot → 0.07 lots.": "Contoh: $1,000 × 1.5% = $15 risiko. 20 pips × $10 = $200 setiap lot → 0.07 lot.",
- "Presets": "Pratetap",
- "One-click setups for common styles.": "Tetapan satu klik untuk gaya biasa.",
- "Layers": "Lapisan",
- "Splits total lots into equal entries.": "Membahagi jumlah lot kepada kemasukan sama rata.",
- "R:R targets": "Sasaran R:R",
- "Profit if price hits 1.5×, 2× or 3× your risk.": "Untung jika harga capai 1.5×, 2× atau 3× risiko anda.",
- "Warnings": "Amaran",
- "Yellow/red banner = lot size too big for your risk.": "Sepanduk kuning/merah = saiz lot terlalu besar untuk risiko anda.",
- "Educational calculator only – not financial advice. Always verify pip value and contract size with your broker.": "Kalkulator pendidikan sahaja – bukan nasihat kewangan. Sentiasa sahkan nilai pip dan saiz kontrak dengan broker anda.",
- "Got it": "Faham",
- "Quick start:": "Mula pantas:",
- "pick a": "pilih",
- "preset": "pratetap",
- "below (or fill the 3 boxes:": "di bawah (atau isi 3 kotak:",
- "equity → risk % → stop loss": "ekuiti → risiko % → stop loss",
- ") and read the": ") dan baca",
- "Recommended Broker Order": "Pesanan Broker Disyorkan",
- "on the right. Press": "di sebelah kanan. Tekan",
- "for a 30-second guide.": "untuk panduan 30 saat.",
- "🎯 1-Touch Position Sizer": "🎯 Pengira Saiz Posisi 1-Sentuhan",
- "📈 Stepped Compounding Plan": "📈 Pelan Kompaun Berperingkat",
- "PRESETS:": "PRATETAP:",
- "Gold Scalp (30 pips)": "Skalp Emas (30 pips)",
- "Forex Swing (25p)": "Swing Forex (25p)",
- "BTC 2% Risk": "BTC Risiko 2%",
- "Cent Account (10k USC)": "Akaun Cent (10k USC)",
- "Your Trade Setup": "Tetapan Dagangan Anda",
- "Live": "Langsung",
- "What are you trading?": "Apa yang anda dagangkan?",
- "Gold Metals": "Emas",
- "Crypto": "Kripto",
- "Indices": "Indeks",
- "Account Type": "Jenis Akaun",
- "Standard ($10/pip per lot)": "Standard ($10/pip setiap lot)",
- "Cent Account (USC)": "Akaun Cent (USC)",
- "Micro Account": "Akaun Mikro",
- "Account Equity ($)": "Ekuiti Akaun ($)",
- "Not sure? Leave Account Type on": "Tidak pasti? Biarkan Jenis Akaun pada",
- "Standard": "Standard",
- ". Use": ". Guna",
- "Cent": "Cent",
- "only if your broker offers cent accounts.": "hanya jika broker anda menawarkan akaun cent.",
- "Risk Per Trade": "Risiko Setiap Dagangan",
- "at risk": "dalam risiko",
- "The % of your equity you accept losing if the stop loss hits. Most traders stay at 1–2%.": "% ekuiti yang anda sanggup rugi jika stop loss terkena. Kebanyakan peniaga kekal pada 1–2%.",
- "Distance between your entry price and your stop loss. Tighter stop = bigger lot size for the same risk.": "Jarak antara harga kemasukan dan stop loss anda. Stop lebih dekat = saiz lot lebih besar untuk risiko yang sama.",
- "Split into entries (optional)": "Bahagi kepada kemasukan (pilihan)",
- "1 Entry": "1 Kemasukan",
- "2 Layers": "2 Lapisan",
- "3 Layers": "3 Lapisan",
- "4 Layers": "4 Lapisan",
- "Layers = several smaller orders that together equal the total lot size (all share the same stop loss).": "Lapisan = beberapa pesanan lebih kecil yang jumlahnya sama dengan jumlah lot (semua berkongsi stop loss yang sama).",
- "Recommended broker order": "Pesanan broker disyorkan",
- "Enter this lot size in your trading platform.": "Masukkan saiz lot ini dalam platform dagangan anda.",
- "Max loss if stopped out": "Kerugian maksimum jika stop loss terkena",
- "Order breakdown": "Pecahan pesanan",
- "If the trade wins (reward : risk)": "Jika dagangan menang (ganjaran : risiko)",
- "Pip Value:": "Nilai Pip:",
- "Contract:": "Kontrak:",
- "Min step:": "Langkah min:",
- "Good to know": "Perlu tahu",
- "Add a small buffer to your stop loss for spread and liquidity sweeps.": "Tambah sedikit ruang pada stop loss untuk spread dan sapuan kecairan.",
- "On Gold (XAUUSD), a $1.00 price move = 10 pips (100 points).": "Pada Emas (XAUUSD), pergerakan harga $1.00 = 10 pips (100 points).",
- "On Cent accounts, enter your equity in real US dollars (10,000 USC = $100). Dollar figures shown are real dollars – multiply by 100 to see USC.": "Pada akaun Cent, masukkan ekuiti anda dalam dolar AS sebenar (10,000 USC = $100). Angka dolar yang dipaparkan ialah dolar sebenar – darabkan dengan 100 untuk melihat USC.",
- "Pip values here are approximations – confirm with your broker's contract specs.": "Nilai pip di sini adalah anggaran – sahkan dengan spesifikasi kontrak broker anda.",
- "How this works:": "Cara ia berfungsi:",
- "enter your starting balance, goal and number of steps (trades). The planner calculates the growth % each step must deliver. You can also type a growth % directly. Click": "masukkan baki permulaan, sasaran dan bilangan langkah (dagangan). Perancang mengira % pertumbuhan yang perlu dicapai setiap langkah. Anda juga boleh taip % pertumbuhan terus. Klik",
- "on any row to size that step's trade.": "pada mana-mana baris untuk mengira saiz dagangan langkah itu.",
- "Starting Balance ($)": "Baki Permulaan ($)",
- "Target End Goal ($)": "Sasaran Akhir ($)",
- "Steps / Milestone Trades": "Langkah / Dagangan Pencapaian",
- "Growth Per Step (%) – auto or manual": "Pertumbuhan Setiap Langkah (%) – auto atau manual",
- "Equity Milestone Trajectory": "Trajektori Pencapaian Ekuiti",
- "Execution Milestones": "Pencapaian Pelaksanaan",
- "Lots are sized from your stop loss and reward : risk, so hitting the target on each trade delivers that step's gain": "Lot dikira daripada stop loss dan ganjaran : risiko anda, jadi mencapai sasaran setiap dagangan memberi keuntungan langkah itu",
- "Stop Loss Distance": "Jarak Stop Loss",
- "Reward : Risk": "Ganjaran : Risiko",
- "Risk at Stop": "Risiko pada Stop",
- "📥 Export CSV": "📥 Eksport CSV",
- "# Step": "# Langkah",
- "Start Balance": "Baki Mula",
- "Gain Required": "Keuntungan Diperlukan",
- "Total Lots": "Jumlah Lot",
- "Layer Ticket (3x)": "Tiket Lapisan (3x)",
- "End Balance": "Baki Akhir",
- "Action": "Tindakan",
- "Financial & Execution Risk Disclosure": "Pendedahan Risiko Kewangan & Pelaksanaan",
- "Trading foreign exchange, precious metals, indices, and crypto CFDs carries high risk and may not be suitable for all investors. Position Sizing v1.0 provides purely mathematical modeling and theoretical exposure estimates based on user inputs. Past performance and theoretical compounding curves do not guarantee future market returns. Actual order execution may experience slippage, broker commission variations, and spread expansion during volatile sessions.": "Dagangan pertukaran asing, logam berharga, indeks dan CFD kripto melibatkan risiko tinggi dan mungkin tidak sesuai untuk semua pelabur. Position Sizing v1.0 hanya menyediakan model matematik dan anggaran pendedahan teori berdasarkan input pengguna. Prestasi lalu dan lengkung kompaun teori tidak menjamin pulangan pasaran masa depan. Pelaksanaan pesanan sebenar mungkin mengalami slippage, perbezaan komisen broker dan pelebaran spread semasa sesi tidak menentu.",
- "PDPA 2010 & Data Processing Notice": "Notis PDPA 2010 & Pemprosesan Data",
- "View Legal Details": "Lihat Butiran Undang-undang",
- "In compliance with the": "Selaras dengan",
- "Personal Data Protection Act 2010 (Malaysia)": "Akta Perlindungan Data Peribadi 2010 (Malaysia)",
- ", this application operates on a": ", aplikasi ini beroperasi atas",
- "Zero-Knowledge Client-Side Architecture": "Seni Bina Sisi-Klien Tanpa Pengetahuan",
- ". All equity amounts, lot sizes, and parameters are calculated strictly inside your local browser runtime memory (RAM) and are not collected, processed, or stored on external servers. Static assets are served via secure Content Delivery Networks (CDNs) hosted across international edge nodes outside Malaysia.": ". Semua jumlah ekuiti, saiz lot dan parameter dikira sepenuhnya dalam memori (RAM) pelayar tempatan anda dan tidak dikumpul, diproses atau disimpan di pelayan luar. Aset statik disampaikan melalui Rangkaian Penyampaian Kandungan (CDN) selamat yang dihoskan di nod tepi antarabangsa di luar Malaysia.",
- "Cross-Border Data Transfer & Infrastructure Statement (Section 129 PDPA)": "Penyata Pemindahan Data Rentas Sempadan & Infrastruktur (Seksyen 129 PDPA)",
- "✕ Close": "✕ Tutup",
- "1. Zero PII Collection": "1. Tiada Pengumpulan PII",
- "This tool does not capture Personally Identifiable Information (PII) such as NRIC, full name, email address, phone number, or live MT4/MT5 broker login credentials.": "Alat ini tidak mengumpul Maklumat Pengenalan Peribadi (PII) seperti No. KP, nama penuh, e-mel, nombor telefon atau kelayakan log masuk broker MT4/MT5.",
- "2. Edge Network Delivery": "2. Penyampaian Rangkaian Tepi",
- "Web application binaries (HTML/JS) are hosted on globally distributed edge networks (including US/EU data centers). By accessing this tool, you acknowledge international transmission of static web assets.": "Fail aplikasi web (HTML/JS) dihoskan pada rangkaian tepi yang diagihkan secara global (termasuk pusat data AS/EU). Dengan mengakses alat ini, anda mengakui penghantaran antarabangsa aset web statik.",
- "3. No Persistence": "3. Tiada Penyimpanan",
- "© 2026 Position Sizing v1.0 • Risk & Compounding Planner": "© 2026 Position Sizing v1.0 • Perancang Risiko & Kompaun",
- "Client-Side Execution": "Pelaksanaan Sisi-Klien",
- "Zero Server Telemetry": "Tiada Telemetri Pelayan",
- "PDPA 2010 (MY)": "PDPA 2010 (MY)",
- "This tool does not store your inputs. Values exist only in your browser's memory for the current session and disappear when you close or reload the page. Only your language and theme choice are remembered in your browser.": "Alat ini tidak menyimpan input anda. Nilai hanya wujud dalam memori pelayar untuk sesi semasa dan hilang apabila anda tutup atau muat semula halaman. Hanya pilihan bahasa dan tema disimpan dalam pelayar anda."
-};
-    const DYN = {"en": {"slDist": "Stop Loss Distance", "totalLots": "Total Lots", "centUnits": "Cent Units", "units": "units", "singleEntry": "Single entry", "equalSplit": "Equal split", "order": "Order", "noOrder": "Enter equity, risk and stop loss to see your order.", "start": "Start", "step": "Step", "steps": "Steps", "loadSizer": "Load Sizer", "chartLabel": "Milestone Equity ($)", "h_forex": "1 pip = 10 points", "h_gold": "$1 move = 10 pips", "h_crypto": "1 point = $1 move", "h_indices": "1 point = 1 index point", "g_round": "<strong>Lot rounding:</strong> the minimum 0.01 lot puts <strong>$%1</strong> (%2%) at risk – more than you chose. Tighten the stop, raise your risk %, or use a Micro/Cent account.", "g_small": "<strong>Small account:</strong> a Standard account with $%1 is very thin. Consider a <strong>Cent Account</strong>.", "g_empty": "Enter your account equity to get a lot size.", "m_over": "<strong>Not enough margin:</strong> this order needs more margin than your equity. At this leverage the most you can open is <strong>%1 lots</strong>. Lower the risk, widen the stop, or use higher leverage.", "p_min": "<strong>Minimum lot:</strong> in %1 of %2 steps the 0.01 lot minimum risks more than the plan needs (up to <strong>%3%</strong> of balance, shown in amber below). Tighten the stop, use a Micro/Cent account, or start with a larger balance.", "p_cent": " Cent/Micro: enter balances in real US dollars (10,000 USC = $100); all dollar figures here are real dollars.", "discGo": "I understand – continue", "discClose": "Close", "p_info": "Lot sizes use the asset and account type from the Sizer tab (%1). Each trade risks gain ÷ reward:risk.", "p_warn": "<strong>Aggressive plan:</strong> to hit this goal at your reward : risk, every trade must risk about <strong>%1%</strong> of your balance. Most traders keep risk at 1–3%. Add more steps, lower the goal, or use a higher reward : risk.", "m_high": "<strong>High margin use:</strong> this order locks up about <strong>%1%</strong> of your equity, leaving little buffer for drawdown."}, "bm": {"slDist": "Jarak Stop Loss", "totalLots": "Jumlah Lot", "centUnits": "Unit Cent", "units": "unit", "singleEntry": "Satu kemasukan", "equalSplit": "Pecahan sama", "order": "Pesanan", "noOrder": "Masukkan ekuiti, risiko dan stop loss untuk melihat pesanan anda.", "start": "Mula", "step": "Langkah", "steps": "Langkah", "loadSizer": "Muat ke Pengira", "chartLabel": "Ekuiti Pencapaian ($)", "h_forex": "1 pip = 10 points", "h_gold": "Pergerakan $1 = 10 pips", "h_crypto": "1 point = pergerakan $1", "h_indices": "1 point = 1 point indeks", "g_round": "<strong>Pembundaran lot:</strong> lot minimum 0.01 meletakkan <strong>$%1</strong> (%2%) dalam risiko – lebih daripada pilihan anda. Ketatkan stop, naikkan % risiko, atau guna akaun Micro/Cent.", "g_small": "<strong>Akaun kecil:</strong> akaun Standard dengan $%1 sangat nipis. Pertimbangkan <strong>Akaun Cent</strong>.", "g_empty": "Masukkan ekuiti akaun anda untuk mendapatkan saiz lot.", "m_over": "<strong>Margin tidak mencukupi:</strong> pesanan ini memerlukan margin melebihi ekuiti anda. Pada leverage ini, maksimum yang boleh dibuka ialah <strong>%1 lot</strong>. Kurangkan risiko, lebarkan stop, atau guna leverage lebih tinggi.", "p_min": "<strong>Lot minimum:</strong> dalam %1 daripada %2 langkah, lot minimum 0.01 meletakkan risiko lebih daripada yang diperlukan pelan (sehingga <strong>%3%</strong> baki, ditunjuk warna amber di bawah). Ketatkan stop, guna akaun Micro/Cent, atau mulakan dengan baki lebih besar.", "p_cent": " Cent/Micro: masukkan baki dalam dolar AS sebenar (10,000 USC = $100); semua angka dolar di sini ialah dolar sebenar.", "discGo": "Saya faham – teruskan", "discClose": "Tutup", "p_info": "Saiz lot guna aset dan jenis akaun dari tab Pengira (%1). Setiap dagangan berisiko keuntungan ÷ ganjaran:risiko.", "p_warn": "<strong>Pelan agresif:</strong> untuk capai sasaran ini pada ganjaran : risiko anda, setiap dagangan perlu mempertaruhkan kira-kira <strong>%1%</strong> baki anda. Kebanyakan peniaga kekalkan risiko 1–3%. Tambah langkah, rendahkan sasaran, atau guna ganjaran : risiko lebih tinggi.", "m_high": "<strong>Penggunaan margin tinggi:</strong> pesanan ini mengunci kira-kira <strong>%1%</strong> ekuiti anda, meninggalkan sedikit ruang untuk drawdown."}};
-    let lang = 'en';
-    let theme = 'dark';
-    const textOrig = new WeakMap();
-
-    function t(key, a, b, c) {
-      let str = DYN[lang][key] ?? DYN.en[key] ?? key;
-      return str.replace('%1', a).replace('%2', b).replace('%3', c);
-    }
-
-    function translateStatic() {
-      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-        acceptNode: n => (n.parentElement.closest('script,[data-nt]') || !n.data.trim()) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
-      });
-      const nodes = [];
-      while (walker.nextNode()) nodes.push(walker.currentNode);
-      nodes.forEach(n => {
-        if (!textOrig.has(n)) textOrig.set(n, n.data);
-        const orig = textOrig.get(n);
-        const key = orig.replace(/\s+/g, ' ').trim();
-        const out = lang === 'bm' && BM[key] !== undefined ? BM[key] : key;
-        const lead = /^\s/.test(orig) ? ' ' : '';
-        const trail = /\s$/.test(orig) ? ' ' : '';
-        n.data = lang === 'bm' && BM[key] !== undefined ? lead + out + trail : orig;
-      });
-    }
-
-    function setLang(l) {
-      lang = l;
-      document.documentElement.lang = l === 'bm' ? 'ms' : 'en';
-      document.getElementById('lang-en').classList.toggle('on', l === 'en');
-      document.getElementById('lang-bm').classList.toggle('on', l === 'bm');
-      try { localStorage.setItem('ps-lang', l); } catch (e) {}
-      translateStatic();
-      if (document.getElementById('disc-btn')) document.getElementById('disc-btn').innerText = disclaimerAccepted() ? t('discClose') : t('discGo');
-      calculateSizer();
-      generateCompoundPlan();
-    }
-
-    function gridColor() { return theme === 'light' ? '#d6d1c4' : '#1e293b'; }
-    function tickColor() { return theme === 'light' ? '#64748b' : '#64748b'; }
-
-    function setTheme(th) {
-      theme = th;
-      document.documentElement.classList.toggle('light', th === 'light');
-      document.getElementById('theme-btn').innerText = th === 'light' ? '🌙' : '☀️';
-      try { localStorage.setItem('ps-theme', th); } catch (e) {}
-      if (chartInstance) generateCompoundPlan();
-    }
-    function toggleTheme() { setTheme(theme === 'light' ? 'dark' : 'light'); }
-
-    function initPrefs() {
-      let l = (navigator.language || '').toLowerCase().startsWith('ms') ? 'bm' : 'en';
-      let th = 'dark';
-      try {
-        l = localStorage.getItem('ps-lang') || l;
-        th = localStorage.getItem('ps-theme') || th;
-      } catch (e) {}
-      setTheme(th);
-      setLang(l);
-    }
-
-    // Full-page disclaimer: shown once per tab session until accepted; reopenable anytime
-    function disclaimerAccepted() {
-      try { return sessionStorage.getItem('ps-disc') === '1'; } catch (e) { return false; }
-    }
-    function openDisclaimer(gate) {
-      const accepted = disclaimerAccepted();
-      document.getElementById('disclaimer-page').classList.remove('hidden');
-      document.getElementById('disclaimer-page').scrollTop = 0;
-      document.getElementById('disc-check-wrap').classList.toggle('hidden', accepted);
-      document.getElementById('disc-btn').classList.toggle('hidden', false);
-      document.getElementById('disc-x').classList.toggle('hidden', !accepted);
-      document.getElementById('disc-check').checked = accepted;
-      document.getElementById('disc-btn').disabled = !accepted;
-      document.getElementById('disc-btn').innerText = accepted ? t('discClose') : t('discGo');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeDisclaimer(accept) {
-      if (!disclaimerAccepted()) {
-        if (!accept || !document.getElementById('disc-check').checked) return;
-        try { sessionStorage.setItem('ps-disc', '1'); } catch (e) {}
-      }
-      document.getElementById('disclaimer-page').classList.add('hidden');
-      document.body.style.overflow = '';
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      initPrefs();
-      if (!disclaimerAccepted()) openDisclaimer();
-    });
-
-    function toggleGuide(show) {
-      const m = document.getElementById('guide-modal');
-      m.classList.toggle('hidden', !show);
-      m.classList.toggle('flex', show);
-    }
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') { toggleGuide(false); if (disclaimerAccepted()) closeDisclaimer(); } });
-
-    function togglePrivacyDrawer() {
-      document.getElementById('privacy-drawer').classList.toggle('hidden');
-    }
-
-    const TAB_ON = 'px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-cyan-500 text-slate-950 shadow-md';
-    const TAB_OFF = 'px-4 py-2 rounded-xl text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-slate-800';
-
-    function switchMainTab(tab) {
-      appState.activeTab = tab;
-      const isSizer = tab === 'sizer';
-      document.getElementById('tab-sizer').className = isSizer ? TAB_ON : TAB_OFF;
-      document.getElementById('tab-planner').className = isSizer ? TAB_OFF : TAB_ON;
-      document.getElementById('section-sizer').classList.toggle('hidden', !isSizer);
-      document.getElementById('section-planner').classList.toggle('hidden', isSizer);
-      if (isSizer) calculateSizer(); else generateCompoundPlan();
-    }
-
-    function setAsset(assetKey) {
-      appState.currentAsset = assetKey;
-      document.querySelectorAll('.asset-pill').forEach(btn => {
-        btn.className = btn.dataset.asset === assetKey
-          ? 'asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 flex flex-col items-center'
-          : 'asset-pill px-2.5 py-2 rounded-xl text-xs font-semibold border border-slate-800 bg-slate-800/50 text-slate-300 hover:border-slate-700 flex flex-col items-center';
-      });
-
-      document.getElementById('entry-price').value = '';
-      const defaults = { gold: 30, crypto: 250, indices: 50, forex: 20 };
-      setSLValue(defaults[assetKey]);
-    }
-
-    function updateLevChips(v) {
-      document.querySelectorAll('.lev-chip').forEach(chip => {
-        const n = parseFloat(chip.innerText.split(':')[1]);
-        chip.className = n === v
-          ? 'lev-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono'
-          : 'lev-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono text-slate-300';
-      });
-    }
-
-    function setLeverage(v) {
-      appState.leverage = v;
-      document.getElementById('lev-input').value = v;
-      updateLevChips(v);
-      calculateSizer();
-    }
-
-    function syncLevInput(val) {
-      let n = parseFloat(val);
-      if (isNaN(n) || n < 1) n = 1;
-      appState.leverage = n;
-      updateLevChips(n);
-      calculateSizer();
-    }
-
-    function setDirection(d) {
-      appState.direction = d;
-      calculateSizer();
-    }
-
-    function fmtPrice(v, dec) {
-      return v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
-    }
-
-    function setRiskPct(val) {
-      appState.riskPct = parseFloat(val);
-      document.getElementById('risk-pct-slider').value = val;
-      document.getElementById('risk-pct-input').value = val;
-      updateRiskChipStyles(appState.riskPct);
-      calculateSizer();
-    }
-
-    function syncRiskSlider(val) {
-      appState.riskPct = parseFloat(val);
-      document.getElementById('risk-pct-input').value = val;
-      updateRiskChipStyles(appState.riskPct);
-      calculateSizer();
-    }
-
-    function syncRiskInput(val) {
-      let num = parseFloat(val);
-      if (isNaN(num) || num < 0.1) num = 0.1;
-      if (num > 20) num = 20;
-      appState.riskPct = num;
-      document.getElementById('risk-pct-slider').value = num;
-      updateRiskChipStyles(num);
-      calculateSizer();
-    }
-
-    function updateRiskChipStyles(activeVal) {
-      document.querySelectorAll('.risk-chip').forEach(chip => {
-        chip.className = parseFloat(chip.innerText) === activeVal
-          ? 'risk-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono'
-          : 'risk-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono text-slate-300';
-      });
-    }
-
-    function updateSLChipStyles(val) {
-      document.querySelectorAll('.sl-chip').forEach(chip => {
-        chip.className = parseFloat(chip.innerText) === val
-          ? 'sl-chip text-xs py-1 rounded-lg bg-cyan-400 text-slate-950 font-bold border border-cyan-400 font-mono'
-          : 'sl-chip text-xs py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 font-mono text-slate-300';
-      });
-    }
-
-    function setSLValue(val) {
-      appState.slDistance = parseFloat(val);
-      document.getElementById('sl-distance').value = val;
-      updateSLChipStyles(appState.slDistance);
-      calculateSizer();
-    }
-
-    function onSLInput() {
-      updateSLChipStyles(parseFloat(document.getElementById('sl-distance').value));
-      calculateSizer();
-    }
-
-    function setLayers(count) {
-      appState.layers = parseInt(count);
-      document.querySelectorAll('.layer-pill').forEach(btn => {
-        btn.className = parseInt(btn.dataset.layers) === appState.layers
-          ? 'layer-pill py-1.5 rounded-lg text-xs font-bold border border-cyan-500/50 bg-cyan-500/10 text-cyan-300'
-          : 'layer-pill py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-slate-800 text-slate-300';
-      });
-      calculateSizer();
-    }
-
-    function applyPreset(name) {
-      const presets = {
-        'gold-scalp':   { bal: 1000,  acc: 'standard', asset: 'gold',   risk: 1.5, sl: 30,  layers: 3 },
-        'forex-swing':  { bal: 2500,  acc: 'standard', asset: 'forex',  risk: 1.0, sl: 25,  layers: 2 },
-        'btc-intraday': { bal: 1500,  acc: 'standard', asset: 'crypto', risk: 2.0, sl: 350, layers: 3 },
-        'cent-boost':   { bal: 100,   acc: 'cent',     asset: 'forex',  risk: 2.0, sl: 20,  layers: 4 }
-      };
-      const p = presets[name];
-      if (!p) return;
-      switchMainTab('sizer');
-      document.getElementById('acc-balance').value = p.bal;
-      document.getElementById('acc-type').value = p.acc;
-      setAsset(p.asset);
-      setRiskPct(p.risk);
-      setSLValue(p.sl);
-      setLayers(p.layers);
-    }
-
-    function resetToDefaults() {
-      document.getElementById('acc-balance').value = 1000;
-      document.getElementById('acc-type').value = 'standard';
-      setAsset('forex');
-      setRiskPct(1.5);
-      setSLValue(20);
-      setLayers(3);
-    }
-
-    function calculateSizer() {
-      const balance = parseFloat(document.getElementById('acc-balance').value) || 0;
-      const accType = document.getElementById('acc-type').value;
-      appState.balance = balance;
-      appState.accountType = accType;
-      appState.slDistance = parseFloat(document.getElementById('sl-distance').value) || 1;
-
-      const riskAmount = balance * (appState.riskPct / 100);
-      document.getElementById('risk-cash-display').innerText = `$${riskAmount.toFixed(2)}`;
-
-      let accMultiplier = 1.0;
-      if (accType === 'micro') accMultiplier = 0.1;
-      if (accType === 'cent') accMultiplier = 0.01;
-
-      const profile = appState.assetProfiles[appState.currentAsset];
-      document.getElementById('sl-unit-tag').innerText = profile.unit;
-      document.getElementById('sl-unit-helper').innerText = t(profile.helperKey);
-      document.getElementById('sl-label').innerHTML = `<span class="step-badge mr-1">4</span> ${t('slDist')} (${profile.unit})`;
-      const effectivePipValue = profile.pipVal * accMultiplier;
-
-      const calculatedLot = riskAmount / (appState.slDistance * effectivePipValue);
-      let roundedTotalLot = Math.floor(calculatedLot * 100 + 1e-9) / 100;
-      if (roundedTotalLot < 0.01 && calculatedLot > 0) roundedTotalLot = 0.01;
-
-      document.getElementById('display-order-title').innerText = `${roundedTotalLot.toFixed(2)} ${t('totalLots')}`;
-      document.getElementById('debug-pipval').innerText = `$${effectivePipValue.toFixed(2)}/lot`;
-      document.getElementById('debug-contract').innerText = `${(profile.contract * accMultiplier).toLocaleString('en-US')} ${t('units')}${accType === 'cent' ? ' (' + t('centUnits') + ')' : ''}`;
-      document.getElementById('display-split-ratio').innerText = appState.layers === 1 ? t('singleEntry') : `${t('equalSplit')} x${appState.layers}`;
-
-      buildLayerTickets(roundedTotalLot, appState.layers, appState.slDistance, effectivePipValue, profile.short);
-
-      // Real risk of the rounded lot size (not the target risk)
-      const actualDollarAtRisk = roundedTotalLot * appState.slDistance * effectivePipValue;
-      const actualRiskPct = balance > 0 ? (actualDollarAtRisk / balance) * 100 : 0;
-      document.getElementById('display-risk-cash').innerText = `-$${actualDollarAtRisk.toFixed(2)} (-${parseFloat(actualRiskPct.toFixed(2))}%)`;
-
-      const guardrail = document.getElementById('guardrail-alert');
-      const guardMsg = document.getElementById('guardrail-msg');
-
-      if (balance > 0 && actualDollarAtRisk > riskAmount * 1.15) {
-        guardrail.className = 'p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs flex items-center gap-2.5 text-amber-300';
-        guardMsg.innerHTML = t('g_round', actualDollarAtRisk.toFixed(2), ((actualDollarAtRisk / balance) * 100).toFixed(1));
-      } else if (balance > 0 && balance < 50 && accType === 'standard') {
-        guardrail.className = 'p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-xs flex items-center gap-2.5 text-rose-300';
-        guardMsg.innerHTML = t('g_small', balance);
-      } else if (balance <= 0) {
-        guardrail.className = 'p-3 rounded-xl border border-slate-600/40 bg-slate-800/60 text-xs flex items-center gap-2.5 text-slate-300';
-        guardMsg.innerHTML = t('g_empty');
-      } else {
-        guardrail.className = 'hidden';
-      }
-
-      const sl = appState.slDistance;
-      // Price levels (optional entry price)
-      const entry = parseFloat(document.getElementById('entry-price').value);
-      const dir = appState.direction;
-      document.getElementById('entry-price').placeholder = profile.ph;
-      document.getElementById('dir-long').className = 'px-2.5 py-1 ' + (dir === 1 ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-slate-300');
-      document.getElementById('dir-short').className = 'px-2.5 py-1 ' + (dir === -1 ? 'bg-cyan-400 text-slate-950' : 'bg-slate-800 text-slate-300');
-      const hasEntry = entry > 0;
-      document.getElementById('levels-wrap').classList.toggle('hidden', !hasEntry);
-      if (hasEntry) {
-        const slPrice = entry - dir * appState.slDistance * profile.priceUnit;
-        document.getElementById('lvl-entry').innerText = fmtPrice(entry, profile.dec);
-        document.getElementById('lvl-sl').innerText = slPrice > 0 ? fmtPrice(slPrice, profile.dec) : '-';
-      }
-      // Margin check (needs an entry price)
-      const lev = appState.leverage;
-      document.getElementById('mg-lev').innerText = `1:${lev}`;
-      const mgBody = document.getElementById('mg-body');
-      const mgAlert = document.getElementById('mg-alert');
-      document.getElementById('mg-hint').classList.toggle('hidden', hasEntry);
-      mgBody.classList.toggle('hidden', !hasEntry);
-      mgAlert.className = 'hidden';
-      if (hasEntry) {
-        const perLot = profile.contract * accMultiplier * entry / lev;
-        const margin = roundedTotalLot * perLot;
-        const pct = balance > 0 ? (margin / balance) * 100 : 0;
-        const maxLots = Math.floor((balance / perLot) * 100 + 1e-9) / 100;
-        document.getElementById('mg-req').innerText = `$${margin.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        document.getElementById('mg-pct').innerText = `${pct.toFixed(1)}%`;
-        document.getElementById('mg-max').innerText = maxLots.toFixed(2);
-        if (balance > 0 && margin > balance) {
-          mgAlert.className = 'p-2.5 rounded-lg border text-xs leading-relaxed border-rose-500/30 bg-rose-500/10 text-rose-300';
-          mgAlert.innerHTML = t('m_over', maxLots.toFixed(2));
-        } else if (pct > 30) {
-          mgAlert.className = 'p-2.5 rounded-lg border text-xs leading-relaxed border-amber-500/30 bg-amber-500/10 text-amber-300';
-          mgAlert.innerHTML = t('m_high', pct.toFixed(0));
-        }
-      }
-      [['15', 1.5], ['20', 2.0], ['30', 3.0]].forEach(([id, r]) => {
-        const tp = entry + dir * appState.slDistance * r * profile.priceUnit;
-        document.getElementById(`tp-price-${id}`).innerText = hasEntry && tp > 0 ? fmtPrice(tp, profile.dec) : '';
-      });
-      [['15', 1.5], ['20', 2.0], ['30', 3.0]].forEach(([id, r]) => {
-        document.getElementById(`tp-gain-${id}`).innerText = `+$${(actualDollarAtRisk * r).toFixed(2)}`;
-        document.getElementById(`tp-pips-${id}`).innerText = `+${(sl * r).toFixed(1)} ${profile.short}`;
-      });
-    }
-
-    function buildLayerTickets(totalLots, layerCount, sl, pipVal, unitShort) {
-      const container = document.getElementById('layer-ticket-container');
-      container.innerHTML = '';
-
-      // Distribute in whole 0.01 steps so layers always sum to the total
-      const totalSteps = Math.round(totalLots * 100);
-      const baseSteps = Math.floor(totalSteps / layerCount);
-      const extra = totalSteps - baseSteps * layerCount;
-
-      for (let i = 0; i < layerCount; i++) {
-        const steps = baseSteps + (i < extra ? 1 : 0);
-        if (steps === 0) continue;
-        const lot = steps / 100;
-        const ticketRisk = lot * sl * pipVal;
-        const div = document.createElement('div');
-        div.className = 'flex items-center justify-between p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 font-mono text-xs';
-        div.innerHTML = `
-          <div class="flex items-center gap-3">
-            <span class="w-6 h-6 rounded-lg bg-cyan-400/10 text-cyan-300 flex items-center justify-center font-bold text-[11px] border border-cyan-400/20">L${i + 1}</span>
-            <div>
-              <span class="text-white font-bold text-sm">${lot.toFixed(2)} Lots</span>
-              <span class="text-[10px] text-slate-500 ml-2">${t('order')} #${i + 1}</span>
-            </div>
+  <!-- ===================== PLANNER ===================== -->
+  <main id="v-plan" hidden>
+    <div class="pgrid">
+      <section class="form">
+        <p class="help" style="margin:0;font-size:13.5px" id="p-intro"></p>
+        <div class="row2">
+          <div>
+            <label class="lbl" for="p-start" data-i="p_start"></label>
+            <input class="in" id="p-start" inputmode="decimal" value="1,000" oninput="solveGrowth()">
           </div>
-          <div class="text-right">
-            <span class="text-rose-400 font-semibold">-$${ticketRisk.toFixed(2)}</span>
-            <span class="text-[10px] text-slate-500 block">SL: ${sl} ${unitShort}</span>
-          </div>`;
-        container.appendChild(div);
-      }
-      if (!container.children.length) {
-        container.innerHTML = `<div class="text-xs text-slate-500 p-3">${t('noOrder')}</div>`;
-      }
-    }
+          <div>
+            <label class="lbl" for="p-goal" data-i="p_goal"></label>
+            <input class="in" id="p-goal" inputmode="decimal" value="5,000" oninput="solveGrowth()">
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label class="lbl" for="p-steps" data-i="p_steps"></label>
+            <input class="in" id="p-steps" inputmode="numeric" value="20" oninput="solveGrowth()">
+          </div>
+          <div>
+            <label class="lbl" for="p-growth" data-i="p_growth"></label>
+            <input class="in" id="p-growth" inputmode="decimal" oninput="plan()">
+          </div>
+        </div>
+        <p class="help" style="margin-top:-10px" data-i="p_growthHelp"></p>
+        <div class="row2">
+          <div>
+            <label class="lbl" for="p-rr" data-i="p_rr"></label>
+            <input class="in" id="p-rr" inputmode="decimal" value="2" oninput="plan()">
+          </div>
+          <div>
+            <label class="lbl" for="p-stop" data-i="p_stop"></label>
+            <input class="in" id="p-stop" inputmode="decimal" oninput="plan()">
+          </div>
+        </div>
+        <p class="help" style="margin-top:-10px" id="p-stop-help"></p>
+      </section>
 
-    function solveGainFromGoal() {
-      const start = parseFloat(document.getElementById('cp-start').value);
-      const goal = parseFloat(document.getElementById('cp-goal').value);
-      const steps = parseInt(document.getElementById('cp-steps').value);
+      <section>
+        <div class="card">
+          <span class="lbl" style="font-weight:500;color:var(--muted)" data-i="p_chart"></span>
+          <div class="big" id="p-big"></div>
+          <svg id="p-chart" viewBox="0 0 640 220" width="100%" role="img" aria-label="Balance after each winning trade"></svg>
+        </div>
+        <div id="p-warn"></div>
+      </section>
+    </div>
+    <div class="tblwrap">
+      <div class="actions" style="margin:0 0 8px">
+        <button class="btn ghost" onclick="copyPlan()" data-i="p_copy"></button>
+        <span class="ok" id="plan-ok" hidden></span>
+      </div>
+      <div class="scroll"><table class="tbl" id="p-table"></table></div>
+    </div>
+  </main>
 
-      if (start > 0 && goal > start && steps > 0) {
-        const rate = Math.pow(goal / start, 1 / steps) - 1;
-        document.getElementById('cp-growth-pct').value = (rate * 100).toFixed(4);
-      }
-      generateCompoundPlan();
-    }
+  <footer>
+    <span data-i="foot"></span>
+    <button class="linkbtn" onclick="openDisc()" data-i="discOpen"></button>
+  </footer>
+</div>
 
-    function generateCompoundPlan() {
-      const start = parseFloat(document.getElementById('cp-start').value) || 100;
-      const steps = Math.min(100, Math.max(1, parseInt(document.getElementById('cp-steps').value) || 20));
-      const growthPct = parseFloat(document.getElementById('cp-growth-pct').value) || 5;
-      const sl = Math.max(0.1, parseFloat(document.getElementById('cp-sl').value) || 25);
-      const rr = parseFloat(document.getElementById('cp-rr').value) || 2;
+<div class="mbar" id="mbar" hidden>
+  <div><b id="m-size"></b> <span id="m-unit"></span></div>
+  <div class="m-sl" id="m-sl"></div>
+  <div class="m-tp" id="m-tp"></div>
+  <button class="linkbtn" onclick="document.querySelector('.ticket').scrollIntoView({ behavior: 'smooth' })" data-i="mView"></button>
+</div>
 
-      // Pip value comes from the asset / account type chosen in the Sizer tab
-      const profile = appState.assetProfiles[appState.currentAsset];
-      const accType = document.getElementById('acc-type').value;
-      const accMult = accType === 'micro' ? 0.1 : accType === 'cent' ? 0.01 : 1;
-      const pipVal = profile.pipVal * accMult;
-      const riskPctNeeded = growthPct / rr;
+<div class="modal" id="disc" hidden role="dialog" aria-modal="true" aria-labelledby="disc-h">
+  <div class="sheet">
+    <h2 id="disc-h" data-i="discTitle"></h2>
+    <p data-i="disc1"></p><p data-i="disc2"></p><p data-i="disc3"></p>
+    <p data-i="disc4"></p><p data-i="disc5"></p><p data-i="disc6"></p>
+    <label class="check" id="disc-check-wrap"><input type="checkbox" id="disc-check" onchange="$('disc-go').disabled = !this.checked"><span data-i="discCheck"></span></label>
+    <button class="btn" id="disc-go" onclick="closeDisc()" disabled data-i="discGo"></button>
+  </div>
+</div>
 
-      document.getElementById('cp-sl-unit').innerText = profile.short;
-      const assetName = appState.currentAsset.charAt(0).toUpperCase() + appState.currentAsset.slice(1);
-      document.getElementById('cp-info').innerText = t('p_info', `${assetName}, $${pipVal.toFixed(2)} per lot`) + (accMult < 1 ? t('p_cent') : '');
-      let minLotSteps = 0, maxRiskPct = 0;
+<script>
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(String(v ?? '').replace(/,/g, '').trim()); return isFinite(n) ? n : NaN; };
+const decOf = step => { const s = String(step); return s.includes('e-') ? parseInt(s.split('e-')[1], 10) : (s.includes('.') ? s.split('.')[1].length : 0); };
+const fmtN = (x, d) => x.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtUsd = x => (x < 0 ? '-' : '') + '$' + fmtN(Math.abs(x), 2);
+const sgn = x => (x >= 0 ? '+' : '-') + '$' + fmtN(Math.abs(x), 2);
+const trim = x => parseFloat(x.toFixed(4));
 
-      const tbody = document.getElementById('planner-table-body');
-      tbody.innerHTML = '';
+// usdBase: USD is the base currency (USD/JPY), so P/L in quote currency is divided by price.
+const ASSETS = {
+  crypto: { sym: 'BTCUSDT', contract: 1,      step: 0.001, min: 0.001, usdBase: false, dec: 2,      pip: 1,      unit: 'pts',  coin: true,  stop: 1000, ref: 83500, stopPct: 1, fee: 0.055, mmr: 0.5 },
+  gold:   { sym: 'XAUUSD',  contract: 100,    step: 0.01,  min: 0.01,  usdBase: false, dec: 2,      pip: 0.1,    unit: 'pips', coin: false, stop: 5,    ref: 2650,  stopPct: 0.5, fee: 0, mmr: null },
+  fxusd:  { sym: 'EURUSD',  contract: 100000, step: 0.01,  min: 0.01,  usdBase: false, dec: 5,      pip: 0.0001, unit: 'pips', coin: false, stop: 0.002, ref: 1.085, stopPct: 0.25, fee: 0, mmr: null },
+  usdxxx: { sym: 'USDJPY',  contract: 100000, step: 0.01,  min: 0.01,  usdBase: true,  dec: 'auto', pip: 'auto', unit: 'pips', coin: false, stop: 0.2,  ref: 150,   stopPct: 0.25, fee: 0, mmr: null },
+  index:  { sym: 'NAS100',  contract: 1,      step: 0.01,  min: 0.01,  usdBase: false, dec: 2,      pip: 1,      unit: 'pts',  coin: false, stop: 50,   ref: 21000, stopPct: 0.5, fee: 0, mmr: null }
+};
+const priceDec = (a, px) => a.dec === 'auto' ? (px > 20 ? 3 : 5) : a.dec;
+const pipSize = (a, px) => a.pip === 'auto' ? (px > 20 ? 0.01 : 0.0001) : a.pip;
 
-      let currentBal = start;
-      const chartLabels = [t('start')];
-      const chartData = [start];
+const state = { asset: 'crypto', side: 1, rr: 2, split: 1, lang: 'en', theme: 'light', tab: 'sizer', last: null };
 
-      for (let i = 1; i <= steps; i++) {
-        const gain = currentBal * (growthPct / 100);
-        const endBal = currentBal + gain;
+// ---------------- text ----------------
+const TXT = {
+ en: {
+  title: 'Position Sizing',
+  emptyRisk: 'Type a risk % above 0.', errStopPct: 'For a buy, the stop size must be below 100%.',
+  fee: 'Fee per side (%)', mmr: 'Maintenance margin (%)',
+  feeHelpCrypto: 'Default 0.055% is a typical Bybit taker fee (assumed). Check your own fee tier. Size is cut so loss plus fees stays within your risk.',
+  feeHelpOther: 'Leave at 0 if your broker charges through the spread. If you pay commission, size is cut so loss plus fees stays within your risk.',
+  centHelp: 'Enter equity in real US dollars, not cents. 10,000 USC = $100.',
+  statFees: 'Fees at stop / at target', statLiq: 'Est. liquidation (isolated)', liqNA: 'Not applicable', noFees: 'Not included', inclFees: 'fees',
+  w_liq: 'Your stop is beyond the estimated liquidation price (%1) at 1 : %2 isolated. You would be liquidated before the stop is hit. Lower the leverage or move the stop closer.',
+  mFeeRate: 'Fee per side', mFees: 'Fees at stop', mLiq: 'Est. liquidation (isolated, rough)',
+  sideBuy: 'BUY', sideSell: 'SELL', u_pts: 'pts', u_pips: 'pips', coins: 'coins', mView: 'View',
+  w_feeEat: 'Fees of %1 are bigger than the %2 price gain at this target, so this trade loses money even if it hits the target. Use a wider target or a lower-fee order type.',
+  p_goalLow: 'The goal must be above the starting balance.',
+  p_impossible: 'Impossible plan: each trade would need to risk %1% of the balance. Add more trades or lower the goal.', tagline: 'Know your size, stop loss and exit before you place the trade.',
+  tabSizer: 'Position sizer', tabPlan: 'Compounding plan', light: 'Light', dark: 'Dark',
+  instrument: 'What are you trading?', a_crypto: 'Crypto', a_gold: 'Gold', a_fxusd: 'Forex xxx/USD', a_usdxxx: 'Forex USD/xxx', a_index: 'Indices',
+  ex_crypto: 'BTC, ETH and other USDT perps on Bybit or Binance. Size is in coins, step 0.001.',
+  ex_gold: 'XAUUSD. 1 lot = 100 oz, so a $1 move = $100 per lot. Brokers differ, so check contract size in Broker settings.',
+  ex_fxusd: 'Pairs quoted in USD: EURUSD, GBPUSD, AUDUSD. 1 lot = 100,000 units.',
+  ex_usdxxx: 'Pairs with USD first: USDJPY, USDCAD, USDCHF. Profit is converted back to USD. Cross pairs such as EURJPY or EURGBP are not supported yet.',
+  ex_index: 'Index CFDs such as US30 or NAS100. Assumes $1 per point per lot in USD. For a non-USD index such as DAX, set contract size to the EURUSD rate.',
+  symbol: 'Symbol', equity: 'Account equity ($)', risk: 'Risk per trade',
+  riskHelp: 'The most you lose if your stop loss is hit. Most traders use 0.5–2%.',
+  side: 'Direction', buy: 'Buy / Long', sell: 'Sell / Short',
+  entry: 'Entry price', entryHelp: 'The price you plan to enter at, usually the current price.',
+  sl: 'Stop loss price (optional)', slHelp: 'Leave blank to use the stop size below, or type your level from the chart.',
+  stopSize: 'Stop size (used when the stop price is blank)',
+  stopHelp: 'How far the stop sits from entry, as % of price. Your size adjusts so the loss at the stop is always your risk %.',
+  autoNote: 'Stop placed %1% from entry. Type a stop price on the left to use your chart level instead.',
+  below: 'below entry', above: 'above entry',
+  rr: 'Reward : risk target', exit: 'Exit price (optional)',
+  exitHelp: 'Leave blank to use the reward : risk above. Type a price to set your own target.',
+  auto: 'Auto',
+  broker: 'Broker settings', brokerHelp: 'Pre-filled for each instrument. Change them to match your broker’s contract specs.',
+  acct: 'Account type', std: 'Standard', micro: 'Micro (×0.1)', cent: 'Cent (×0.01)', lev: 'Leverage (1 : x)',
+  contractLot: 'Contract size per lot', contractCoin: 'Coins per 1.0 size',
+  step: 'Size step', min: 'Minimum size', resetBroker: 'Reset to defaults',
+  sizeCap: 'Size to enter on your platform', lots: 'lots',
+  tp: 'Take profit', enTag: 'Entry', slTag: 'Stop loss', riskLbl: 'Risk',
+  empty0: 'Type your account equity to start.', empty1: 'Type your entry price to start.', empty2: 'Now add your stop loss price from your chart.',
+  errSlBuy: 'For a buy, the stop loss must be below the entry price.', errSlSell: 'For a sell, the stop loss must be above the entry price.',
+  errExitBuy: 'For a buy, the exit must be above entry. Using the reward : risk target instead.',
+  errExitSell: 'For a sell, the exit must be below entry. Using the reward : risk target instead.',
+  statRR: 'Reward : risk', statBE: 'Win rate needed to break even', statValue: 'Position value', statMg: 'Margin at 1 : %1',
+  w_min: 'Your stop is too wide for this account. The minimum size of %1 risks %2 (%3% of equity), more than you chose. Move the stop closer or skip the trade.',
+  w_mgOver: 'Not enough margin. This size needs %1 but your equity is %2. At 1 : %3 the most you can open is %4. Raise leverage or use a wider stop.',
+  w_mgHigh: 'This trade ties up %1% of your equity as margin, leaving little room for other trades.',
+  w_risk: 'Risking %1% per trade is aggressive. Five losses in a row would cost about %2% of the account.',
+  w_exitNeg: 'This reward : risk puts the exit below zero. Use a lower target.',
+  copy: 'Copy order', copied: 'Copied to clipboard', copyFail: 'Select and copy:',
+  details: 'More details', dTargets: 'Other targets', dSplit: 'Split into entries',
+  dSplitHelp: 'Several smaller orders with the same stop loss. Together they equal the total size.',
+  dMore: 'Numbers behind the plan', target: 'Target', price: 'Price', profit: 'Profit', order: 'Order', size: 'Size', lossAtSl: 'Loss at stop',
+  mDist: 'Stop distance', mLossLot: 'Loss per 1.0 size at stop', mRaw: 'Exact size before rounding', mMax: 'Max size at your leverage', mRisk: 'Risk you chose', mActual: 'Actual loss at stop',
+  assume: 'Estimates only. Includes trading fees at the rate set in Broker settings. Excludes spread, swap or funding, and slippage. Check the order ticket on your platform before you trade.',
+  p_intro: 'Map a path from your balance to a goal. Each step is one winning trade at your reward : risk. Size uses the instrument and broker settings from the sizer (%1).',
+  p_start: 'Starting balance ($)', p_goal: 'Goal ($)', p_steps: 'Winning trades', p_growth: 'Growth per trade (%)',
+  p_growthHelp: 'Fills itself from your goal. Type your own to override.',
+  p_rr: 'Reward : risk (1 : x)', p_stop: 'Typical stop distance (price)',
+  p_stopHelp: 'How far your stop usually sits from entry, in price. %1',
+  p_chart: 'Balance after each winning trade', p_big: '%1 to %2 in %3 winning trades',
+  p_risk: 'Each trade risks about %1% of the balance.',
+  p_aggr: 'Aggressive plan: each trade must risk about %1% of the balance. Most traders stay at 1–3%. Add more trades, lower the goal or use a higher reward : risk.',
+  p_real: 'The plan assumes every trade wins. One loss at %1% risk takes %2 off the first step, and you then need %3% just to get back.',
+  p_min: 'In %1 of %2 trades the minimum size risks more than the plan needs (up to %3% of balance, shaded below).',
+  c_n: '#', c_start: 'Start balance', c_risk: 'Risk at stop', c_gain: 'Target gain', c_size: 'Size', c_end: 'End balance',
+  use: 'Use in sizer', start: 'Start', trade: 'Trade', p_copy: 'Copy table (CSV)',
+  foot: 'Educational calculator, not financial advice. Your inputs stay in your browser and are never sent or stored (PDPA 2010).',
+  discOpen: 'Read disclaimer', discTitle: 'Before you use this calculator',
+  disc1: 'This is an educational calculator, not financial, investment or trading advice. The creator is not a licensed adviser, and the tool is not reviewed by any regulator.',
+  disc2: 'Forex, gold, index and crypto CFDs and perpetual futures are leveraged. You can lose money quickly, and with some brokers more than you deposit. Only trade money you can afford to lose.',
+  disc3: 'Sizes, profits and margin are estimates based on the broker settings shown. Brokers differ in contract size, minimum size, size step, leverage and margin rules. If this tool and your broker disagree, trust your broker.',
+  disc4: 'Stop losses are not guaranteed. Gaps, slippage, news, thin liquidity and platform failures can make a real loss bigger than shown. Trading fees are included only at the rate you set in Broker settings. Spread, swap, funding and slippage are not included.',
+  disc5: 'The compounding plan is hypothetical. It assumes every trade wins, which does not happen in real trading. It is an illustration, not a forecast or a promise of return.',
+  disc6: 'Your inputs are processed only in your browser and are not sent to or stored on any server. Your language and theme choice are remembered on this device only.',
+  discCheck: 'I have read this and I use the tool at my own risk.', discGo: 'Continue'
+ },
+ bm: {
+  title: 'Saiz Posisi',
+  emptyRisk: 'Taip % risiko melebihi 0.', errStopPct: 'Untuk beli, saiz stop mesti bawah 100%.',
+  fee: 'Yuran setiap sisi (%)', mmr: 'Margin penyelenggaraan (%)',
+  feeHelpCrypto: 'Lalai 0.055% ialah yuran taker biasa Bybit (andaian). Semak tahap yuran anda. Saiz dikurangkan supaya rugi campur yuran kekal dalam had risiko anda.',
+  feeHelpOther: 'Biarkan 0 jika broker anda caj melalui spread. Jika anda bayar komisen, saiz dikurangkan supaya rugi campur yuran kekal dalam had risiko.',
+  centHelp: 'Masukkan ekuiti dalam dolar AS sebenar, bukan sen. 10,000 USC = $100.',
+  statFees: 'Yuran pada stop / sasaran', statLiq: 'Anggaran likuidasi (isolated)', liqNA: 'Tidak berkaitan', noFees: 'Tidak dikira', inclFees: 'yuran',
+  w_liq: 'Stop anda melepasi anggaran harga likuidasi (%1) pada 1 : %2 isolated. Anda akan dilikuidasi sebelum stop terkena. Kurangkan leverage atau dekatkan stop.',
+  mFeeRate: 'Yuran setiap sisi', mFees: 'Yuran pada stop', mLiq: 'Anggaran likuidasi (isolated, kasar)',
+  sideBuy: 'BELI', sideSell: 'JUAL', u_pts: 'mata', u_pips: 'pip', coins: 'syiling', mView: 'Lihat',
+  w_feeEat: 'Yuran %1 lebih besar daripada keuntungan harga %2 pada sasaran ini, jadi dagangan ini rugi walaupun sasaran tercapai. Guna sasaran lebih jauh atau jenis pesanan yuran lebih rendah.',
+  p_goalLow: 'Sasaran mesti melebihi baki permulaan.',
+  p_impossible: 'Pelan mustahil: setiap dagangan perlu merisikokan %1% baki. Tambah dagangan atau rendahkan sasaran.', tagline: 'Tahu saiz, stop loss dan harga keluar sebelum anda buat dagangan.',
+  tabSizer: 'Pengira saiz', tabPlan: 'Pelan kompaun', light: 'Cerah', dark: 'Gelap',
+  instrument: 'Apa yang anda dagangkan?', a_crypto: 'Kripto', a_gold: 'Emas', a_fxusd: 'Forex xxx/USD', a_usdxxx: 'Forex USD/xxx', a_index: 'Indeks',
+  ex_crypto: 'BTC, ETH dan perp USDT lain di Bybit atau Binance. Saiz dalam unit syiling, langkah 0.001.',
+  ex_gold: 'XAUUSD. 1 lot = 100 auns, jadi pergerakan $1 = $100 setiap lot. Broker berbeza, jadi semak saiz kontrak dalam Tetapan broker.',
+  ex_fxusd: 'Pasangan berkuotkan USD: EURUSD, GBPUSD, AUDUSD. 1 lot = 100,000 unit.',
+  ex_usdxxx: 'Pasangan dengan USD di depan: USDJPY, USDCAD, USDCHF. Untung ditukar semula ke USD. Pasangan silang seperti EURJPY atau EURGBP belum disokong.',
+  ex_index: 'CFD indeks seperti US30 atau NAS100. Andaian $1 setiap point setiap lot dalam USD. Untuk indeks bukan USD seperti DAX, tetapkan saiz kontrak kepada kadar EURUSD.',
+  symbol: 'Simbol', equity: 'Ekuiti akaun ($)', risk: 'Risiko setiap dagangan',
+  riskHelp: 'Jumlah maksimum anda rugi jika stop loss terkena. Kebanyakan peniaga guna 0.5–2%.',
+  side: 'Arah', buy: 'Beli / Long', sell: 'Jual / Short',
+  entry: 'Harga masuk', entryHelp: 'Harga anda mahu masuk, biasanya harga semasa.',
+  sl: 'Harga stop loss (pilihan)', slHelp: 'Biarkan kosong untuk guna saiz stop di bawah, atau taip aras dari carta.',
+  stopSize: 'Saiz stop (diguna jika harga stop kosong)',
+  stopHelp: 'Jarak stop dari harga masuk, sebagai % harga. Saiz anda dilaras supaya rugi pada stop sentiasa sama dengan % risiko anda.',
+  autoNote: 'Stop diletakkan %1% dari harga masuk. Taip harga stop di sebelah kiri untuk guna aras carta anda.',
+  below: 'bawah harga masuk', above: 'atas harga masuk',
+  rr: 'Sasaran ganjaran : risiko', exit: 'Harga keluar (pilihan)',
+  exitHelp: 'Biarkan kosong untuk guna sasaran ganjaran : risiko di atas. Taip harga untuk sasaran sendiri.',
+  auto: 'Auto',
+  broker: 'Tetapan broker', brokerHelp: 'Diisi mengikut instrumen. Ubah supaya sama dengan spesifikasi kontrak broker anda.',
+  acct: 'Jenis akaun', std: 'Standard', micro: 'Mikro (×0.1)', cent: 'Cent (×0.01)', lev: 'Leverage (1 : x)',
+  contractLot: 'Saiz kontrak setiap lot', contractCoin: 'Syiling setiap saiz 1.0',
+  step: 'Langkah saiz', min: 'Saiz minimum', resetBroker: 'Set semula',
+  sizeCap: 'Saiz untuk dimasukkan dalam platform anda', lots: 'lot',
+  tp: 'Ambil untung', enTag: 'Masuk', slTag: 'Stop loss', riskLbl: 'Risiko',
+  empty0: 'Taip ekuiti akaun anda untuk mula.', empty1: 'Taip harga masuk untuk mula.', empty2: 'Sekarang masukkan harga stop loss dari carta anda.',
+  errSlBuy: 'Untuk beli, stop loss mesti di bawah harga masuk.', errSlSell: 'Untuk jual, stop loss mesti di atas harga masuk.',
+  errExitBuy: 'Untuk beli, harga keluar mesti di atas harga masuk. Guna sasaran ganjaran : risiko.',
+  errExitSell: 'Untuk jual, harga keluar mesti di bawah harga masuk. Guna sasaran ganjaran : risiko.',
+  statRR: 'Ganjaran : risiko', statBE: 'Kadar menang untuk pulang modal', statValue: 'Nilai posisi', statMg: 'Margin pada 1 : %1',
+  w_min: 'Stop anda terlalu jauh untuk akaun ini. Saiz minimum %1 merisikokan %2 (%3% ekuiti), lebih daripada pilihan anda. Dekatkan stop atau langkau dagangan.',
+  w_mgOver: 'Margin tidak cukup. Saiz ini perlukan %1 tetapi ekuiti anda %2. Pada 1 : %3, maksimum yang boleh dibuka ialah %4. Naikkan leverage atau guna stop lebih jauh.',
+  w_mgHigh: 'Dagangan ini mengunci %1% ekuiti anda sebagai margin, tinggal sedikit ruang untuk dagangan lain.',
+  w_risk: 'Risiko %1% setiap dagangan adalah agresif. Lima kerugian berturut-turut boleh hilangkan kira-kira %2% akaun.',
+  w_exitNeg: 'Sasaran ini meletakkan harga keluar bawah sifar. Guna sasaran lebih rendah.',
+  copy: 'Salin pesanan', copied: 'Disalin', copyFail: 'Pilih dan salin:',
+  details: 'Butiran lanjut', dTargets: 'Sasaran lain', dSplit: 'Bahagi kepada beberapa kemasukan',
+  dSplitHelp: 'Beberapa pesanan kecil dengan stop loss yang sama. Jumlahnya sama dengan saiz penuh.',
+  dMore: 'Angka di sebalik pelan', target: 'Sasaran', price: 'Harga', profit: 'Untung', order: 'Pesanan', size: 'Saiz', lossAtSl: 'Rugi pada stop',
+  mDist: 'Jarak stop', mLossLot: 'Rugi setiap saiz 1.0 pada stop', mRaw: 'Saiz tepat sebelum dibundarkan', mMax: 'Saiz maksimum pada leverage anda', mRisk: 'Risiko pilihan anda', mActual: 'Rugi sebenar pada stop',
+  assume: 'Anggaran sahaja. Termasuk yuran dagangan pada kadar dalam Tetapan broker. Tidak termasuk spread, swap atau pembiayaan, dan slippage. Semak tiket pesanan dalam platform anda sebelum berdagang.',
+  p_intro: 'Rancang laluan dari baki anda ke sasaran. Setiap langkah ialah satu dagangan menang pada ganjaran : risiko anda. Saiz guna instrumen dan tetapan broker dari pengira saiz (%1).',
+  p_start: 'Baki permulaan ($)', p_goal: 'Sasaran ($)', p_steps: 'Dagangan menang', p_growth: 'Pertumbuhan setiap dagangan (%)',
+  p_growthHelp: 'Diisi sendiri dari sasaran anda. Taip nilai sendiri untuk ubah.',
+  p_rr: 'Ganjaran : risiko (1 : x)', p_stop: 'Jarak stop biasa (harga)',
+  p_stopHelp: 'Sejauh mana stop anda biasanya dari harga masuk, dalam harga. %1',
+  p_chart: 'Baki selepas setiap dagangan menang', p_big: '%1 ke %2 dalam %3 dagangan menang',
+  p_risk: 'Setiap dagangan merisikokan kira-kira %1% baki.',
+  p_aggr: 'Pelan agresif: setiap dagangan perlu merisikokan kira-kira %1% baki. Kebanyakan peniaga kekal 1–3%. Tambah dagangan, rendahkan sasaran atau guna ganjaran : risiko lebih tinggi.',
+  p_real: 'Pelan ini andaikan setiap dagangan menang. Satu kerugian pada risiko %1% memotong %2 pada langkah pertama, dan anda perlu %3% hanya untuk pulih.',
+  p_min: 'Dalam %1 daripada %2 dagangan, saiz minimum merisikokan lebih daripada keperluan pelan (sehingga %3% baki, berlorek di bawah).',
+  c_n: '#', c_start: 'Baki mula', c_risk: 'Risiko pada stop', c_gain: 'Sasaran untung', c_size: 'Saiz', c_end: 'Baki akhir',
+  use: 'Guna di pengira', start: 'Mula', trade: 'Dagangan', p_copy: 'Salin jadual (CSV)',
+  foot: 'Kalkulator pendidikan, bukan nasihat kewangan. Input anda kekal dalam pelayar dan tidak dihantar atau disimpan (PDPA 2010).',
+  discOpen: 'Baca penafian', discTitle: 'Sebelum anda guna kalkulator ini',
+  disc1: 'Ini kalkulator pendidikan, bukan nasihat kewangan, pelaburan atau dagangan. Pencipta bukan penasihat berlesen, dan alat ini tidak disemak oleh mana-mana pengawal selia.',
+  disc2: 'CFD dan niaga hadapan perpetual Forex, emas, indeks dan kripto adalah berleverage. Anda boleh rugi dengan cepat, dan dengan sesetengah broker lebih daripada deposit. Berdagang hanya dengan wang yang anda mampu rugi.',
+  disc3: 'Saiz, untung dan margin ialah anggaran berdasarkan tetapan broker yang dipaparkan. Broker berbeza dari segi saiz kontrak, saiz minimum, langkah saiz, leverage dan peraturan margin. Jika alat ini dan broker anda tidak sama, percayalah broker anda.',
+  disc4: 'Stop loss tidak dijamin. Jurang harga, slippage, berita, kecairan nipis dan kegagalan platform boleh menjadikan kerugian sebenar lebih besar. Yuran dagangan hanya dikira pada kadar yang anda tetapkan dalam Tetapan broker. Spread, swap, pembiayaan dan slippage tidak termasuk.',
+  disc5: 'Pelan kompaun bersifat hipotetikal. Ia andaikan setiap dagangan menang, yang tidak berlaku dalam dagangan sebenar. Ia ilustrasi, bukan ramalan atau janji pulangan.',
+  disc6: 'Input anda diproses hanya dalam pelayar dan tidak dihantar atau disimpan di mana-mana pelayan. Pilihan bahasa dan tema hanya diingati pada peranti ini.',
+  discCheck: 'Saya telah membaca ini dan menggunakan alat ini atas risiko sendiri.', discGo: 'Teruskan'
+ }
+};
+function t(k, ...args) {
+  let s = (TXT[state.lang] && TXT[state.lang][k]) ?? TXT.en[k] ?? k;
+  args.forEach((v, i) => { s = s.split('%' + (i + 1)).join(v); });
+  return s;
+}
+function applyText() {
+  document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
+  document.documentElement.lang = state.lang === 'bm' ? 'ms' : 'en';
+  $('l-en').setAttribute('aria-pressed', state.lang === 'en');
+  $('l-bm').setAttribute('aria-pressed', state.lang === 'bm');
+  $('theme-btn').textContent = state.theme === 'light' ? t('dark') : t('light');
+}
+function setLang(l) {
+  state.lang = l;
+  try { localStorage.setItem('ps-lang', l); } catch (e) {}
+  applyText(); calc(); plan();
+}
+function setTheme(th) {
+  state.theme = th;
+  document.documentElement.setAttribute('data-theme', th);
+  try { localStorage.setItem('ps-theme', th); } catch (e) {}
+  applyText(); plan();
+}
+function toggleTheme() { setTheme(state.theme === 'light' ? 'dark' : 'light'); }
 
-        // Risk needed so that a winning trade at reward:risk delivers `gain`
-        const riskNeeded = gain / rr;
-        let lots = Math.floor((riskNeeded / (sl * pipVal)) * 100 + 1e-9) / 100;
-        if (lots < 0.01) lots = 0.01;
-        const actualRisk = lots * sl * pipVal;
-        const actualRiskPct = (actualRisk / currentBal) * 100;
-        const overRisk = actualRisk > riskNeeded * 1.15;
-        if (overRisk) { minLotSteps++; maxRiskPct = Math.max(maxRiskPct, actualRiskPct); }
+function showTab(tab) {
+  state.tab = tab;
+  $('tab-sizer').setAttribute('aria-selected', tab === 'sizer');
+  $('tab-plan').setAttribute('aria-selected', tab === 'plan');
+  $('v-sizer').hidden = tab !== 'sizer';
+  $('v-plan').hidden = tab !== 'plan';
+  if (tab === 'plan') plan(); else calc();
+}
 
-        // Split in whole 0.01 steps so layers always sum to the total
-        const totalSteps = Math.round(lots * 100);
-        const baseSteps = Math.floor(totalSteps / 3);
-        const extra = totalSteps - baseSteps * 3;
-        const layerLots = extra === 0
-          ? `${(baseSteps / 100).toFixed(2)} x3`
-          : baseSteps === 0
-            ? `0.01 x${extra}`
-            : `${((baseSteps + 1) / 100).toFixed(2)} x${extra} + ${(baseSteps / 100).toFixed(2)} x${3 - extra}`;
+// ---------------- sizer inputs ----------------
+function setAsset(key, clear = true) {
+  state.asset = key;
+  const a = ASSETS[key];
+  document.querySelectorAll('#asset-pills .pill').forEach(b => b.setAttribute('aria-pressed', b.dataset.a === key));
+  $('symbol').value = a.sym;
+  resetBroker(false);
+  if (clear) { $('entry').value = ''; $('sl').value = ''; $('exit').value = ''; }
+  $('p-stop').value = a.stop;
+  state.stopPct = a.stopPct;
+  calc(); plan();
+}
+function resetBroker(run = true) {
+  const a = ASSETS[state.asset];
+  $('b-contract').value = a.contract;
+  $('b-step').value = a.step;
+  $('b-min').value = a.min;
+  $('b-acct').value = '1';
+  $('b-fee').value = a.fee;
+  $('b-mmr').value = a.mmr ?? '';
+  if (run) { calc(); plan(); }
+}
+function setSide(s) { state.side = s; calc(); }
+function setRR(v) { state.rr = v; $('rr-custom').value = v; $('exit').value = ''; calc(); }
+function onRRCustom() {
+  const n = num($('rr-custom').value);
+  if (n > 0) { state.rr = n; $('exit').value = ''; calc(); }
+}
 
-        chartLabels.push(`${t('step')} ${i}`);
-        chartData.push(parseFloat(endBal.toFixed(2)));
+function setStop(v) { state.stopPct = v; $('stop-custom').value = v; $('sl').value = ''; calc(); }
+function onStopCustom() {
+  const n = num($('stop-custom').value);
+  if (n > 0) { state.stopPct = n; $('sl').value = ''; calc(); }
+}
 
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-800/40 transition-colors';
-        tr.innerHTML = `
-          <td class="p-3 text-slate-400 font-bold">#${i}</td>
-          <td class="p-3 text-white">$${currentBal.toFixed(2)}</td>
-          <td class="p-3 text-emerald-400 font-bold">+$${gain.toFixed(2)} (${parseFloat(growthPct.toFixed(2))}%)</td>
-          <td class="p-3 ${overRisk ? 'text-amber-300' : 'text-rose-400'}">-$${actualRisk.toFixed(2)} (${actualRiskPct.toFixed(1)}%)</td>
-          <td class="p-3 text-cyan-300 font-semibold">${lots.toFixed(2)}</td>
-          <td class="p-3 text-slate-400">${layerLots}</td>
-          <td class="p-3 text-white font-bold">$${endBal.toFixed(2)}</td>
-          <td class="p-3 text-right">
-            <button onclick="loadStepIntoSizer(${currentBal}, ${Math.ceil((actualRisk / parseFloat(currentBal.toFixed(2))) * 1000000) / 10000}, ${sl})" class="px-2 py-1 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-slate-300 text-[10px] transition-colors">${t('loadSizer')}</button>
-          </td>`;
-        tbody.appendChild(tr);
-        currentBal = endBal;
-      }
+function broker() {
+  const a = ASSETS[state.asset];
+  const mult = num($('b-acct').value) || 1;
+  const contract = num($('b-contract').value) > 0 ? num($('b-contract').value) : a.contract;
+  const step = num($('b-step').value) > 0 ? num($('b-step').value) : a.step;
+  const minSz = num($('b-min').value) > 0 ? num($('b-min').value) : step;
+  const lev = Math.max(1, num($('b-lev').value) || 1);
+  const fee = Math.max(0, num($('b-fee').value) || 0) / 100;
+  const mmr = Math.max(0, num($('b-mmr').value) || 0) / 100;
+  return { a, mult, contract, step, minSz, lev, fee, mmr, sd: decOf(step) };
+}
+// USD value of a price move d per 1.0 size, measured at price px
+function moneyPerSize(b, d, px) { return b.a.usdBase ? d * b.contract * b.mult / px : d * b.contract * b.mult; }
+function roundDown(x, step) { return Math.floor(x / step + 1e-9) * step; }
 
-      const warnBox = 'p-3 rounded-xl border border-amber-500/30 bg-amber-500/10 text-xs text-amber-300 leading-relaxed';
-      const warn = document.getElementById('cp-warn');
-      const msgs = [];
-      if (riskPctNeeded > 3) msgs.push(t('p_warn', riskPctNeeded.toFixed(1)));
-      if (minLotSteps > 0) msgs.push(t('p_min', minLotSteps, steps, maxRiskPct.toFixed(1)));
-      warn.className = msgs.length ? 'space-y-2' : 'hidden';
-      warn.innerHTML = msgs.map(m => `<div class="${warnBox}">${m}</div>`).join('');
+function cleanSym(v, a) { return (String(v || '').toUpperCase().replace(/[^A-Z0-9._\/-]/g, '') || a.sym); }
+function coinOf(sym, a) { return a.coin ? (sym.replace(/(USDT|USDC|USD|PERP|-|\/)+$/g, '') || t('coins')) : t('lots'); }
+const notionalPer = (b, px) => b.a.usdBase ? b.contract * b.mult : b.contract * b.mult * px;
+const feePer = (b, p1, p2) => b.fee * (notionalPer(b, p1) + notionalPer(b, p2));
 
-      document.getElementById('chart-summary-stat').innerText = `$${start.toFixed(2)} ➔ $${currentBal.toFixed(2)} (${steps} ${t('steps')})`;
-      renderChart(chartLabels, chartData);
-    }
+function updateMbar() {
+  const show = state.tab === 'sizer' && !!state.last && !state.ticketVisible;
+  $('mbar').hidden = !show;
+  document.body.classList.toggle('has-mbar', show);
+}
 
-    function loadStepIntoSizer(stepBal, riskPct, sl) {
-      document.getElementById('acc-balance').value = stepBal.toFixed(2);
-      switchMainTab('sizer');
-      setSLValue(sl);
-      setRiskPct(Math.min(20, Math.max(0.01, riskPct)));
-    }
+function calc() {
+  const b = broker(), a = b.a;
+  const eq = num($('equity').value), rp = num($('riskpct').value);
+  const entry = num($('entry').value), side = state.side;
+  const sym = cleanSym($('symbol').value, a);
+  const coinName = coinOf(sym, a);
+  const unitTxt = t(a.unit === 'pts' ? 'u_pts' : 'u_pips');
+  const riskUsd = eq > 0 && rp > 0 ? eq * rp / 100 : 0;
 
-    function renderChart(labels, data) {
-      const ctx = document.getElementById('compoundingChart').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [{
-            label: t('chartLabel'),
-            data,
-            borderColor: '#06b6d4',
-            backgroundColor: 'rgba(6, 182, 212, 0.08)',
-            fill: true,
-            tension: 0.35,
-            borderWidth: 2,
-            pointBackgroundColor: '#22d3ee',
-            pointRadius: 3
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: gridColor() }, ticks: { color: tickColor(), font: { family: 'JetBrains Mono', size: 10 } } },
-            y: { grid: { color: gridColor() }, ticks: { color: tickColor(), font: { family: 'JetBrains Mono', size: 10 }, callback: v => '$' + v } }
-          }
-        }
-      });
-    }
+  // no stop price typed: place the stop at the chosen % from entry
+  const stopOk = state.stopPct > 0 && (side === -1 || state.stopPct < 100);
+  let sl = num($('sl').value), slAuto = false;
+  if (!(sl > 0) && entry > 0 && stopOk) { sl = entry * (1 - side * state.stopPct / 100); slAuto = true; }
+  document.querySelectorAll('#stop-chips .pill').forEach(c => c.setAttribute('aria-pressed', num(c.dataset.s) === state.stopPct));
+  if (document.activeElement !== $('stop-custom')) $('stop-custom').value = state.stopPct;
+  $('sl').placeholder = slAuto ? `${t('auto')}: ${fmtN(sl, priceDec(a, entry))}` : '';
 
-    function exportPlanCSV() {
-      const rows = [["Step", "Start Balance", "Target Gain", "Risk at Stop", "Lots", "Layers", "End Balance"]];
-      document.querySelectorAll('#planner-table-body tr').forEach(tr => {
-        const c = tr.querySelectorAll('td');
-        rows.push([c[0].innerText, c[1].innerText.replace('$', ''), `"${c[2].innerText}"`, `"${c[3].innerText}"`, c[4].innerText, `"${c[5].innerText}"`, c[6].innerText.replace('$', '')]);
-      });
-      const blob = new Blob([rows.map(r => r.join(",")).join("\n")], { type: 'text/csv;charset=utf-8' });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "Position_Sizing_v1.0_Plan.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-    }
-  </script>
+  // controls state
+  document.querySelectorAll('#risk-chips .pill').forEach(c => c.setAttribute('aria-pressed', num(c.dataset.r) === rp));
+  $('s-buy').setAttribute('aria-pressed', side === 1);
+  $('s-sell').setAttribute('aria-pressed', side === -1);
+  $('asset-ex').textContent = t('ex_' + state.asset);
+  $('b-contract-lbl').textContent = a.coin ? t('contractCoin') : t('contractLot');
+  $('entry').placeholder = fmtN(a.ref, priceDec(a, a.ref)).replace(/,/g, '');
+  $('acct-help').hidden = $('b-acct').value === '1';
+  $('mmr-wrap').hidden = !a.coin;
+  $('fee-help').textContent = t(a.coin ? 'feeHelpCrypto' : 'feeHelpOther');
+
+  $('t-side').textContent = t(side === 1 ? 'sideBuy' : 'sideSell');
+  $('t-side').className = 'badge' + (side === -1 ? ' sell' : '');
+  $('t-sym').textContent = sym;
+  $('t-risk').textContent = riskUsd > 0 ? `${t('riskLbl')} ${fmtUsd(riskUsd)} (${trim(rp)}%)` : '';
+
+  // SL helper line
+  const slHelp = $('sl-help');
+  slHelp.className = 'help';
+  if (entry > 0 && sl > 0) {
+    const d = Math.abs(entry - sl), dec = priceDec(a, entry);
+    const units = d / pipSize(a, entry);
+    slHelp.innerHTML = `${slAuto ? t('auto') + ' ' + trim(state.stopPct) + '%: ' : ''}<b>${fmtN(d, dec)}</b> (${fmtN(units, 1)} ${unitTxt}) ${sl < entry ? t('below') : t('above')}`;
+    if ((entry - sl) * side <= 0) slHelp.className = 'help bad';
+  } else {
+    slHelp.textContent = t('slHelp');
+  }
+
+  let msg = null, bad = false;
+  if (!(eq > 0)) msg = t('empty0');
+  else if (!(rp > 0)) { msg = t('emptyRisk'); bad = true; }
+  else if (!(entry > 0)) msg = t('empty1');
+  else if (!(sl > 0)) { msg = stopOk ? t('empty2') : t('errStopPct'); bad = !stopOk; }
+  else if ((entry - sl) * side <= 0) { msg = t(side === 1 ? 'errSlBuy' : 'errSlSell'); bad = true; }
+  document.querySelectorAll('#rr-chips .pill').forEach(c => c.setAttribute('aria-pressed', !$('exit').value.trim() && num(c.dataset.rr) === state.rr));
+  if (msg) {
+    $('t-empty').textContent = msg;
+    $('t-empty').className = 'empty' + (bad ? ' bad' : '');
+    $('t-empty').hidden = false; $('t-body').hidden = true;
+    $('exit').placeholder = '';
+    state.last = null; updateMbar();
+    return;
+  }
+  $('t-empty').hidden = true; $('t-body').hidden = false;
+
+  const dec = priceDec(a, entry), pip = pipSize(a, entry);
+  const dist = Math.abs(entry - sl);
+  const lossPer = moneyPerSize(b, dist, sl);
+  const costPer = lossPer + feePer(b, entry, sl);           // loss + round-trip fees per 1.0 size
+  const raw = riskUsd / costPer;
+  let size = +roundDown(raw, b.step).toFixed(b.sd);
+  let forcedMin = false;
+  if (size < b.minSz) { size = b.minSz; forcedMin = true; }
+  const loss = size * lossPer, feeSl = size * feePer(b, entry, sl), lossAll = loss + feeSl;
+
+  // exit: typed price overrides the R:R target
+  let rr = state.rr, exitErr = '';
+  const typed = num($('exit').value);
+  if (typed > 0) {
+    const mv = (typed - entry) * side;
+    if (mv > 0) rr = mv / dist; else exitErr = t(side === 1 ? 'errExitBuy' : 'errExitSell');
+  }
+  const exit = entry + side * dist * rr;
+  const autoExit = entry + side * dist * state.rr;
+  $('exit').placeholder = autoExit > 0 ? `${t('auto')}: ${fmtN(autoExit, dec)}` : '';
+  if (document.activeElement !== $('rr-custom')) $('rr-custom').value = trim(+rr.toFixed(2));
+  const eh = $('exit-help');
+  eh.textContent = exitErr || t('exitHelp');
+  eh.className = exitErr ? 'help bad' : 'help';
+
+  const gain = exit > 0 ? size * moneyPerSize(b, dist * rr, exit) : 0;
+  const feeTp = exit > 0 ? size * feePer(b, entry, exit) : 0;
+  const net = gain - feeTp;
+  const valPer = notionalPer(b, entry);
+  const value = size * valPer, margin = value / b.lev;
+  const maxSize = Math.max(0, +roundDown(eq * b.lev / valPer, b.step).toFixed(b.sd));
+  const sizeTxt = fmtN(size, b.sd);
+
+  // rough isolated liquidation for crypto perps: entry x (1 -/+ (1/leverage - maintenance margin))
+  let liq = null, liqHit = false;
+  if (a.coin) {
+    const k = 1 / b.lev - b.mmr;
+    liq = k > 0 ? entry * (1 - side * k) : entry;
+    liqHit = side === 1 ? sl <= liq : sl >= liq;
+  }
+
+  $('t-size').textContent = sizeTxt;
+  $('t-unit').textContent = coinName;
+  $('t-auto').hidden = !slAuto;
+  $('t-auto').textContent = slAuto ? t('autoNote', trim(state.stopPct)) : '';
+
+  // price ladder, drawn top (higher price) to bottom
+  const feeTxt = f => b.fee > 0 ? `, ${t('inclFees')} ${fmtUsd(f)}` : '';
+  const tpRow = { cls: 'tp', name: t('tp'), price: exit, amt: exit > 0 ? sgn(net) : '–', sub: `+${fmtN(dist * rr / pip, 1)} ${unitTxt}${feeTxt(feeTp)}` };
+  const enRow = { cls: 'en', name: t('enTag'), price: entry, amt: '', sub: '' };
+  const slRow = { cls: 'sl', name: t('slTag'), price: sl, amt: '-' + fmtUsd(lossAll), sub: `-${fmtN(dist / pip, 1)} ${unitTxt}${feeTxt(feeSl)}` };
+  const rrc = Math.min(Math.max(rr, 0.25), 5), total = 150;
+  const hWin = Math.max(22, total * rrc / (rrc + 1)), hLoss = Math.max(22, total / (rrc + 1));
+  const zone = (cls, h) => `<div class="lad-zone ${cls}" style="height:${h.toFixed(0)}px"><i></i><span></span></div>`;
+  const row = r => `<div class="lad-row ${r.cls}"><span class="lad-dot"></span><div><span class="lad-name">${r.name}</span><span class="lad-price">${r.price > 0 ? fmtN(r.price, dec) : '–'}</span></div><div class="lad-amt">${r.amt ? `<b>${r.amt}</b>${r.sub}` : ''}</div></div>`;
+  $('ladder').innerHTML = side === 1
+    ? row(tpRow) + zone('win', hWin) + row(enRow) + zone('loss', hLoss) + row(slRow)
+    : row(slRow) + zone('loss', hLoss) + row(enRow) + zone('win', hWin) + row(tpRow);
+
+  $('st-rr').textContent = `1 : ${trim(+rr.toFixed(2))}`;
+  $('st-be').textContent = net > 0 ? `${fmtN(lossAll / (lossAll + net) * 100, 1)}%` : '–';
+  $('st-val').textContent = fmtUsd(value);
+  $('st-mg-lbl').textContent = t('statMg', trim(b.lev));
+  $('st-mg').textContent = `${fmtUsd(margin)} (${fmtN(margin / eq * 100, 1)}%)`;
+  $('st-fee').textContent = b.fee > 0 ? `${fmtUsd(feeSl)} / ${fmtUsd(feeTp)}` : t('noFees');
+  $('st-liq').textContent = a.coin ? (liq > 0 ? fmtN(liq, dec) : '–') : t('liqNA');
+
+  // warnings
+  const w = [];
+  if (liqHit) w.push(['bad', t('w_liq', liq > 0 ? fmtN(liq, dec) : '0', trim(b.lev))]);
+  if (forcedMin && lossAll > riskUsd * 1.15) w.push(['bad', t('w_min', `${fmtN(b.minSz, b.sd)} ${coinName}`, fmtUsd(lossAll), fmtN(lossAll / eq * 100, 2))]);
+  if (margin > eq) w.push(['bad', t('w_mgOver', fmtUsd(margin), fmtUsd(eq), trim(b.lev), `${fmtN(maxSize, b.sd)} ${coinName}`)]);
+  else if (margin / eq > 0.5) w.push(['', t('w_mgHigh', fmtN(margin / eq * 100, 0))]);
+  if (rp > 3) w.push(['', t('w_risk', trim(rp), fmtN((1 - Math.pow(1 - rp / 100, 5)) * 100, 1))]);
+  if (!(exit > 0)) w.push(['bad', t('w_exitNeg')]);
+  if (exit > 0 && net <= 0) w.push(['bad', t('w_feeEat', fmtUsd(feeTp), fmtUsd(gain))]);
+  $('t-warn').innerHTML = w.map(([c, m]) => `<div class="warn ${c}">${m}</div>`).join('');
+
+  // details: other targets (profit after fees)
+  const targets = [1, 1.5, 2, 3];
+  $('tp-table').innerHTML = `<tr><th>${t('target')}</th><th>${t('price')}</th><th>${t('profit')}</th></tr>` +
+    targets.map(r => { const p = entry + side * dist * r; return `<tr><td>1 : ${r}</td><td>${p > 0 ? fmtN(p, dec) : '–'}</td><td>${p > 0 ? sgn(size * (moneyPerSize(b, dist * r, p) - feePer(b, entry, p))) : '–'}</td></tr>`; }).join('');
+
+  // details: split
+  document.querySelectorAll('#split-chips .pill').forEach(c => c.setAttribute('aria-pressed', +c.dataset.n === state.split));
+  const units = Math.round(size / b.step), n = state.split;
+  const base = Math.floor(units / n), extra = units - base * n;
+  let rows = '';
+  for (let i = 0; i < n; i++) {
+    const u = base + (i < extra ? 1 : 0);
+    if (u <= 0) continue;
+    const sz = u * b.step;
+    rows += `<tr><td>${t('order')} ${i + 1}</td><td>${fmtN(sz, b.sd)} ${coinName}</td><td>-${fmtUsd(sz * costPer)}</td></tr>`;
+  }
+  $('split-table').innerHTML = `<tr><th>${t('order')}</th><th>${t('size')}</th><th>${t('lossAtSl')}</th></tr>` + rows;
+
+  // details: the numbers
+  const mrow = (k, v) => `<tr><td>${t(k)}</td><td>${v}</td></tr>`;
+  $('more-table').innerHTML =
+    mrow('mRisk', `${fmtUsd(riskUsd)} (${trim(rp)}%)`) +
+    mrow('mDist', `${fmtN(dist, dec)} (${fmtN(dist / pip, 1)} ${unitTxt})`) +
+    mrow('mLossLot', fmtUsd(lossPer)) +
+    mrow('mFeeRate', `${trim(b.fee * 100)}%`) +
+    mrow('mFees', fmtUsd(feeSl)) +
+    mrow('mRaw', `${fmtN(raw, Math.max(b.sd + 2, 4))} ${coinName}`) +
+    mrow('mActual', `${fmtUsd(lossAll)} (${fmtN(lossAll / eq * 100, 2)}%)`) +
+    mrow('mMax', `${fmtN(maxSize, b.sd)} ${coinName}`) +
+    (a.coin ? mrow('mLiq', liq > 0 ? fmtN(liq, dec) : '–') : '');
+
+  state.last = { side, sym, sizeTxt, coinName, entry: fmtN(entry, dec), sl: fmtN(sl, dec), tp: exit > 0 ? fmtN(exit, dec) : '-', loss: fmtUsd(lossAll), gain: sgn(net), rr: trim(+rr.toFixed(2)) };
+  $('m-size').textContent = sizeTxt;
+  $('m-unit').textContent = coinName;
+  $('m-sl').textContent = `SL ${fmtN(sl, dec)}`;
+  $('m-tp').textContent = `TP ${exit > 0 ? fmtN(exit, dec) : '–'}`;
+  updateMbar();
+}
+
+function flash(id, text) {
+  const el = $(id); el.textContent = text; el.hidden = false;
+  clearTimeout(el._t); el._t = setTimeout(() => { el.hidden = true; }, 2200);
+}
+function copyText(text, okId) {
+  const fallback = () => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    if (ok) flash(okId, t('copied')); else window.prompt(t('copyFail'), text);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => flash(okId, t('copied')), fallback);
+  else fallback();
+}
+function copyOrder() {
+  const L = state.last; if (!L) return;
+  const text = `${t(L.side === 1 ? 'sideBuy' : 'sideSell')} ${L.sym}  ${t('size')} ${L.sizeTxt} ${L.coinName}\n${t('enTag')} ${L.entry}\n${t('slTag')} ${L.sl}  (-${L.loss})\n${t('tp')} ${L.tp}  (${L.gain})  R:R 1:${L.rr}`;
+  copyText(text, 'copy-ok');
+}
+
+// ---------------- planner ----------------
+function solveGrowth() {
+  const start = num($('p-start').value), goal = num($('p-goal').value), steps = parseInt(num($('p-steps').value), 10);
+  if (start > 0 && goal > start && steps > 0) {
+    state.pg = (Math.pow(goal / start, 1 / steps) - 1) * 100;          // exact, used while the box is untouched
+    state.pgStr = state.pg.toFixed(4);
+    $('p-growth').value = state.pgStr;
+  }
+  plan();
+}
+function plan() {
+  const b = broker(), a = b.a;
+  const entry = num($('entry').value);
+  const refPx = entry > 0 ? entry : a.ref;
+  const sym = cleanSym($('symbol').value, a);
+  const coinName = coinOf(sym, a);
+  const unitTxt = t(a.unit === 'pts' ? 'u_pts' : 'u_pips');
+  const goal = num($('p-goal').value);
+  const start = num($('p-start').value) > 0 ? num($('p-start').value) : 1000;
+  const steps = Math.min(100, Math.max(1, parseInt(num($('p-steps').value), 10) || 20));
+  const gBox = $('p-growth').value.trim();
+  const g = (state.pg && gBox === state.pgStr ? state.pg : (num(gBox) > 0 ? num(gBox) : 5)) / 100;
+  const rr = num($('p-rr').value) > 0 ? num($('p-rr').value) : 2;
+  const stop = num($('p-stop').value) > 0 ? num($('p-stop').value) : a.stop;
+  const dec = priceDec(a, refPx), pip = pipSize(a, refPx);
+  $('p-intro').textContent = t('p_intro', `${sym}, ${t('step').toLowerCase()} ${fmtN(b.step, b.sd)}`);
+  $('p-stop-help').textContent = t('p_stopHelp', `${fmtN(stop, dec)} = ${fmtN(stop / pip, 1)} ${unitTxt} (${fmtN(stop / refPx * 100, 2)}%)`);
+
+  const lossPer = moneyPerSize(b, stop, refPx) + feePer(b, refPx, Math.max(refPx - stop, 0));
+  let bal = start, rows = [], minHits = 0, maxPct = 0;
+  const labels = [t('start')], data = [start];
+  for (let i = 1; i <= steps; i++) {
+    const gain = bal * g, end = bal + gain, need = gain / rr;
+    let size = +roundDown(need / lossPer, b.step).toFixed(b.sd);
+    if (size < b.minSz) size = b.minSz;
+    const risk = size * lossPer, pct = risk / bal * 100;
+    const over = risk > need * 1.15;
+    if (over) { minHits++; maxPct = Math.max(maxPct, pct); }
+    rows.push({ i, bal, gain, risk, pct, size, end, over });
+    labels.push(`${t('trade')} ${i}`); data.push(end);
+    bal = end;
+  }
+  $('p-big').textContent = t('p_big', fmtUsd(start), fmtUsd(bal), steps);
+
+  const riskNeed = g * 100 / rr;
+  const w = [];
+  if (!(goal > start)) w.push(['bad', t('p_goalLow')]);
+  w.push(['', t('p_risk', fmtN(riskNeed, 2))]);
+  if (riskNeed >= 100) w.push(['bad', t('p_impossible', fmtN(riskNeed, 1))]);
+  else if (riskNeed > 3) w.push(['bad', t('p_aggr', fmtN(riskNeed, 1))]);
+  if (minHits) w.push(['', t('p_min', minHits, steps, fmtN(maxPct, 1))]);
+  const r1 = rows[0];
+  w.push(['', t('p_real', fmtN(r1.pct, 2), fmtUsd(r1.risk), fmtN(r1.risk / (r1.bal - r1.risk) * 100, 2))]);
+  $('p-warn').innerHTML = w.map(([c, m]) => `<div class="warn ${c}">${m}</div>`).join('');
+
+  $('p-table').innerHTML = `<tr><th>${t('c_n')}</th><th>${t('c_start')}</th><th>${t('c_gain')}</th><th>${t('c_risk')}</th><th>${t('c_size')}</th><th>${t('c_end')}</th><th></th></tr>` +
+    rows.map(r => `<tr class="${r.over ? 'amber' : ''}"><td>${r.i}</td><td>${fmtUsd(r.bal)}</td><td>+${fmtUsd(r.gain)}</td><td>-${fmtUsd(r.risk)} (${fmtN(r.pct, 2)}%)</td><td>${fmtN(r.size, b.sd)} ${coinName}</td><td>${fmtUsd(r.end)}</td><td><button class="usebtn" onclick="useStep(${r.i - 1})">${t('use')}</button></td></tr>`).join('');
+  state.planRows = rows; state.planMeta = { rr, stop, coinName, sd: b.sd };
+  drawChart(data);
+}
+function drawChart(data) {
+  const W = 640, H = 220, L = 64, R = 12, T = 14, B = 26;
+  const min = Math.min(...data), max = Math.max(...data);
+  const span = max - min || 1;
+  const x = i => L + (W - L - R) * (data.length === 1 ? 0 : i / (data.length - 1));
+  const y = v => T + (H - T - B) * (1 - (v - min) / span);
+  const pts = data.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const css = getComputedStyle(document.documentElement);
+  const acc = css.getPropertyValue('--accent').trim(), line = css.getPropertyValue('--line').trim();
+  const short = v => v >= 1e6 ? '$' + fmtN(v / 1e6, 2) + 'M' : v >= 1e4 ? '$' + fmtN(v / 1e3, 1) + 'k' : '$' + fmtN(v, 0);
+  $('p-chart').innerHTML =
+    `<line x1="${L}" y1="${y(max)}" x2="${W - R}" y2="${y(max)}" stroke="${line}"/>` +
+    `<line x1="${L}" y1="${y(min)}" x2="${W - R}" y2="${y(min)}" stroke="${line}"/>` +
+    `<text x="${L - 8}" y="${y(max) + 4}" text-anchor="end">${short(max)}</text>` +
+    `<text x="${L - 8}" y="${y(min) + 4}" text-anchor="end">${short(min)}</text>` +
+    `<polygon points="${x(0)},${y(min)} ${pts} ${x(data.length - 1)},${y(min)}" fill="${acc}" opacity="0.10"/>` +
+    `<polyline points="${pts}" fill="none" stroke="${acc}" stroke-width="2.5" stroke-linejoin="round"/>` +
+    `<text x="${L}" y="${H - 6}">${t('start')}</text>` +
+    `<text x="${W - R}" y="${H - 6}" text-anchor="end">${t('trade')} ${data.length - 1}</text>`;
+}
+function useStep(idx) {
+  const r = state.planRows[idx], m = state.planMeta; if (!r) return;
+  const a = ASSETS[state.asset];
+  $('equity').value = fmtN(r.bal, 2);
+  $('riskpct').value = Math.ceil(r.pct * 100) / 100;
+  state.rr = m.rr; $('rr-custom').value = m.rr; $('exit').value = '';
+  const entry = num($('entry').value);
+  if (entry > 0) {
+    const s = entry - state.side * m.stop;
+    if (s > 0) $('sl').value = +s.toFixed(priceDec(a, entry));
+  }
+  showTab('sizer');
+  window.scrollTo({ top: 0 });
+}
+function copyPlan() {
+  const rows = state.planRows || [], m = state.planMeta || {};
+  const csv = [['Trade', 'Start balance', 'Target gain', 'Risk at stop', 'Risk %', 'Size', 'End balance'].join(',')]
+    .concat(rows.map(r => [r.i, r.bal.toFixed(2), r.gain.toFixed(2), r.risk.toFixed(2), r.pct.toFixed(2), r.size.toFixed(m.sd), r.end.toFixed(2)].join(','))).join('\n');
+  copyText(csv, 'plan-ok');
+}
+
+// ---------------- disclaimer ----------------
+function discAccepted() { try { return sessionStorage.getItem('ps-disc') === '1'; } catch (e) { return false; } }
+function openDisc() {
+  const acc = discAccepted();
+  $('disc-check-wrap').hidden = acc;
+  $('disc-go').disabled = !acc;
+  $('disc').hidden = false;
+  document.body.style.overflow = 'hidden';
+  $('disc-go').focus();
+}
+function closeDisc() {
+  if (!discAccepted()) {
+    if (!$('disc-check').checked) return;
+    try { sessionStorage.setItem('ps-disc', '1'); } catch (e) {}
+  }
+  $('disc').hidden = true;
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('disc').hidden && discAccepted()) closeDisc(); });
+
+// ---------------- wiring ----------------
+document.querySelectorAll('#asset-pills .pill').forEach(b => b.addEventListener('click', () => setAsset(b.dataset.a)));
+document.querySelectorAll('#risk-chips .pill').forEach(b => b.addEventListener('click', () => { $('riskpct').value = b.dataset.r; calc(); }));
+document.querySelectorAll('#rr-chips .pill').forEach(b => b.addEventListener('click', () => setRR(num(b.dataset.rr))));
+document.querySelectorAll('#split-chips .pill').forEach(b => b.addEventListener('click', () => { state.split = +b.dataset.n; calc(); }));
+document.querySelectorAll('#stop-chips .pill').forEach(b => b.addEventListener('click', () => setStop(num(b.dataset.s))));
+
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver(es => { state.ticketVisible = es[0].isIntersecting; updateMbar(); }, { threshold: 0.15 }).observe(document.querySelector('.ticket'));
+}
+const _showTab = showTab;
+showTab = function (tab) { _showTab(tab); updateMbar(); };
+
+(function init() {
+  let l = (navigator.language || '').toLowerCase().startsWith('ms') ? 'bm' : 'en', th = 'light';
+  try { l = localStorage.getItem('ps-lang') || l; th = localStorage.getItem('ps-theme') || th; } catch (e) {}
+  state.lang = l; state.theme = th;
+  document.documentElement.setAttribute('data-theme', th);
+  applyText();
+  setAsset('crypto', false);
+  solveGrowth();
+  calc();
+  if (!discAccepted()) openDisc();
+})();
+</script>
 </body>
 </html>
