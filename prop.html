@@ -176,6 +176,10 @@
             <label class="lbl" for="firm" data-i="firm"></label>
             <select class="in" id="firm" onchange="onFirm()">
               <option value="bitfunded">Bitfunded</option>
+              <option value="ftmo">FTMO</option>
+              <option value="fundednext">FundedNext</option>
+              <option value="the5ers">The5ers</option>
+              <option value="apex">Apex Trader Funding</option>
               <option value="custom" data-i="custom"></option>
             </select>
           </div>
@@ -194,13 +198,7 @@
         </div>
         <div id="plan-wrap">
           <span class="lbl" data-i="plan"></span>
-          <div class="pills" id="plan-pills">
-            <button class="pill" data-p="s2a" data-i="p_s2a"></button>
-            <button class="pill" data-p="s2b" data-i="p_s2b"></button>
-            <button class="pill" data-p="s1" data-i="p_s1"></button>
-            <button class="pill" data-p="exp" data-i="p_exp"></button>
-            <button class="pill" data-p="inst" data-i="p_inst"></button>
-          </div>
+          <div class="pills" id="plan-pills"></div>
         </div>
         <details class="box" id="rules-box">
           <summary id="rules-sum"></summary>
@@ -403,6 +401,30 @@ const BITFUNDED = {
     inst: { target: 0,  daily: 4, max: 6,  expo: 55, split: 60 }
   }
 };
+// Other firms: % of the starting balance, from each firm's public pages (checked 17 Oct 2026). Leverage varies by instrument, so edit it if needed.
+const FIRMS = {
+  bitfunded: { def: 's1', common: BITFUNDED.common, plans: BITFUNDED.plans, i18nPlans: true },
+  ftmo: { def: '1s', common: { lev: 100, fee: 0, pos: 20 }, plans: {
+    '2s1': { label: '2-Step, Challenge', target: 10, daily: 5, max: 10, expo: 100 },
+    '2s2': { label: '2-Step, Verification', target: 5, daily: 5, max: 10, expo: 100 },
+    '1s':  { label: '1-Step', target: 10, daily: 3, max: 10, expo: 100 } } },
+  fundednext: { def: 's1', common: { lev: 100, fee: 0, pos: 20 }, plans: {
+    s2a: { label: 'Stellar 2-Step, phase 1', target: 8, daily: 5, max: 10, expo: 100 },
+    s2b: { label: 'Stellar 2-Step, phase 2', target: 5, daily: 5, max: 10, expo: 100 },
+    s1:  { label: 'Stellar 1-Step', target: 10, daily: 3, max: 6, expo: 100 },
+    l1:  { label: 'Stellar Lite, phase 1', target: 8, daily: 4, max: 8, expo: 100 },
+    l2:  { label: 'Stellar Lite, phase 2', target: 4, daily: 4, max: 8, expo: 100 } } },
+  the5ers: { def: 'hg', common: { lev: 100, fee: 0, pos: 20 }, plans: {
+    hg:  { label: 'Hyper Growth', target: 10, daily: 3, max: 6, expo: 100 },
+    hs1: { label: 'High Stakes, step 1', target: 10, daily: 5, max: 10, expo: 100 },
+    hs2: { label: 'High Stakes, step 2', target: 5, daily: 5, max: 10, expo: 100 } } },
+  apex: { def: 'a50', common: { lev: 20, fee: 0, pos: 10 }, plans: {
+    a50:  { label: 'Evaluation, 50K-style', target: 6, daily: 2, max: 4, expo: 100 },
+    a100: { label: 'Evaluation, 100K-style', target: 6, daily: 1.5, max: 3, expo: 100 } } }
+};
+const firmKey = () => $('firm').value;
+const firmDef = () => FIRMS[firmKey()];
+const planLabel = (f, k) => f.i18nPlans ? t('p_' + k) : f.plans[k].label;
 const MAJORS = ['BTC', 'ETH', 'BNB', 'XRP', 'SOL', 'TRX', 'HYPE', 'ZEC', 'DOGE', 'ADA'];
 const TRADFI = ['XAU', 'XAG', 'TSLA'];
 
@@ -417,6 +439,10 @@ const TXT = {
   rulesSum: 'Rules: target %1%, daily loss %2%, max loss %3%, leverage up to %4x', rulesSumNoT: 'Rules: no target, daily loss %2%, max loss %3%, leverage up to %4x',
   r_target: 'Profit target %', r_daily: 'Max daily loss %', r_max: 'Max loss %', r_lev: 'Max leverage (x)', r_fee: 'Fee per side %', r_expo: 'Exposure limit %', r_pos: 'Max open positions',
   rulesSrc: 'Bitfunded: both limits are a fixed % of the starting balance (static) and include floating losses. The day resets at 00:00 UTC+8. Exposure above the limit does not fail you, but cuts your payout by 50–70%. Hedging, bots, scripts and copy trading are not allowed. Edit any value if the rules change.',
+  src_ftmo: 'FTMO: 1-Step has a 3% daily loss and a 10% end-of-day trailing max loss; 2-Step has a 5% daily loss and a 10% static max loss. Losses include open trades. This page treats both limits as static, so the 1-Step max loss may be looser than the real one. Leverage depends on the instrument. Edit any value if the rules change.',
+  src_fundednext: 'FundedNext Stellar: limits are a % of the starting balance and include open losses. Daily loss resets at server time. Minimum trading days apply per phase. Leverage depends on the instrument. Edit any value if the rules change.',
+  src_the5ers: 'The5ers: Hyper Growth has a 3% daily loss and a 6% static max loss; High Stakes has a 5% daily loss and a 10% static max loss. Targets differ between program versions (High Stakes step 1 is 8% on the classic version). Leverage depends on the instrument. Edit any value if the rules change.',
+  src_apex: 'Apex is a futures firm with dollar-based limits and a trailing drawdown. These plans convert the 50K and 100K evaluation limits into % and treat the drawdown as static, which is looser than the real one. Futures are margin-based, so leverage here is only a rough cap. Edit any value, and check the firm’s rules.',
   rulesSrcCustom: 'Custom rules: this page treats both limits as a fixed % of the starting balance (static drawdown).',
   h_now: 'Where you are now', bal: 'Closed balance ($)', today: 'Today’s closed P&L', float: 'Open P&L now',
   nowHelp: 'Use a minus sign for losses. Today means since the last reset (%1). To stay on the safe side, today’s profits and open profits are never counted as extra room.', resetBit: '00:00 UTC+8, midnight in Malaysia', resetCustom: 'your firm’s daily reset',
@@ -431,7 +457,7 @@ const TXT = {
   s_today: 'Room today', s_total: 'Room before max loss', s_tgt: 'To profit target', s_death: 'Days to breach, worst case',
   nLosses: '%1 losing trades', nWins: '%1 winning trades', reached: 'Target reached', noTarget: 'No target on this plan',
   deathN: 'at %1 losses a day', deathNA: 'Cannot trade', deathSub: 'every loss counts',
-  w_dailyHit: 'Daily loss limit breached. On Bitfunded this closes your positions and disqualifies the account.',
+  w_dailyHit: 'Daily loss limit breached. On most prop firms this closes your positions and disqualifies the account.',
   w_maxHit: 'Max loss limit breached. The account is disqualified.',
   w_riskBig: 'One loss at this risk is bigger than today’s room. Lower the risk or stop for the day.',
   w_close: 'Less than one full loss of room left today. Stop trading until the reset.',
@@ -455,7 +481,7 @@ const TXT = {
   o_note: 'Simulation of %1 runs with your numbers, assuming you follow your daily stop and never take a trade that could breach today’s limit. %2% were still going after %3 days. Real results depend on your edge being real.',
   o_noTrade: 'Fill in the trade or risk plan to see the odds.',
   foot: 'Hobby project. Not affiliated with any prop firm. Educational calculator, not financial advice. Your inputs stay in your browser and are never sent or stored.',
-  footSrc: 'Bitfunded rules summarised from bitfunded.com/faq and the Bitfunded user guide, checked 17 Oct 2026. Rules change, so always check the latest before trading.',
+  footSrc: 'Rules summarised from each firm’s public pages (Bitfunded from bitfunded.com/faq and its user guide), checked 17 Oct 2026. Rules change, so always check the latest before trading.',
   discOpen: 'Read disclaimer', discTitle: 'Before you use this planner',
   disc1: 'This is an educational calculator built as a hobby project. It is not financial advice and is not affiliated with, endorsed by or checked by Bitfunded or any other prop firm.',
   disc2: 'Prop firm rules are summarised from public pages and can change at any time. The firm’s own rules and platform numbers always win. If this page disagrees with them, trust the firm.',
@@ -471,6 +497,10 @@ const TXT = {
   rulesSum: 'Peraturan: sasaran %1%, rugi harian %2%, rugi maksimum %3%, leverage sehingga %4x', rulesSumNoT: 'Peraturan: tiada sasaran, rugi harian %2%, rugi maksimum %3%, leverage sehingga %4x',
   r_target: 'Sasaran untung %', r_daily: 'Rugi harian maksimum %', r_max: 'Rugi maksimum %', r_lev: 'Leverage maksimum (x)', r_fee: 'Yuran setiap sisi %', r_expo: 'Had pendedahan %', r_pos: 'Posisi terbuka maksimum',
   rulesSrc: 'Bitfunded: kedua-dua had ialah % tetap baki permulaan (statik) dan termasuk rugi terapung. Hari bertukar pada 00:00 UTC+8. Pendedahan melebihi had tidak menggagalkan anda, tetapi memotong bayaran 50–70%. Hedging, bot, skrip dan copy trading tidak dibenarkan. Ubah nilai jika peraturan berubah.',
+  src_ftmo: 'FTMO: 1-Step ada had rugi harian 3% dan had rugi maksimum 10% jejak hujung hari; 2-Step ada rugi harian 5% dan rugi maksimum 10% statik. Rugi termasuk dagangan terbuka. Halaman ini menganggap kedua-dua had statik, jadi had rugi maksimum 1-Step mungkin lebih longgar daripada sebenar. Leverage bergantung pada instrumen. Ubah nilai jika peraturan berubah.',
+  src_fundednext: 'FundedNext Stellar: had ialah % baki permulaan dan termasuk rugi terbuka. Rugi harian ditetapkan semula pada waktu pelayan. Hari dagangan minimum dikenakan setiap fasa. Leverage bergantung pada instrumen. Ubah nilai jika peraturan berubah.',
+  src_the5ers: 'The5ers: Hyper Growth ada rugi harian 3% dan rugi maksimum 6% statik; High Stakes ada rugi harian 5% dan rugi maksimum 10% statik. Sasaran berbeza antara versi program (langkah 1 High Stakes ialah 8% pada versi klasik). Leverage bergantung pada instrumen. Ubah nilai jika peraturan berubah.',
+  src_apex: 'Apex ialah firma niaga hadapan dengan had dalam dolar dan drawdown jejak. Pelan ini menukar had penilaian 50K dan 100K kepada % dan menganggap drawdown statik, yang lebih longgar daripada sebenar. Niaga hadapan berasaskan margin, jadi leverage di sini hanya had kasar. Ubah nilai dan semak peraturan firma.',
   rulesSrcCustom: 'Peraturan sendiri: halaman ini menganggap kedua-dua had sebagai % tetap baki permulaan (drawdown statik).',
   h_now: 'Kedudukan anda sekarang', bal: 'Baki tertutup ($)', today: 'Untung/rugi tertutup hari ini', float: 'Untung/rugi terbuka',
   nowHelp: 'Guna tanda tolak untuk rugi. Hari ini bermaksud sejak tetapan semula terakhir (%1). Untuk selamat, untung hari ini dan untung terbuka tidak dikira sebagai ruang tambahan.', resetBit: '00:00 UTC+8, tengah malam waktu Malaysia', resetCustom: 'tetapan semula harian firma anda',
@@ -485,7 +515,7 @@ const TXT = {
   s_today: 'Ruang hari ini', s_total: 'Ruang sebelum rugi maksimum', s_tgt: 'Ke sasaran untung', s_death: 'Hari sebelum langgar had, paling teruk',
   nLosses: '%1 dagangan rugi', nWins: '%1 dagangan menang', reached: 'Sasaran dicapai', noTarget: 'Tiada sasaran untuk pelan ini',
   deathN: 'pada %1 kerugian sehari', deathNA: 'Tidak boleh berdagang', deathSub: 'setiap kerugian dikira',
-  w_dailyHit: 'Had rugi harian dilanggar. Di Bitfunded ini menutup posisi dan membatalkan akaun.',
+  w_dailyHit: 'Had rugi harian dilanggar. Di kebanyakan prop firm ini menutup posisi dan membatalkan akaun.',
   w_maxHit: 'Had rugi maksimum dilanggar. Akaun dibatalkan.',
   w_riskBig: 'Satu kerugian pada risiko ini lebih besar daripada ruang hari ini. Kurangkan risiko atau berhenti untuk hari ini.',
   w_close: 'Ruang hari ini kurang daripada satu kerugian penuh. Berhenti sehingga tetapan semula.',
@@ -509,7 +539,7 @@ const TXT = {
   o_note: 'Simulasi %1 larian dengan angka anda, dengan andaian anda ikut had harian dan tidak ambil dagangan yang boleh melanggar had hari ini. %2% masih berjalan selepas %3 hari. Keputusan sebenar bergantung pada kelebihan anda benar-benar wujud.',
   o_noTrade: 'Isi dagangan atau pelan risiko untuk melihat peluang.',
   foot: 'Projek hobi. Tiada kaitan dengan mana-mana prop firm. Kalkulator pendidikan, bukan nasihat kewangan. Input anda kekal dalam pelayar dan tidak dihantar atau disimpan.',
-  footSrc: 'Peraturan Bitfunded diringkaskan dari bitfunded.com/faq dan panduan pengguna Bitfunded, disemak 17 Okt 2026. Peraturan berubah, jadi semak yang terkini sebelum berdagang.',
+  footSrc: 'Peraturan diringkaskan dari halaman awam setiap firma (Bitfunded dari bitfunded.com/faq dan panduan penggunanya), disemak 17 Okt 2026. Peraturan berubah, jadi semak yang terkini sebelum berdagang.',
   discOpen: 'Baca penafian', discTitle: 'Sebelum anda guna perancang ini',
   disc1: 'Ini kalkulator pendidikan yang dibina sebagai projek hobi. Ia bukan nasihat kewangan dan tiada kaitan dengan, tidak disokong atau disemak oleh Bitfunded atau mana-mana prop firm.',
   disc2: 'Peraturan prop firm diringkaskan dari halaman awam dan boleh berubah bila-bila masa. Peraturan dan angka platform firma sentiasa diutamakan. Jika halaman ini berbeza, percayalah firma.',
@@ -522,6 +552,7 @@ function t(k, ...a) { let s = (TXT[state.lang] && TXT[state.lang][k]) ?? TXT.en[
 function applyText() {
   document.querySelectorAll('[data-i]').forEach(el => { el.textContent = t(el.dataset.i); });
   document.documentElement.lang = state.lang === 'bm' ? 'ms' : 'en';
+  renderPlans();
   $('l-en').setAttribute('aria-pressed', state.lang === 'en');
   $('l-bm').setAttribute('aria-pressed', state.lang === 'bm');
   $('theme-btn').textContent = state.theme === 'light' ? t('dark') : t('light');
@@ -532,17 +563,24 @@ function setTheme(th) { state.theme = th; document.documentElement.setAttribute(
 function toggleTheme() { setTheme(state.theme === 'light' ? 'dark' : 'light'); }
 
 // ---------------- inputs ----------------
+function renderPlans() {
+  const f = firmDef(); if (!f) return;
+  $('plan-pills').innerHTML = Object.keys(f.plans).map(k => `<button class="pill" data-p="${k}">${planLabel(f, k)}</button>`).join('');
+  document.querySelectorAll('#plan-pills .pill').forEach(b => b.addEventListener('click', () => loadPlan(b.dataset.p)));
+}
 function loadPlan(p) {
+  const f = firmDef(); if (!f.plans[p]) p = f.def;
   state.plan = p;
-  const r = BITFUNDED.plans[p], c = BITFUNDED.common;
+  const r = f.plans[p], c = f.common;
   $('r-target').value = r.target; $('r-daily').value = r.daily; $('r-max').value = r.max;
   $('r-lev').value = c.lev; $('r-fee').value = c.fee; $('r-expo').value = r.expo; $('r-pos').value = c.pos;
   calc();
 }
 function onFirm() {
-  const bit = $('firm').value === 'bitfunded';
-  $('plan-wrap').hidden = !bit;
-  if (bit) loadPlan(state.plan); else { $('rules-box').open = true; calc(); }
+  const known = !!firmDef();
+  $('plan-wrap').hidden = !known;
+  renderPlans();
+  if (known) loadPlan(state.plan); else { $('rules-box').open = true; calc(); }
 }
 function onRuleEdit() { calc(); }
 function onAcct() { $('bal').value = ''; calc(); }
@@ -606,12 +644,12 @@ function setBar(id, frac) {
 }
 
 function calc() {
-  const r = rules(), bit = $('firm').value === 'bitfunded';
+  const r = rules(), bit = firmKey() === 'bitfunded', known = !!firmDef();
   const size = num($('acct').value);
   document.querySelectorAll('#plan-pills .pill').forEach(b => b.setAttribute('aria-pressed', b.dataset.p === state.plan));
   document.querySelectorAll('#size-chips .pill').forEach(b => b.setAttribute('aria-pressed', num(b.dataset.s) === size));
   $('rules-sum').textContent = t(r.target > 0 ? 'rulesSum' : 'rulesSumNoT', trim(r.target), trim(r.daily), trim(r.max), trim(r.lev));
-  $('rules-src').textContent = bit ? t('rulesSrc') : t('rulesSrcCustom');
+  $('rules-src').textContent = bit ? t('rulesSrc') : known ? t('src_' + firmKey()) : t('rulesSrcCustom');
   $('now-help').textContent = t('nowHelp', bit ? t('resetBit') : t('resetCustom'));
   $('bal').placeholder = size > 0 ? fmtN(size, 0) : '';
 
@@ -644,7 +682,7 @@ function calc() {
   const targetBal = size * (1 + r.target / 100), toGo = Math.max(0, targetBal - bal);
   const riskUsd = riskPct > 0 ? size * riskPct / 100 : 0;
 
-  $('room-right').textContent = `${t('p_' + state.plan) && bit ? t('p_' + state.plan) + ', ' : ''}${usd0(size)}`;
+  $('room-right').textContent = `${known ? planLabel(firmDef(), state.plan) + ', ' : ''}${usd0(size)}`;
   setBar('m-daily', dayUsed / dailyLimit);
   $('m-daily-txt').textContent = `${fmtUsd(dayUsed)} / ${fmtUsd(dailyLimit)}`;
   const maxUsed = Math.max(0, size - eqSafe);
@@ -748,7 +786,7 @@ function sizeTrade(r, size, bal, riskUsd, rr, roomToday, roomTotal) {
   const maxQtyExpo = Math.max(0, +(Math.floor(((r.expo / 100) * bal - mgUsed - 0.01) * levEff / entry / step) * step).toFixed(sd));
   const openN = Math.max(0, Math.round(num($('open-n').value) || 0));
   const [holdDays, holdCat] = holdInfo(sym);
-  const bit = $('firm').value === 'bitfunded', minTrades = state.plan === 'inst' ? 3 : 2;
+  const bit = firmKey() === 'bitfunded', minTrades = state.plan === 'inst' ? 3 : 2;
 
   $('t-empty').hidden = true; $('t-body').hidden = false;
   $('t-size').textContent = fmtN(qty, sd); $('t-unit').textContent = coin;
@@ -791,7 +829,6 @@ function closeDisc() { if (!discAccepted()) { if (!$('disc-check').checked) retu
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('disc').hidden && discAccepted()) closeDisc(); });
 
 // ---------------- wiring ----------------
-document.querySelectorAll('#plan-pills .pill').forEach(b => b.addEventListener('click', () => loadPlan(b.dataset.p)));
 document.querySelectorAll('#size-chips .pill').forEach(b => b.addEventListener('click', () => { $('acct').value = fmtN(num(b.dataset.s), 0); onAcct(); }));
 document.querySelectorAll('#risk-chips .pill').forEach(b => b.addEventListener('click', () => { $('risk').value = b.dataset.r; calc(); }));
 document.querySelectorAll('#rr-chips .pill').forEach(b => b.addEventListener('click', () => { $('rr').value = b.dataset.rr; calc(); }));
