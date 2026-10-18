@@ -1,0 +1,48 @@
+name: Daily Prop Trading Telegram Briefing
+
+on:
+  schedule:
+    # 21:00 MYT is 13:00 UTC (Night-before structure review: Prompt 2)
+    - cron: '0 13 * * *'
+    # 08:30 MYT is 00:30 UTC (Pre-session event check & plan: Prompt 3 & 7)
+    - cron: '30 0 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Briefing Mode'
+        required: true
+        default: 'night'
+        type: choice
+        options:
+          - night
+          - presession
+
+jobs:
+  send-briefing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Determine Mode and Run Briefing
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MODE="${{ github.event.inputs.mode }}"
+          else
+            HOUR=$(date -u +%H)
+            if [ "$HOUR" -eq 13 ]; then
+              MODE="night"
+            else
+              MODE="presession"
+            fi
+          fi
+          echo "Executing mode: $MODE"
+          python scripts/daily_prop_brief.py "$MODE"
