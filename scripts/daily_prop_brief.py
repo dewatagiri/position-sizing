@@ -12,11 +12,22 @@ Generates automated daily briefings for Telegram:
 import os
 import sys
 import json
+import urllib.error
 import urllib.request
 import datetime
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8654119191:AAFvM4z-Wam69-VkfmZ8cK8-ahknql7nT5E")
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "527580033")
+# Secrets come from the environment only; strip stray whitespace/newlines from pasted values.
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+
+KRAKEN_OHLC_URL = "https://api.kraken.com/0/public/OHLC"
+# Kraken pair names and OHLC interval minutes (Binance is geo-blocked on US GitHub runners).
+KRAKEN_PAIRS = {"BTCUSDT": "XBTUSDT", "ETHUSDT": "ETHUSDT"}
+KRAKEN_INTERVALS = {"1d": 1440, "4h": 240, "1h": 60}
+
+
+class BriefingError(Exception):
+    """Raised when market data cannot be fetched or Telegram cannot be reached."""
 
 # (title, [sector ETFs], [example leaders])
 SECTORS = [
@@ -43,36 +54,42 @@ WEEKEND_CHECKLIST = [
 ]
 
 def fetch_klines(symbol="BTCUSDT", interval="1d", limit=30):
-    """Fetch candles from Binance public API."""
-    url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
+    """Fetch candles from Kraken's public OHLC API (works from US IPs)."""
+    pair = KRAKEN_PAIRS.get(symbol)
+    minutes = KRAKEN_INTERVALS.get(interval)
+    if pair is None or minutes is None:
+        raise BriefingError(f"Unsupported symbol/interval: {symbol} {interval}")
+    url = f"{KRAKEN_OHLC_URL}?pair={pair}&interval={minutes}"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read().decode())
-            # Format: [open_time, open, high, low, close, volume, ...]
-            candles = []
-            for d in data:
-                candles.append({
-                    "open": float(d[1]),
-                    "high": float(d[2]),
-                    "low": float(d[3]),
-                    "close": float(d[4]),
-                    "volume": float(d[5]),
-                    "time": d[0]
-                })
-            return candles
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = json.loads(resp.read().decode())
     except Exception as e:
-        print(f"Error fetching {symbol} {interval}: {e}")
-        return []
+        raise BriefingError(f"Error fetching {symbol} {interval}: {e}") from e
+    if body.get("error"):
+        raise BriefingError(f"Kraken error for {symbol} {interval}: {body['error']}")
+    # Format: result[<pair>] = [[time, open, high, low, close, vwap, volume, count], ...]
+    rows = next((v for k, v in body.get("result", {}).items() if k != "last"), [])
+    candles = [
+        {
+            "open": float(d[1]),
+            "high": float(d[2]),
+            "low": float(d[3]),
+            "close": float(d[4]),
+            "volume": float(d[6]),
+            "time": d[0],
+        }
+        for d in rows[-limit:]
+    ]
+    if not candles:
+        raise BriefingError(f"No candles returned for {symbol} {interval}")
+    return candles
 
 def analyze_structure(symbol="BTCUSDT"):
     """Identify Highs, Lows, Range boundaries, and key deviation checks."""
     daily = fetch_klines(symbol, "1d", 30)
     h4 = fetch_klines(symbol, "4h", 42) # ~7 days
     h1 = fetch_klines(symbol, "1h", 24)
-
-    if not daily or not h4 or not h1:
-        return None
 
     current_price = h1[-1]["close"]
     
@@ -112,7 +129,10 @@ def analyze_structure(symbol="BTCUSDT"):
     }
 
 def send_telegram_message(text):
-    """Send text formatted with HTML/Markdown to Telegram."""
+    """Send text formatted with HTML/Markdown to Telegram. Raises BriefingError on failure."""
+    missing = [n for n, v in (("TELEGRAM_BOT_TOKEN", TELEGRAM_BOT_TOKEN), ("TELEGRAM_CHAT_ID", TELEGRAM_CHAT_ID)) if not v]
+    if missing:
+        raise BriefingError(f"Missing or empty environment variable(s): {', '.join(missing)}")
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -123,12 +143,17 @@ def send_telegram_message(text):
     data = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"})
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=10):
             print("Telegram sent successfully.")
-            return True
+    except urllib.error.HTTPError as e:
+        # Report status and Telegram's description only; never the URL (it contains the token).
+        try:
+            desc = json.loads(e.read().decode()).get("description", "")
+        except Exception:
+            desc = ""
+        raise BriefingError(f"Telegram HTTP {e.code}: {desc}") from None
     except Exception as e:
-        print(f"Failed to send Telegram message: {e}")
-        return False
+        raise BriefingError(f"Failed to send Telegram message: {type(e).__name__}") from None
 
 def generate_night_review():
     """Prompt 2: Chart Structure Review (night before)"""
@@ -142,8 +167,6 @@ def generate_night_review():
     msg += f"━━━━━━━━━━━━━━━━━━━━━\n\n"
 
     for coin in [btc, eth]:
-        if not coin:
-            continue
         msg += f"📊 <b>{coin['symbol']}/USDT Structure</b>\n"
         msg += f"• <b>Live Price:</b> ${coin['current_price']:,.2f}\n"
         msg += f"• <b>Range High:</b> ${coin['range_high']:,.2f} (~{coin['high_taps']} taps)\n"
@@ -208,18 +231,24 @@ def generate_sector_watchlist():
             msg += f"{i}. {q}\n"
     return msg
 
-if __name__ == "__main__":
+def main():
     mode = sys.argv[1] if len(sys.argv) > 1 else "night"
     if mode == "night":
-        text = generate_night_review()
+        messages = [generate_night_review()]
     elif mode == "presession":
-        send_telegram_message(generate_presession_brief())
-        text = generate_sector_watchlist()
+        messages = [generate_presession_brief(), generate_sector_watchlist()]
     elif mode == "sectors":
-        text = generate_sector_watchlist()
+        messages = [generate_sector_watchlist()]
     elif mode == "test":
-        text = "🤖 <b>Kabun Daily Automation Test</b>\nBot connection active and ready!"
+        messages = ["🤖 <b>Kabun Daily Automation Test</b>\nBot connection active and ready!"]
     else:
-        text = f"Unknown mode {mode}"
+        raise BriefingError(f"Unknown mode: {mode}")
+    for text in messages:
+        send_telegram_message(text)
 
-    send_telegram_message(text)
+if __name__ == "__main__":
+    try:
+        main()
+    except BriefingError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
