@@ -231,62 +231,76 @@ def load_candles(asset):
     h1 = fetch_yahoo(asset["sym"], "60m", "1mo")
     return fetch_yahoo(asset["sym"], "1d", "3mo")[-30:], resample_4h(h1)[-42:], h1[-24:]
 
-def analyze_structure(asset):
-    """Identify Highs, Lows, Range boundaries, and key deviation checks."""
-    daily, h4, h1 = load_candles(asset)
-
-    current_price = h1[-1]["close"]
-    
+def range_stats(h4, h1):
+    """4H range (last 30 bars), tap counts, and 1H deviation state - shared by every asset."""
     # 4H Range Estimation (last 30 bars)
     recent_h4 = h4[-30:]
     range_high = max(c["high"] for c in recent_h4)
     range_low = min(c["low"] for c in recent_h4)
-    range_mid = (range_high + range_low) / 2.0
 
     # Count approximate touches/taps (within 0.75% of high/low)
     high_threshold = range_high * 0.9925
     low_threshold = range_low * 1.0075
-    
+
     high_taps = sum(1 for c in recent_h4 if c["high"] >= high_threshold)
     low_taps = sum(1 for c in recent_h4 if c["low"] <= low_threshold)
 
     # Deviation detection (1H wick outside range closing back inside)
-    last_1h = h1[-3:]
-    deviation_state = "No active deviation"
-    for candle in reversed(last_1h):
+    deviation = None
+    for candle in reversed(h1[-3:]):
         if candle["high"] > range_high and candle["close"] < range_high:
-            deviation_state = f"⚠️ Bull Trap / Deviation above High ({fmt_price(candle['high'])}) -> closed back inside!"
+            deviation = ("above", candle["high"])
             break
         elif candle["low"] < range_low and candle["close"] > range_low:
-            deviation_state = f"⚠️ Bear Trap / Deviation below Low ({fmt_price(candle['low'])}) -> closed back inside!"
+            deviation = ("below", candle["low"])
             break
+
+    return {
+        "range_high": range_high,
+        "range_low": range_low,
+        "range_mid": (range_high + range_low) / 2.0,
+        "high_taps": high_taps,
+        "low_taps": low_taps,
+        "deviation": deviation,
+    }
+
+def analyze_structure(asset):
+    """Identify Highs, Lows, Range boundaries, and key deviation checks."""
+    daily, h4, h1 = load_candles(asset)
+    r = range_stats(h4, h1)
+
+    deviation_state = "No active deviation"
+    if r["deviation"]:
+        side, level = r["deviation"]
+        if side == "above":
+            deviation_state = f"⚠️ Bull Trap / Deviation above High ({fmt_price(level)}) -> closed back inside!"
+        else:
+            deviation_state = f"⚠️ Bear Trap / Deviation below Low ({fmt_price(level)}) -> closed back inside!"
 
     return {
         "title": asset["title"],
         "label": asset["title"].split("/")[0].split(" ")[0],
-        "current_price": current_price,
-        "range_high": range_high,
-        "range_low": range_low,
-        "range_mid": range_mid,
-        "high_taps": high_taps,
-        "low_taps": low_taps,
-        "deviation_state": deviation_state
+        "current_price": h1[-1]["close"],
+        "deviation_state": deviation_state,
+        **r,
     }
 
 def analyze_alt(base, pair):
-    """One request per alt: 24h change and position inside the 5-day (120h) range."""
+    """One request per alt: 24h change, plus the same 4H range/taps/deviation as the big assets."""
     c = fetch_klines(pair, "1h", 121)
     if len(c) < 25:
         raise BriefingError(f"{base}: only {len(c)} hourly candles")
     price = c[-1]["close"]
-    window = c[-120:]
-    hi = max(x["high"] for x in window)
-    lo = min(x["low"] for x in window)
+    r = range_stats(resample_4h(c), c)
+    span = r["range_high"] - r["range_low"]
     return {
         "base": base,
         "price": price,
         "chg24": (price / c[-25]["close"] - 1) * 100,
-        "pos": (price - lo) / (hi - lo) * 100 if hi > lo else 50.0,
+        "pos": (price - r["range_low"]) / span * 100 if span > 0 else 50.0,
+        "high_taps": r["high_taps"],
+        "low_taps": r["low_taps"],
+        "deviation": r["deviation"],
     }
 
 def collect(items, fn, label):
@@ -331,12 +345,14 @@ def collect_alts():
 def alts_text(groups, notes):
     if not groups:
         return ""
-    parts = ["🪙 <b>ALTS</b> (24h change · position in 5-day range)"]
+    parts = ["🪙 <b>ALTS</b> (24h change · position in 4H range · taps high/low)"]
     for title, rows in groups:
         lines = [f"<b>{title}</b>"]
         for r in rows:
             flag = " 🔼" if r["pos"] >= 90 else " 🔽" if r["pos"] <= 10 else ""
-            lines.append(f"• <b>{r['base']}</b> ${fmt_price(r['price'])} | {r['chg24']:+.1f}% | {r['pos']:.0f}%{flag}")
+            if r["deviation"]:
+                flag += " ⚠️Dev↑" if r["deviation"][0] == "above" else " ⚠️Dev↓"
+            lines.append(f"• <b>{r['base']}</b> ${fmt_price(r['price'])} | {r['chg24']:+.1f}% | {r['pos']:.0f}% | {r['high_taps']}H/{r['low_taps']}L{flag}")
         parts.append("\n".join(lines))
     if notes:
         parts.append("\n".join(f"<i>{html.escape(n)}</i>" for n in notes))
