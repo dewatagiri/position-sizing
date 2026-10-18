@@ -6,6 +6,10 @@ on:
     - cron: '0 13 * * *'
     # 08:30 MYT is 00:30 UTC (Pre-session event check & plan: Prompt 3 & 7)
     - cron: '30 0 * * *'
+    # 09:50 New York on weekdays, in both DST states (the script skips the one that is off-hours):
+    # 13:50 UTC = 09:50 EDT, 14:50 UTC = 09:50 EST (Opening range breakout)
+    - cron: '50 13 * * 1-5'
+    - cron: '50 14 * * 1-5'
   workflow_dispatch:
     inputs:
       mode:
@@ -17,6 +21,7 @@ on:
           - night
           - presession
           - sectors
+          - orb
 
 jobs:
   send-briefing:
@@ -34,16 +39,19 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_MODE: ${{ github.event.inputs.mode }}
+          SCHEDULE: ${{ github.event.schedule }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            MODE="${{ github.event.inputs.mode }}"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            MODE="$INPUT_MODE"
           else
-            HOUR=$(date -u +%H)
-            if [ "$HOUR" -eq 13 ]; then
-              MODE="night"
-            else
-              MODE="presession"
-            fi
+            case "$SCHEDULE" in
+              '0 13 * * *') MODE="night" ;;
+              '30 0 * * *') MODE="presession" ;;
+              '50 13 * * 1-5'|'50 14 * * 1-5') MODE="orb"; export ORB_GATE=1 ;;
+              *) echo "Unknown schedule: $SCHEDULE"; exit 1 ;;
+            esac
           fi
           echo "Executing mode: $MODE"
           python scripts/daily_prop_brief.py "$MODE"
