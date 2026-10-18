@@ -18,6 +18,30 @@ import datetime
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8654119191:AAFvM4z-Wam69-VkfmZ8cK8-ahknql7nT5E")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "527580033")
 
+# (title, [sector ETFs], [example leaders])
+SECTORS = [
+    ("01 Semiconductors / Memory", ["SMH", "DRAM", "SOXX", "XSD"], ["NVDA", "AMD", "AVGO", "MU", "SNDK", "INTC"]),
+    ("02 AI Infrastructure / Data Centers", ["DTCR", "IGV", "PSI", "PSTG", "CIBR"], ["DELL", "SMCI", "VRT", "ANET"]),
+    ("03 Software / Cybersecurity", ["IGV", "CIBR", "HACK", "SKYY"], ["PLTR", "CRWD", "PANW", "FTNT", "NET"]),
+    ("04 Power / Grid / Nuclear", ["GRID", "XLI", "NLR", "PAVE", "URA"], ["GEV", "CEG", "ETN", "VRT", "OKLO"]),
+    ("05 Crypto / Fintech", ["ARKF", "WGMI", "BLOK", "BITO", "IBIT"], ["HOOD", "COIN", "CRCL", "MSTR"]),
+    ("06 Space / Defense", ["ARKX", "ITA", "UFO", "XAR"], ["ASTS", "RKLB", "LMT", "RTX", "BA"]),
+    ("07 Quantum", ["QTUM"], ["IONQ", "RGTI", "QBTS", "QUBT"]),
+    ("08 Robotics / Automation", ["BOTZ", "ARKQ"], ["TSLA", "PLTR", "ACHR", "TER"]),
+    ("09 Real Assets / Resources", ["GLD", "SLV", "COPX", "REMX"], ["FCX", "TECK", "SCCO", "MP", "ALB"]),
+    ("10 Economy / Risk", ["IWM", "XLF", "XLE", "JETS", "SPY", "QQQ"], ["IWM", "XLF", "XLE", "JETS"]),
+    ("11 Health / Biotech", ["XBI", "XLV", "IBB", "ARKG"], ["VRTX", "LLY", "MRNA", "ABBV"]),
+]
+
+WEEKEND_CHECKLIST = [
+    "What is making new highs?",
+    "What is holding the 8/21 trend?",
+    "What is outperforming $SPY / $QQQ?",
+    "Where is relative strength showing up?",
+    "What is breaking out of a base?",
+    "Where is volume expanding?",
+]
+
 def fetch_klines(symbol="BTCUSDT", interval="1d", limit=30):
     """Fetch candles from Binance public API."""
     url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
@@ -169,12 +193,30 @@ def generate_presession_brief():
     msg += f"🛠 <b>Open Calculator:</b> <a href='https://dewatagiri.github.io/position-sizing/prop.html'>Bitfunded Prop Planner</a>\n"
     return msg
 
+def generate_sector_watchlist():
+    """Sector ETF + leader watchlist, with the weekend checklist on Sat/Sun MYT."""
+    now_myt = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
+    msg = f"🗂 <b>SECTOR WATCHLIST</b> | {now_myt.strftime('%d %b %Y (%a)')}\n"
+    msg += f"━━━━━━━━━━━━━━━━━━━━━\n\n"
+    for title, etfs, leaders in SECTORS:
+        msg += f"<b>{title}</b>\n"
+        msg += f"• ETFs: {' '.join(etfs)}\n"
+        msg += f"• Leaders: {' '.join(leaders)}\n\n"
+    if now_myt.weekday() >= 5:
+        msg += f"✅ <b>Weekend Checklist</b>\n"
+        for i, q in enumerate(WEEKEND_CHECKLIST, 1):
+            msg += f"{i}. {q}\n"
+    return msg
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else "night"
     if mode == "night":
         text = generate_night_review()
     elif mode == "presession":
-        text = generate_presession_brief()
+        send_telegram_message(generate_presession_brief())
+        text = generate_sector_watchlist()
+    elif mode == "sectors":
+        text = generate_sector_watchlist()
     elif mode == "test":
         text = "🤖 <b>Kabun Daily Automation Test</b>\nBot connection active and ready!"
     else:
