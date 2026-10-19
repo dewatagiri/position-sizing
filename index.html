@@ -285,6 +285,7 @@
         <label class="lbl" for="exit" data-i="exit"></label>
         <input class="in" id="exit" inputmode="decimal" autocomplete="off" oninput="calc()">
         <p class="help" id="exit-help" data-i="exitHelp"></p>
+        <p class="help" id="exit-min"></p>
       </div>
 
       <details class="box" id="broker">
@@ -520,6 +521,7 @@ const TXT = {
   below: 'below entry', above: 'above entry',
   rr: 'Reward : risk target', exit: 'Exit price (optional)',
   exitHelp: 'Leave blank to use the reward : risk above. Type a price to set your own target.',
+  exitBE: 'Break-even (fees covered): %1', exitMin: 'Minimum worthwhile (wins as much as the stop loses, after fees): %1',
   auto: 'Auto',
   broker: 'Broker settings', brokerHelp: 'Pre-filled for each instrument. Change them to match your broker’s contract specs.',
   acct: 'Account type', std: 'Standard', micro: 'Micro (×0.1)', cent: 'Cent (×0.01)', lev: 'Leverage (1 : x)',
@@ -598,6 +600,7 @@ const TXT = {
   below: 'bawah harga masuk', above: 'atas harga masuk',
   rr: 'Sasaran ganjaran : risiko', exit: 'Harga keluar (pilihan)',
   exitHelp: 'Biarkan kosong untuk guna sasaran ganjaran : risiko di atas. Taip harga untuk sasaran sendiri.',
+  exitBE: 'Pulang modal (yuran ditampung): %1', exitMin: 'Minimum berbaloi (untung sama banyak dengan rugi stop loss, selepas yuran): %1',
   auto: 'Auto',
   broker: 'Tetapan broker', brokerHelp: 'Diisi mengikut instrumen. Ubah supaya sama dengan spesifikasi kontrak broker anda.',
   acct: 'Jenis akaun', std: 'Standard', micro: 'Mikro (×0.1)', cent: 'Cent (×0.01)', lev: 'Leverage (1 : x)',
@@ -795,7 +798,7 @@ function calc() {
     $('t-empty').textContent = msg;
     $('t-empty').className = 'empty' + (bad ? ' bad' : '');
     $('t-empty').hidden = false; $('t-body').hidden = true;
-    $('exit').placeholder = '';
+    $('exit').placeholder = ''; $('exit-min').textContent = '';
     state.last = null; updateMbar();
     return;
   }
@@ -810,6 +813,25 @@ function calc() {
   let forcedMin = false;
   if (size < b.minSz) { size = b.minSz; forcedMin = true; }
   const loss = size * lossPer, feeSl = size * feePer(b, entry, sl), lossAll = loss + feeSl;
+
+  // fee-aware floor prices: break-even, and the price where a win equals the stop-loss loss (both after open + close fees)
+  {
+    const f = b.fee, C = b.contract * b.mult, u = lossAll / (size * C);    // u = loss per 1 unit of contract, in USD
+    const pw = Math.pow(10, dec), round = x => (side === 1 ? Math.ceil(x * pw - 1e-9) : Math.floor(x * pw + 1e-9)) / pw;   // round toward the safe side
+    let be, mn;
+    if (a.usdBase) {                                                       // profit = C * (move / exit price), fee notional is fixed
+      const k = 2 * f + u;
+      be = side === 1 ? (2 * f < 1 ? entry / (1 - 2 * f) : null) : entry / (1 + 2 * f);
+      mn = side === 1 ? (k < 1 ? entry / (1 - k) : null) : entry / (1 + k);
+    } else {                                                               // profit = C * (move - fee * (entry + exit))
+      be = side === 1 ? entry * (1 + f) / (1 - f) : entry * (1 - f) / (1 + f);
+      mn = side === 1 ? (u + entry * (1 + f)) / (1 - f) : (entry * (1 - f) - u) / (1 + f);
+    }
+    const lines = [];
+    if (f > 0 && be > 0) lines.push(t('exitBE', `<b>${fmtN(round(be), dec)}</b>`));
+    if (mn > 0) lines.push(t('exitMin', `<b>${fmtN(round(mn), dec)}</b>`));
+    $('exit-min').innerHTML = lines.join('<br>');
+  }
 
   // exit: typed price overrides the R:R target
   let rr = state.rr, exitErr = '';
