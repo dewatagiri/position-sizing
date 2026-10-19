@@ -314,7 +314,7 @@
         </div>
         <div class="row2">
           <div><label class="lbl" for="step" data-i="step"></label><input class="in" id="step" inputmode="decimal" value="0.001" oninput="calc()"></div>
-          <div><label class="lbl" for="tp" data-i="tpIn"></label><input class="in" id="tp" inputmode="decimal" autocomplete="off" oninput="calc()"><p class="help" id="tp-help"></p></div>
+          <div><label class="lbl" for="tp" data-i="tpIn"></label><input class="in" id="tp" inputmode="decimal" autocomplete="off" oninput="calc()"><p class="help" id="tp-help"></p><p class="help" id="tp-min"></p></div>
         </div>
       </div>
     </section>
@@ -484,6 +484,7 @@ const TXT = {
   t_empty0: 'Fill in your account size to start.', t_empty1: 'Type your entry price to size a trade.', t_emptyRisk: 'Type a risk % above 0.',
   t_slBuy: 'For a buy, the stop loss must be below the entry price.', t_slSell: 'For a sell, the stop loss must be above the entry price.',
   ck_tpFee: 'Fees at the take profit (%1) eat the whole gain (%2). Move the take profit further out.',
+  tpBE: 'Break-even (fees covered): %1', tpMin: 'Minimum worthwhile (wins as much as the stop loses, after fees): %1',
   tpIn: 'Take profit price (optional)', tpHelp: 'Leave blank to use the reward : risk above.',
   t_tpBuy: 'For a buy, the take profit must be above entry. Using the reward : risk target instead.', t_tpSell: 'For a sell, the take profit must be below entry. Using the reward : risk target instead.',
   t_tooSmall: 'Your risk is too small for this stop. The minimum size of %1 would lose %2.',
@@ -550,6 +551,7 @@ const TXT = {
   t_empty0: 'Isi saiz akaun anda untuk mula.', t_empty1: 'Taip harga masuk untuk kira saiz dagangan.', t_emptyRisk: 'Taip % risiko melebihi 0.',
   t_slBuy: 'Untuk beli, stop loss mesti di bawah harga masuk.', t_slSell: 'Untuk jual, stop loss mesti di atas harga masuk.',
   ck_tpFee: 'Yuran pada ambil untung (%1) menghabiskan seluruh untung (%2). Jauhkan harga ambil untung.',
+  tpBE: 'Pulang modal (yuran ditampung): %1', tpMin: 'Minimum berbaloi (untung sama banyak dengan rugi stop loss, selepas yuran): %1',
   tpIn: 'Harga ambil untung (pilihan)', tpHelp: 'Biarkan kosong untuk guna ganjaran : risiko di atas.',
   t_tpBuy: 'Untuk beli, ambil untung mesti di atas harga masuk. Guna sasaran ganjaran : risiko.', t_tpSell: 'Untuk jual, ambil untung mesti di bawah harga masuk. Guna sasaran ganjaran : risiko.',
   t_tooSmall: 'Risiko anda terlalu kecil untuk stop ini. Saiz minimum %1 akan rugi %2.',
@@ -692,6 +694,7 @@ function calc() {
   document.querySelectorAll('#stop-chips .pill').forEach(b => b.setAttribute('aria-pressed', num(b.dataset.st) === state.stopPct));
   $('s-buy').setAttribute('aria-pressed', state.side === 1);
   $('s-sell').setAttribute('aria-pressed', state.side === -1);
+  $('tp-min').textContent = '';
   $('tp').placeholder = ''; $('tp-help').textContent = t('tpHelp'); $('tp-help').className = 'help';   // sizeTrade refills these once there is a trade
   const capRaw = num($('cap').value);
   const cap = isFinite(capRaw) ? Math.max(1, Math.round(capRaw)) : 2;
@@ -822,6 +825,15 @@ function sizeTrade(r, size, bal, riskUsd, rr, roomToday, roomTotal) {
   $('tp').placeholder = `Auto: ${fmtN(entry + side * dist * rrTarget, dec)}`;
   $('tp-help').textContent = tpErr || t('tpHelp');
   $('tp-help').className = tpErr ? 'help bad' : 'help';
+  // fee-aware floor prices: break-even, and the price where a win equals the loss (both after open + close fees)
+  const pw = Math.pow(10, dec), round = x => (side === 1 ? Math.ceil(x * pw - 1e-9) : Math.floor(x * pw + 1e-9)) / pw;   // round toward the safe side
+  const f = r.fee, perUnitLoss = lossAll / qty;
+  const beRaw = side === 1 ? entry * (1 + f) / (1 - f) : entry * (1 - f) / (1 + f);
+  const minRaw = side === 1 ? (perUnitLoss + entry * (1 + f)) / (1 - f) : (entry * (1 - f) - perUnitLoss) / (1 + f);
+  const tpLines = [];
+  if (f > 0 && beRaw > 0) tpLines.push(t('tpBE', `<b>${fmtN(round(beRaw), dec)}</b>`));
+  if (minRaw > 0) tpLines.push(t('tpMin', `<b>${fmtN(round(minRaw), dec)}</b>`));
+  $('tp-min').innerHTML = tpLines.join('<br>');
   const exit = tpOk ? tpTyped : entry + side * dist * rr;
   const gain = exit > 0 ? qty * dist * rr : 0, feeTp = exit > 0 ? qty * r.fee * (entry + exit) : 0, net = gain - feeTp;
   const lev = levUse, levEff = Math.min(levUse, r.lev), notional = qty * entry, margin = notional / levEff;   // platform won't go above its max
